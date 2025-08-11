@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <link rel="stylesheet" href="http://localhost:8080/style.css">
+  </head>
+  <body>
+      <!-- Your website content -->
+
+      <!-- Widget will be injected here -->
+      <div id="porta-futuri-widget"></div>
+
+      <!-- Load the widget -->
+      <script src="http://localhost:8080/widget.iife.js"></script>
+      <script>
+          // Initialize the widget
+          window.PortaFuturi.init({
+              apiKey: 'your-api-key',
+              apiUrl: 'https://rvlbbgdkgneobvlyawix.supabase.co/functions/v1'
+          });
+      </script>
+  </body>
+  </html>

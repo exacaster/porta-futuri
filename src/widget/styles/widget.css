@@ -1,0 +1,214 @@
+/* Porta Futuri Widget Styles */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* CSS Variables for theming */
+:root {
+  --pf-primary: 220 90% 56%;
+  --pf-primary-foreground: 0 0% 100%;
+  --pf-secondary: 220 14% 96%;
+  --pf-secondary-foreground: 220 9% 46%;
+  --pf-background: 0 0% 100%;
+  --pf-foreground: 220 9% 10%;
+  --pf-muted: 220 14% 96%;
+  --pf-muted-foreground: 220 9% 46%;
+  --pf-accent: 220 14% 96%;
+  --pf-accent-foreground: 220 9% 46%;
+  --pf-border: 220 14% 90%;
+  --pf-radius: 0.5rem;
+  --pf-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Widget Container */
+.pf-widget-container {
+  pointer-events: auto !important;
+  font-family: var(--pf-font-family);
+  font-size: 14px;
+  line-height: 1.5;
+  color: hsl(var(--pf-foreground));
+}
+
+/* Position classes */
+.pf-widget-container.pf-bottom-right {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.pf-widget-container.pf-bottom-left {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 9999;
+}
+
+.pf-widget-container.pf-top-right {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.pf-widget-container.pf-top-left {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 9999;
+}
+
+/* Widget Panel */
+.pf-widget-panel {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  width: 380px;
+  height: 600px;
+  background: hsl(var(--pf-background));
+  border: 1px solid hsl(var(--pf-border));
+  border-radius: var(--pf-radius);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: pf-slide-in 0.3s ease-out;
+}
+
+.pf-bottom-left .pf-widget-panel {
+  right: auto;
+  left: 0;
+}
+
+.pf-top-right .pf-widget-panel,
+.pf-top-left .pf-widget-panel {
+  bottom: auto;
+  top: 70px;
+}
+
+/* Widget Header */
+.pf-widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid hsl(var(--pf-border));
+  background: hsl(var(--pf-secondary));
+}
+
+.pf-widget-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.pf-widget-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Buttons */
+.pf-btn-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid hsl(var(--pf-border));
+  border-radius: calc(var(--pf-radius) - 2px);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pf-btn-icon:hover {
+  background: hsl(var(--pf-accent));
+}
+
+.pf-btn-primary {
+  padding: 0.5rem 1rem;
+  background: hsl(var(--pf-primary));
+  color: hsl(var(--pf-primary-foreground));
+  border: none;
+  border-radius: calc(var(--pf-radius) - 2px);
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.pf-btn-primary:hover {
+  opacity: 0.9;
+}
+
+/* Loading State */
+.pf-widget-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+}
+
+.pf-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid hsl(var(--pf-border));
+  border-top-color: hsl(var(--pf-primary));
+  border-radius: 50%;
+  animation: pf-spin 1s linear infinite;
+}
+
+/* Error State */
+.pf-widget-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  text-align: center;
+}
+
+.pf-widget-error p {
+  margin-bottom: 1rem;
+  color: hsl(var(--pf-muted-foreground));
+}
+
+/* Animations */
+@keyframes pf-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pf-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .pf-widget-panel {
+    width: calc(100vw - 40px);
+    max-width: 380px;
+  }
+}
+
+/* Ensure widget styles don't affect host page */
+.pf-widget-container * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.pf-widget-container *::before,
+.pf-widget-container *::after {
+  box-sizing: border-box;
+}
