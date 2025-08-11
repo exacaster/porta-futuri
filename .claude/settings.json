@@ -1,0 +1,61 @@
+{
+  "name": "Porta Futuri AI Add-On",
+  "description": "AI-powered product recommendation widget with PRP framework",
+  "tools": {
+    "enabled": [
+      "read",
+      "write",
+      "edit",
+      "bash",
+      "search",
+      "multi_edit",
+      "create"
+    ],
+    "auto_approve": {
+      "file_read": ["PRPs/**", "src/**", "tests/**", "CLAUDE.md", ".claude/**"],
+      "file_write": ["PRPs/**", "src/**", "tests/**"],
+      "terminal_run": ["npm run*", "npm test*", "python PRPs/scripts/prp_runner.py*"]
+    }
+  },
+  "preferences": {
+    "autoTest": true,
+    "formatOnSave": true,
+    "lintOnSave": true,
+    "validation_first": true,
+    "test_before_commit": true,
+    "incremental_development": true
+  },
+  "context": {
+    "primaryFiles": [
+      "CLAUDE.md",
+      "PRPs/README.md",
+      "PRPs/QUICK_START.md",
+      "PRPs/completed/porta-futuri-ai-addon-requirements.md"
+    ],
+    "auto_include": ["CLAUDE.md", "PRPs/README.md"],
+    "ignorePaths": [
+      "node_modules",
+      "dist",
+      ".git",
+      "coverage"
+    ],
+    "max_file_size": 100000,
+    "follow_imports": true
+  },
+  "commands": {
+    "test": "npm test",
+    "lint": "npm run lint",
+    "format": "npm run format",
+    "typecheck": "npm run typecheck",
+    "build": "npm run build",
+    "dev": "npm run dev",
+    "prp_run": "python PRPs/scripts/prp_runner.py"
+  },
+  "prp_config": {
+    "templates_dir": "PRPs/templates",
+    "active_dir": "PRPs",
+    "completed_dir": "PRPs/completed",
+    "ai_docs_dir": "PRPs/ai_docs",
+    "scripts_dir": "PRPs/scripts"
+  }
+}
