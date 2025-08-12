@@ -16,6 +16,7 @@ export const Login: React.FC<LoginProps> = ({
   error,
   clearError
 }) => {
+  console.log('[Login] Component rendering...');
   const [email, setEmail] = useState('egidijus@exacaster.com'); // Pre-fill for convenience
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

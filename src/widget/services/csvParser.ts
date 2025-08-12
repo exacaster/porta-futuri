@@ -45,13 +45,23 @@ export class CSVProcessor {
       const products: Product[] = [];
       const errors: CSVParseError[] = [];
       let rowCount = 0;
+      let metaData: any = null;
 
       Papa.parse(file, {
         header: true,
         dynamicTyping: true,
         skipEmptyLines: true,
-        worker: true, // Use web worker for performance
+        encoding: 'UTF-8',
+        transformHeader: (header) => {
+          // Remove BOM and trim whitespace from headers
+          return header.replace(/^\uFEFF/, '').replace(/^[\ufeff\u200B]+/, '').trim();
+        },
+        // Note: Cannot use worker with transformHeader function
         chunk: (results) => {
+          // Store metadata from first chunk
+          if (!metaData && results.meta) {
+            metaData = results.meta;
+          }
           results.data.forEach((row: any) => {
             rowCount++;
             
@@ -94,17 +104,17 @@ export class CSVProcessor {
             }
           });
         },
-        complete: (results) => {
+        complete: () => {
           const result = {
             data: products,
             errors,
-            meta: {
-              fields: results.meta.fields || [],
-              delimiter: results.meta.delimiter || ',',
-              linebreak: results.meta.linebreak || '\n',
-              aborted: results.meta.aborted || false,
+            meta: metaData ? {
+              fields: metaData.fields || [],
+              delimiter: metaData.delimiter || ',',
+              linebreak: metaData.linebreak || '\n',
+              aborted: metaData.aborted || false,
               truncated: products.length >= this.MAX_PRODUCTS
-            }
+            } : this.getEmptyMeta()
           };
           
           this.setCache(cacheKey, result);
@@ -369,12 +379,23 @@ export class CSVProcessor {
       Papa.parse(file, {
         preview: 1, // Only parse first row to get headers
         header: true,
+        encoding: 'UTF-8', // Explicitly set encoding
+        skipEmptyLines: true, // Skip empty lines
+        transformHeader: (header) => {
+          // Remove BOM and trim whitespace from headers
+          return header.replace(/^\uFEFF/, '').replace(/^[\ufeff\u200B]+/, '').trim();
+        },
         complete: (results) => {
           const fields = results.meta.fields || [];
           const errors: string[] = [];
           
+          // Clean field names of BOM and whitespace
+          const cleanFields = fields.map(field => 
+            field.replace(/^\uFEFF/, '').replace(/^[\ufeff\u200B]+/, '').trim()
+          );
+          
           requiredFields.forEach(field => {
-            if (!fields.includes(field)) {
+            if (!cleanFields.includes(field)) {
               errors.push(`Missing required field: ${field}`);
             }
           });

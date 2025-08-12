@@ -30,6 +30,9 @@ const supabase = createClient(
 );
 
 export function AdminApp() {
+  // Debug: Add visual indicator that component is mounting
+  console.log('[AdminApp] Component mounting...');
+  
   const { 
     user, 
     adminUser,
@@ -78,6 +81,7 @@ export function AdminApp() {
   }
 
   if (!user) {
+    console.log('[AdminApp] Rendering Login component...');
     return (
       <Login
         onLogin={signInWithEmail}
