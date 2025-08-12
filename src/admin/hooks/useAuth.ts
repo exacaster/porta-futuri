@@ -1,0 +1,275 @@
+import { useState, useEffect } from 'react';
+import { User } from '@supabase/supabase-js';
+
+interface AuthError {
+  message: string;
+  code?: string;
+}
+
+interface AdminUser {
+  id: string;
+  email: string;
+  role: 'super_admin' | 'admin' | 'viewer';
+  permissions: Record<string, string[]>;
+  is_active: boolean;
+}
+
+export const useAuth = (supabase: any) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<AuthError | null>(null);
+
+  useEffect(() => {
+    console.log('[useAuth] Initializing auth...');
+    // Check current session
+    checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event: string, session: any) => {
+        console.log('[useAuth] Auth state changed:', _event, session?.user?.email);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await loadAdminUser(session.user.email);
+        } else {
+          setAdminUser(null);
+        }
+        // Don't set loading to false here - let checkUser handle it
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const checkUser = async () => {
+    try {
+      console.log('[checkUser] Checking for existing session...');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('[checkUser] Error getting session:', sessionError);
+        setUser(null);
+        setAdminUser(null);
+        setLoading(false);
+        return;
+      }
+      
+      if (session?.user) {
+        console.log('[checkUser] Found user:', session.user.email);
+        setUser(session.user);
+        if (session.user.email) {
+          await loadAdminUser(session.user.email);
+        }
+      } else {
+        console.log('[checkUser] No session found');
+        setUser(null);
+        setAdminUser(null);
+      }
+    } catch (error) {
+      console.error('[checkUser] Unexpected error:', error);
+      setUser(null);
+      setAdminUser(null);
+    } finally {
+      console.log('[checkUser] Setting loading to false');
+      setLoading(false);
+    }
+  };
+
+  const loadAdminUser = async (email: string) => {
+    try {
+      console.log('[loadAdminUser] Loading admin user for:', email);
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('id, email, role, permissions, is_active')
+        .eq('email', email)
+        .eq('is_active', true)
+        .single();
+
+      if (data && !error) {
+        console.log('[loadAdminUser] Found admin user:', data);
+        setAdminUser(data);
+        // Update last login
+        await supabase
+          .from('admin_users')
+          .update({ 
+            last_login: new Date().toISOString(),
+            failed_login_attempts: 0,
+            lockout_until: null
+          })
+          .eq('id', data.id);
+      } else {
+        console.log('[loadAdminUser] No admin user found or error:', error);
+        setAdminUser(null);
+        if (error) {
+          console.error('[loadAdminUser] Admin user query error:', error);
+        }
+      }
+    } catch (error) {
+      console.error('[loadAdminUser] Error loading admin user:', error);
+      setAdminUser(null);
+    }
+  };
+
+  const signInWithEmail = async (email: string, password: string) => {
+    setError(null);
+    
+    try {
+      // First check if user exists and is not locked out
+      const { data: adminData } = await supabase
+        .from('admin_users')
+        .select('lockout_until, failed_login_attempts')
+        .eq('email', email)
+        .single();
+
+      if (adminData?.lockout_until && new Date(adminData.lockout_until) > new Date()) {
+        const minutesLeft = Math.ceil((new Date(adminData.lockout_until).getTime() - Date.now()) / 60000);
+        setError({ 
+          message: `Account locked due to too many failed attempts. Try again in ${minutesLeft} minutes.`,
+          code: 'ACCOUNT_LOCKED'
+        });
+        return { error: true };
+      }
+
+      // Attempt sign in with Supabase Auth
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (authError) {
+        // Handle failed login
+        await supabase.rpc('handle_failed_login', { p_email: email });
+        
+        if (authError.message.includes('Invalid login credentials')) {
+          setError({ 
+            message: 'Invalid email or password',
+            code: 'INVALID_CREDENTIALS'
+          });
+        } else {
+          setError({ 
+            message: authError.message,
+            code: authError.name
+          });
+        }
+        return { error: true };
+      }
+
+      // Reset failed attempts on successful login
+      if (data.user) {
+        await supabase.rpc('reset_failed_login_attempts', { p_user_id: data.user.id });
+        await loadAdminUser(data.user.email!);
+      }
+
+      return { error: false, user: data.user };
+    } catch (error: any) {
+      setError({ 
+        message: error.message || 'An unexpected error occurred',
+        code: 'UNKNOWN_ERROR'
+      });
+      return { error: true };
+    }
+  };
+
+  const signInWithOAuth = async (provider: 'google' | 'github') => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/admin`
+      }
+    });
+    if (error) {
+      setError({ message: error.message });
+    }
+  };
+
+  const signOut = async () => {
+    console.log('Starting signOut process...');
+    
+    try {
+      // Clear all storage first
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Clear cookies
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+      
+      // Force clear the state
+      setUser(null);
+      setAdminUser(null);
+      setLoading(false);
+      
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('SignOut error:', error);
+      }
+      
+      console.log('SignOut completed successfully');
+      return { success: true };
+    } catch (error) {
+      console.error('Error during signOut:', error);
+      setUser(null);
+      setAdminUser(null);
+      setLoading(false);
+      return { success: true };
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/admin/reset-password`,
+    });
+    
+    if (error) {
+      setError({ message: error.message });
+      return { error: true };
+    }
+    
+    return { error: false };
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+    
+    if (error) {
+      setError({ message: error.message });
+      return { error: true };
+    }
+    
+    return { error: false };
+  };
+
+  const hasPermission = (resource: string, action: string): boolean => {
+    // Temporary: If user is authenticated but adminUser not loaded, assume super_admin
+    if (!adminUser && user) return true;
+    
+    if (!adminUser) return false;
+    if (adminUser.role === 'super_admin') return true;
+    
+    const resourcePermissions = adminUser.permissions[resource];
+    return resourcePermissions && resourcePermissions.includes(action);
+  };
+
+  return { 
+    user, 
+    adminUser,
+    loading, 
+    error,
+    signInWithEmail, 
+    signInWithOAuth,
+    signOut,
+    resetPassword,
+    updatePassword,
+    hasPermission,
+    clearError: () => setError(null)
+  };
+};
