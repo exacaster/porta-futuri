@@ -51,37 +51,49 @@ function init(config: any) {
     widgetContainer.id = 'porta-futuri-widget';
     widgetContainer.style.position = 'fixed';
     widgetContainer.style.zIndex = '9999';
-    widgetContainer.style.pointerEvents = 'none';
+    // Remove pointer-events: none to allow interaction
     document.body.appendChild(widgetContainer);
   }
 
   // Set container styles for proper positioning
   const position = config.position || 'bottom-right';
-  switch (position) {
-    case 'bottom-right':
-      widgetContainer.style.bottom = '20px';
-      widgetContainer.style.right = '20px';
-      widgetContainer.style.top = 'auto';
-      widgetContainer.style.left = 'auto';
-      break;
-    case 'bottom-left':
-      widgetContainer.style.bottom = '20px';
-      widgetContainer.style.left = '20px';
-      widgetContainer.style.top = 'auto';
-      widgetContainer.style.right = 'auto';
-      break;
-    case 'top-right':
-      widgetContainer.style.top = '20px';
-      widgetContainer.style.right = '20px';
-      widgetContainer.style.bottom = 'auto';
-      widgetContainer.style.left = 'auto';
-      break;
-    case 'top-left':
-      widgetContainer.style.top = '20px';
-      widgetContainer.style.left = '20px';
-      widgetContainer.style.bottom = 'auto';
-      widgetContainer.style.right = 'auto';
-      break;
+  
+  // Special handling for relative positioning (used in preview)
+  if (position === 'relative') {
+    widgetContainer.style.position = 'relative';
+    widgetContainer.style.width = '100%';
+    widgetContainer.style.height = '100%';
+    widgetContainer.style.pointerEvents = 'auto';
+  } else {
+    // Only set position styles if not using a provided container
+    if (!config.containerId) {
+      switch (position) {
+        case 'bottom-right':
+          widgetContainer.style.bottom = '20px';
+          widgetContainer.style.right = '20px';
+          widgetContainer.style.top = 'auto';
+          widgetContainer.style.left = 'auto';
+          break;
+        case 'bottom-left':
+          widgetContainer.style.bottom = '20px';
+          widgetContainer.style.left = '20px';
+          widgetContainer.style.top = 'auto';
+          widgetContainer.style.right = 'auto';
+          break;
+        case 'top-right':
+          widgetContainer.style.top = '20px';
+          widgetContainer.style.right = '20px';
+          widgetContainer.style.bottom = 'auto';
+          widgetContainer.style.left = 'auto';
+          break;
+        case 'top-left':
+          widgetContainer.style.top = '20px';
+          widgetContainer.style.left = '20px';
+          widgetContainer.style.bottom = 'auto';
+          widgetContainer.style.right = 'auto';
+          break;
+      }
+    }
   }
 
   // Create React root and render
@@ -104,22 +116,30 @@ function init(config: any) {
     });
   }
 
-  console.log('[Porta Futuri] Widget initialized');
 }
 
 // Destroy widget
 function destroy() {
-  if (widgetRoot) {
-    widgetRoot.unmount();
-    widgetRoot = null;
+  try {
+    if (widgetRoot) {
+      widgetRoot.unmount();
+      widgetRoot = null;
+    }
+    
+    if (widgetContainer) {
+      // Only remove if it's our created container
+      if (widgetContainer.id === 'porta-futuri-widget') {
+        widgetContainer.remove();
+      } else {
+        // Clear the contents if it's a provided container
+        widgetContainer.innerHTML = '';
+      }
+    }
+    
+    widgetContainer = null;
+  } catch (error) {
+    console.error('[Porta Futuri] Error destroying widget:', error);
   }
-  
-  if (widgetContainer && widgetContainer.id === 'porta-futuri-widget') {
-    widgetContainer.remove();
-  }
-  
-  widgetContainer = null;
-  console.log('[Porta Futuri] Widget destroyed');
 }
 
 // Update widget configuration
@@ -136,7 +156,6 @@ function update(config: any) {
     </React.StrictMode>
   );
   
-  console.log('[Porta Futuri] Widget updated');
 }
 
 // Get widget metrics
@@ -165,7 +184,6 @@ function trackEvent(event: any) {
     });
   }
   
-  console.log('[Porta Futuri] Event tracked:', event);
 }
 
 // Initialize global widget object

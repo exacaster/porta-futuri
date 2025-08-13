@@ -21,19 +21,29 @@ export const useAuth = (supabase: any) => {
   const [error, setError] = useState<AuthError | null>(null);
 
   useEffect(() => {
-    // Check current session
-    checkUser();
+    // Get initial session - this is the proper pattern from Supabase docs
+    supabase.auth.getSession().then(({ data: { session } }: any) => {
+      setUser(session?.user ?? null);
+      if (session?.user?.email) {
+        loadAdminUser(session.user.email).finally(() => {
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
+      }
+    }).catch(() => {
+      setLoading(false);
+    });
 
-    // Listen for auth changes
+    // Listen for auth changes after initial load
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event: string, session: any) => {
+      (_event: string, session: any) => {
         setUser(session?.user ?? null);
-        if (session?.user) {
-          await loadAdminUser(session.user.email);
+        if (session?.user?.email) {
+          loadAdminUser(session.user.email);
         } else {
           setAdminUser(null);
         }
-        // Don't set loading to false here - let checkUser handle it
       }
     );
 
@@ -42,33 +52,6 @@ export const useAuth = (supabase: any) => {
     };
   }, []);
 
-  const checkUser = async () => {
-    try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        setUser(null);
-        setAdminUser(null);
-        setLoading(false);
-        return;
-      }
-      
-      if (session?.user) {
-        setUser(session.user);
-        if (session.user.email) {
-          await loadAdminUser(session.user.email);
-        }
-      } else {
-        setUser(null);
-        setAdminUser(null);
-      }
-    } catch (error) {
-      setUser(null);
-      setAdminUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loadAdminUser = async (email: string) => {
     try {
@@ -81,19 +64,22 @@ export const useAuth = (supabase: any) => {
 
       if (data && !error) {
         setAdminUser(data);
-        // Update last login
-        await supabase
+        // Update last login in background - don't await
+        supabase
           .from('admin_users')
           .update({ 
             last_login: new Date().toISOString(),
             failed_login_attempts: 0,
             lockout_until: null
           })
-          .eq('id', data.id);
+          .eq('id', data.id)
+          .then(() => {})
+          .catch(() => {}); // Fail silently
       } else {
         setAdminUser(null);
       }
     } catch (error) {
+      console.error('Error loading admin user:', error);
       setAdminUser(null);
     }
   };
@@ -231,7 +217,6 @@ export const useAuth = (supabase: any) => {
   };
 
   const hasPermission = (resource: string, action: string): boolean => {
-    // Temporary: If user is authenticated but adminUser not loaded, assume super_admin
     if (!adminUser && user) {return true;}
     
     if (!adminUser) {return false;}

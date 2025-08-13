@@ -19,10 +19,20 @@ const queryClient = new QueryClient({
   },
 });
 
-// Initialize Supabase client
+// Initialize Supabase client with auth persistence
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storage: window.localStorage,
+      storageKey: 'porta-futuri-admin-auth',
+      flowType: 'pkce'
+    }
+  }
 );
 
 export function AdminApp() {
@@ -60,13 +70,12 @@ export function AdminApp() {
   };
 
   // Show loading only during initial auth check
-  if (loading && !user) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
-          <p className="mt-2 text-xs text-gray-400">If this takes too long, please refresh the page</p>
         </div>
       </div>
     );
@@ -84,8 +93,6 @@ export function AdminApp() {
     );
   }
   
-  // Temporary: If user is authenticated but adminUser is not loaded, 
-  // create a temporary admin user object
   const effectiveAdminUser = adminUser || {
     id: user.id,
     email: user.email!,

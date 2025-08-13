@@ -19,10 +19,15 @@ export default defineConfig({
       fileName: 'widget',
       formats: ['iife'],
     },
+    outDir: 'dist',
     rollupOptions: {
-      external: [],
+      // Externalize React to reduce bundle size
+      external: ['react', 'react-dom'],
       output: {
-        globals: {},
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM'
+        },
         inlineDynamicImports: true,
         // Ensure single file output for widget
         manualChunks: undefined,

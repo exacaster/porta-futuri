@@ -242,22 +242,30 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
     
     return (
-      <div key={msg.id}>
+      <div key={msg.id} style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
+        marginBottom: '0.5rem',
+        width: '100%'
+      }}>
         <div
           style={{
-            marginBottom: '1rem',
             padding: '0.75rem',
             borderRadius: 'var(--pf-radius)',
             background: msg.role === 'user' 
-              ? 'hsl(var(--pf-primary))' 
+              ? '#3b82f6'  // Solid blue background for user messages
               : msg.isRedirect 
                 ? 'hsl(var(--pf-accent))'
                 : 'hsl(var(--pf-secondary))',
             color: msg.role === 'user' 
-              ? 'hsl(var(--pf-primary-foreground))' 
+              ? '#ffffff'  // White text for user messages
               : 'hsl(var(--pf-foreground))',
-            marginLeft: msg.role === 'user' ? '20%' : '0',
-            marginRight: msg.role === 'assistant' ? '20%' : '0',
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word',
+            maxWidth: '70%',
+            minWidth: '100px',
+            boxSizing: 'border-box',
           }}
         >
           {msg.content}
@@ -276,28 +284,120 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               <div
                 key={`${msg.id}-rec-${idx}`}
                 style={{
-                  padding: '0.5rem',
                   border: '1px solid hsl(var(--pf-border))',
                   borderRadius: 'calc(var(--pf-radius) - 2px)',
                   background: 'hsl(var(--pf-card))',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column'
                 }}
                 onClick={() => {
                   // Handle product click
-                  console.log('Product clicked:', product);
                 }}
               >
-                <h4 style={{ fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                  {product.name}
-                </h4>
-                <p style={{ fontSize: '0.8rem', color: 'hsl(var(--pf-muted-foreground))' }}>
-                  ${product.price}
-                </p>
-                {'reasoning' in product && (product as any).reasoning && (
-                  <p style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
-                    {String((product as any).reasoning)}
-                  </p>
+                {/* Product Image */}
+                {product.image_url && (
+                  <div style={{
+                    width: '100%',
+                    height: '150px',
+                    background: '#f5f5f5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden'
+                  }}>
+                    <img 
+                      src={product.image_url} 
+                      alt={product.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                      onError={(e) => {
+                        // Fallback to placeholder if image fails to load
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        const parent = (e.target as HTMLImageElement).parentElement;
+                        if (parent) {
+                          parent.innerHTML = `
+                            <div style="
+                              width: 100%;
+                              height: 100%;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              color: #999;
+                              font-size: 0.8rem;
+                            ">
+                              📱
+                            </div>
+                          `;
+                        }
+                      }}
+                    />
+                  </div>
                 )}
+                {/* If no image, show placeholder */}
+                {!product.image_url && (
+                  <div style={{
+                    width: '100%',
+                    height: '150px',
+                    background: '#f5f5f5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '2rem',
+                    color: '#ccc'
+                  }}>
+                    📦
+                  </div>
+                )}
+                
+                {/* Product Details */}
+                <div style={{ padding: '0.75rem' }}>
+                  <h4 style={{ 
+                    fontSize: '0.9rem', 
+                    marginBottom: '0.25rem',
+                    fontWeight: '600',
+                    lineHeight: '1.2',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical'
+                  }}>
+                    {product.name}
+                  </h4>
+                  <p style={{ 
+                    fontSize: '1rem', 
+                    color: 'hsl(var(--pf-primary))',
+                    fontWeight: 'bold',
+                    marginTop: '0.25rem'
+                  }}>
+                    ${product.price}
+                  </p>
+                  {product.category && (
+                    <p style={{ 
+                      fontSize: '0.75rem', 
+                      color: 'hsl(var(--pf-muted-foreground))',
+                      marginTop: '0.25rem'
+                    }}>
+                      {product.category}
+                    </p>
+                  )}
+                  {'reasoning' in product && (product as any).reasoning && (
+                    <p style={{ 
+                      fontSize: '0.75rem', 
+                      marginTop: '0.5rem',
+                      color: 'hsl(var(--pf-muted-foreground))',
+                      fontStyle: 'italic',
+                      lineHeight: '1.3'
+                    }}>
+                      {String((product as any).reasoning)}
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -341,14 +441,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 60px)' }}>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100%',
+      position: 'relative'
+    }}>
       {/* State indicator bar */}
       <div style={{
         padding: '0.5rem 1rem',
         borderBottom: '1px solid hsl(var(--pf-border))',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexShrink: 0
       }}>
         {renderStateIndicator()}
         {insights.length > 0 && (
@@ -359,7 +465,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
       
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '1rem' }}>
+      <div style={{ 
+        flex: '1 1 auto',
+        minHeight: 0,
+        overflowY: 'auto', 
+        overflowX: 'hidden',
+        padding: '1rem',
+        width: '100%',
+        boxSizing: 'border-box'
+      }}>
         {messages.map(renderMessage)}
         {isLoading && (
           <div style={{ textAlign: 'center' }}>
@@ -377,7 +491,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         padding: '1rem', 
         borderTop: '1px solid hsl(var(--pf-border))',
         display: 'flex',
-        gap: '0.5rem'
+        gap: '0.5rem',
+        flexShrink: 0
       }}>
         <input
           type="text"

@@ -5,7 +5,7 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   root: '.',
-  cacheDir: '/tmp/vite-admin-cache',
+  cacheDir: '.vite-admin',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -30,5 +30,11 @@ export default defineConfig({
     headers: {
       'Cache-Control': 'no-store',
     },
+    // Serve the dist folder as static files during development
+    fs: {
+      allow: ['..', '.', './dist'],
+    },
   },
+  // Configure public directory to serve static files
+  publicDir: 'public',
 });

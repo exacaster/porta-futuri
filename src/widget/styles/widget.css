@@ -27,6 +27,9 @@
   font-size: 14px;
   line-height: 1.5;
   color: hsl(var(--pf-foreground));
+  /* Ensure the container doesn't block interactions */
+  width: auto;
+  height: auto;
 }
 
 /* Position classes */
@@ -58,6 +61,51 @@
   z-index: 9999;
 }
 
+/* Relative position for preview mode */
+.pf-widget-container.pf-relative {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding: 20px;
+  z-index: 10;
+}
+
+/* Adjust panel position for relative container */
+.pf-relative .pf-widget-panel {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  z-index: 1001;
+}
+
+/* Widget Trigger Button */
+.pf-widget-trigger {
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 50% !important;
+  background: hsl(var(--pf-primary, 220 90% 56%)) !important;
+  border: none !important;
+  color: white !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+  font-size: 24px !important;
+  position: relative !important;
+  z-index: 1000 !important;
+  pointer-events: auto !important;
+}
+
+.pf-widget-trigger:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
 /* Widget Panel */
 .pf-widget-panel {
   position: absolute;
@@ -73,6 +121,14 @@
   flex-direction: column;
   overflow: hidden;
   animation: pf-slide-in 0.3s ease-out;
+}
+
+/* Ensure chat interface fills available space */
+.pf-widget-panel > div:last-child {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .pf-bottom-left .pf-widget-panel {

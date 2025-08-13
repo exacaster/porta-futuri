@@ -10,6 +10,7 @@
     "dev:admin": "vite --config vite.config.admin.ts",
     "build": "tsc && vite build",
     "build:widget": "vite build --config vite.config.widget.ts",
+    "build:widget:dev": "vite build --config vite.config.widget.dev.ts",
     "build:admin": "tsc && vite build --config vite.config.admin.ts",
     "build:api": "npm run build:functions",
     "preview:admin": "vite preview --config vite.config.admin.ts",

@@ -31,6 +31,7 @@ interface WidgetConfig {
     productCatalogUrl?: string;
     customerProfileUrl?: string;
     contextUrl?: string;
+    products?: Product[];  // Allow direct product data
   };
 }
 
@@ -61,8 +62,12 @@ function AppContent({ config }: AppProps) {
     try {
       const promises = [];
 
-      // Load product catalog
-      if (config.data?.productCatalogUrl) {
+      // Check if products are directly provided
+      if (config.data?.products && config.data.products.length > 0) {
+        setProducts(config.data.products);
+      } 
+      // Load product catalog from URL
+      else if (config.data?.productCatalogUrl) {
         promises.push(
           fetch(config.data.productCatalogUrl)
             .then(res => res.blob())

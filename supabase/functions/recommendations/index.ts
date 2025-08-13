@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
+import { AIRecommendationService } from '../_shared/ai-service.ts';
 
 // Initialize Supabase client
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -299,10 +300,61 @@ function setCache(key: string, data: any): void {
 }
 
 async function generateRecommendations(request: RecommendationRequest): Promise<any> {
-  // Simplified recommendation logic
-  // In production, this would call the AI service
-  
-  const products = request.products || [];
+  try {
+    // Get products from database if not provided
+    let products = request.products || [];
+    if (products.length === 0) {
+      const { data: dbProducts } = await supabase
+        .from('products')
+        .select('*')
+        .order('ratings', { ascending: false })
+        .limit(500);
+      
+      products = dbProducts || [];
+    }
+
+    // Check if we have an Anthropic API key
+    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    
+    console.log('Anthropic API key exists:', !!anthropicApiKey);
+    console.log('Anthropic API key length:', anthropicApiKey?.length || 0);
+    console.log('Anthropic API key starts with:', anthropicApiKey?.substring(0, 10) || 'N/A');
+    console.log('Number of products:', products.length);
+    console.log('Query:', request.query);
+    
+    if (anthropicApiKey && products.length > 0) {
+      // Use AI service for recommendations
+      console.log('Using AI service for recommendations...');
+      console.log('Creating AI service with API key length:', anthropicApiKey.length);
+      const aiService = new AIRecommendationService(anthropicApiKey);
+      
+      const result = await aiService.generateRecommendations({
+        query: request.query || '',
+        products: products,
+        customerProfile: request.customer_profile,
+        conversationHistory: request.conversation_history,
+        context: request.context
+      });
+      
+      console.log('AI service result:', { 
+        hasRecommendations: result.recommendations?.length > 0,
+        fallbackUsed: result.fallback_used,
+        message: result.message?.substring(0, 50) + '...'
+      });
+      
+      return result;
+    } else {
+      // Fallback to simple recommendations if no API key or no products
+      console.log('Using fallback recommendations - API key exists:', !!anthropicApiKey, 'Products:', products.length);
+      return getFallbackRecommendations(request, products);
+    }
+  } catch (error) {
+    console.error('AI generation failed, using fallback:', error);
+    return getFallbackRecommendations(request, request.products || []);
+  }
+}
+
+function getFallbackRecommendations(request: RecommendationRequest, products: any[]): any {
   const topProducts = products
     .filter((p: any) => p.stock_status === 'in_stock')
     .sort((a: any, b: any) => (b.ratings || 0) - (a.ratings || 0))
@@ -318,7 +370,11 @@ async function generateRecommendations(request: RecommendationRequest): Promise<
     message: request.query 
       ? `Based on your search for "${request.query}", here are my recommendations:`
       : 'Here are some products you might like:',
-    fallback_used: false
+    intent: {
+      understood: request.query || 'General browsing',
+      confidence: 0.5
+    },
+    fallback_used: true
   };
 }
 

@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-// Widget-specific Vite configuration for production without terser
+// Widget-specific Vite configuration for development (includes React)
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -19,24 +19,22 @@ export default defineConfig({
       fileName: 'widget',
       formats: ['iife'],
     },
+    outDir: 'dist',
     rollupOptions: {
+      // Include React in the bundle for development
       external: [],
       output: {
-        globals: {},
         inlineDynamicImports: true,
         // Ensure single file output for widget
         manualChunks: undefined,
-        // Make sure React is available globally
-        intro: 'const process = { env: { NODE_ENV: "production" } };',
       },
     },
-    minify: 'esbuild', // Use esbuild instead of terser
-    // Target < 50KB compressed
-    chunkSizeWarningLimit: 50,
+    minify: false,
+    // Include source maps for debugging
+    sourcemap: true,
     cssCodeSplit: false,
-    sourcemap: false,
   },
   define: {
-    'process.env.NODE_ENV': '"production"',
+    'process.env.NODE_ENV': '"development"',
   },
 })

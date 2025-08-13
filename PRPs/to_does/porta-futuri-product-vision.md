@@ -68,7 +68,7 @@ Porta Futuri AI Add-On is a lightweight, embeddable recommendation widget that p
 - **Description**: System must be able to query the latest customer profile from Exacaster CVM Platform (the CDP) over REST API data sources
 - **Acceptance Criteria**:
   - The widget has to have the capability to enter customer_id, expecting that this ID is passed by the website, but if it is not available, I should be able to enter it manually.
-  - "Porta Futuri Admin" component should have the configuration to enter the bearer token, workspace_id, resource_id
+  - "Porta Futuri Admin" component should have Integrations tab, where Exacaster CVM Platform should could be enabled/dissabled and the configuratin of URL, bearer token, workspace_id, resource_id should be managed.
 
 #### FR-003: Real-time Customer Context Customer Profile Data Integration
 - **Description**: The system must be able to collect customer actions on the website, that will be sent by the widget

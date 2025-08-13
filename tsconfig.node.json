@@ -7,5 +7,5 @@
     "allowSyntheticDefaultImports": true,
     "strict": true
   },
-  "include": ["vite.config.ts", "vite.config.widget.ts", "vite.config.admin.ts", "vite.config.unified.ts", "vite.config.widget.prod.ts"]
+  "include": ["vite.config.ts", "vite.config.widget.ts", "vite.config.admin.ts", "vite.config.unified.ts", "vite.config.widget.dev.ts"]
 }
