@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Lock, Mail, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, AlertCircle, Loader2 } from 'lucide-react';
 
 interface LoginProps {
   onLogin: (email: string, password: string) => Promise<{ error: boolean }>;
@@ -11,12 +11,11 @@ interface LoginProps {
 
 export const Login: React.FC<LoginProps> = ({ 
   onLogin, 
-  onOAuthLogin, 
+  // onOAuthLogin,  // Reserved for future OAuth implementation
   onForgotPassword,
   error,
   clearError
 }) => {
-  console.log('[Login] Component rendering...');
   const [email, setEmail] = useState('egidijus@exacaster.com'); // Pre-fill for convenience
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

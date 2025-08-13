@@ -21,14 +21,12 @@ export const useAuth = (supabase: any) => {
   const [error, setError] = useState<AuthError | null>(null);
 
   useEffect(() => {
-    console.log('[useAuth] Initializing auth...');
     // Check current session
     checkUser();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event: string, session: any) => {
-        console.log('[useAuth] Auth state changed:', _event, session?.user?.email);
         setUser(session?.user ?? null);
         if (session?.user) {
           await loadAdminUser(session.user.email);
@@ -46,11 +44,9 @@ export const useAuth = (supabase: any) => {
 
   const checkUser = async () => {
     try {
-      console.log('[checkUser] Checking for existing session...');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
-        console.error('[checkUser] Error getting session:', sessionError);
         setUser(null);
         setAdminUser(null);
         setLoading(false);
@@ -58,29 +54,24 @@ export const useAuth = (supabase: any) => {
       }
       
       if (session?.user) {
-        console.log('[checkUser] Found user:', session.user.email);
         setUser(session.user);
         if (session.user.email) {
           await loadAdminUser(session.user.email);
         }
       } else {
-        console.log('[checkUser] No session found');
         setUser(null);
         setAdminUser(null);
       }
     } catch (error) {
-      console.error('[checkUser] Unexpected error:', error);
       setUser(null);
       setAdminUser(null);
     } finally {
-      console.log('[checkUser] Setting loading to false');
       setLoading(false);
     }
   };
 
   const loadAdminUser = async (email: string) => {
     try {
-      console.log('[loadAdminUser] Loading admin user for:', email);
       const { data, error } = await supabase
         .from('admin_users')
         .select('id, email, role, permissions, is_active')
@@ -89,7 +80,6 @@ export const useAuth = (supabase: any) => {
         .single();
 
       if (data && !error) {
-        console.log('[loadAdminUser] Found admin user:', data);
         setAdminUser(data);
         // Update last login
         await supabase
@@ -101,14 +91,9 @@ export const useAuth = (supabase: any) => {
           })
           .eq('id', data.id);
       } else {
-        console.log('[loadAdminUser] No admin user found or error:', error);
         setAdminUser(null);
-        if (error) {
-          console.error('[loadAdminUser] Admin user query error:', error);
-        }
       }
     } catch (error) {
-      console.error('[loadAdminUser] Error loading admin user:', error);
       setAdminUser(null);
     }
   };
@@ -186,7 +171,6 @@ export const useAuth = (supabase: any) => {
   };
 
   const signOut = async () => {
-    console.log('Starting signOut process...');
     
     try {
       // Clear all storage first
@@ -208,13 +192,11 @@ export const useAuth = (supabase: any) => {
       // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('SignOut error:', error);
+        // Handle error silently
       }
       
-      console.log('SignOut completed successfully');
       return { success: true };
     } catch (error) {
-      console.error('Error during signOut:', error);
       setUser(null);
       setAdminUser(null);
       setLoading(false);
@@ -250,10 +232,10 @@ export const useAuth = (supabase: any) => {
 
   const hasPermission = (resource: string, action: string): boolean => {
     // Temporary: If user is authenticated but adminUser not loaded, assume super_admin
-    if (!adminUser && user) return true;
+    if (!adminUser && user) {return true;}
     
-    if (!adminUser) return false;
-    if (adminUser.role === 'super_admin') return true;
+    if (!adminUser) {return false;}
+    if (adminUser.role === 'super_admin') {return true;}
     
     const resourcePermissions = adminUser.permissions[resource];
     return resourcePermissions && resourcePermissions.includes(action);

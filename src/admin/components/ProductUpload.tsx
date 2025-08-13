@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 // import { useDropzone } from 'react-dropzone';
 import { Upload, CheckCircle, AlertCircle } from 'lucide-react';
 import { csvProcessor } from '../../widget/services/csvParser';
@@ -36,7 +36,7 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
   };
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file) {return;}
 
     setUploading(true);
     setProgress(0);
@@ -75,7 +75,6 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
       const fileHash = await csvProcessor.calculateFileHash(file);
 
       // Step 4: Create upload batch
-      console.log('Creating upload batch for', file.name, 'with', result.data.length, 'products');
       const { data: batch, error: batchError } = await supabase
         .from('product_upload_batches')
         .insert({
@@ -90,10 +89,8 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
         .single();
 
       if (batchError) {
-        console.error('Batch creation error:', batchError);
         throw batchError;
       }
-      console.log('Created batch:', batch);
 
       // Step 5: Upload products in chunks
       const products = result.data;
@@ -116,23 +113,22 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
           uploaded_by: userData.user?.id
         }));
 
-        const { error: insertError, data: insertedData } = await supabase
+        const { error: insertError } = await supabase
           .from('products')
           .upsert(dbProducts, { onConflict: 'product_id' });
 
         if (insertError) {
           failCount += chunk.length;
-          console.error('Insert error:', insertError);
-          console.error('Failed data sample:', dbProducts[0]);
           // Add error to display
-          if (!result.errors) result.errors = [];
+          if (!result.errors) {result.errors = [];}
           result.errors.push({
             row: i + 1,
-            message: `Database error: ${insertError.message}`
+            message: `Database error: ${insertError.message}`,
+            type: 'InvalidValue' as const,
+            code: 'DB_INSERT_ERROR'
           });
         } else {
           successCount += chunk.length;
-          console.log(`Successfully inserted batch ${i / chunkSize + 1}`, insertedData);
         }
       }
 
@@ -168,7 +164,6 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
       }, 3000);
 
     } catch (error: any) {
-      console.error('Upload error:', error);
       setErrors([`Upload failed: ${error.message}`]);
     } finally {
       setUploading(false);

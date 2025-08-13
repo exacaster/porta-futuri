@@ -46,7 +46,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     }
   });
@@ -61,7 +61,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({
         email_confirm: true
       });
 
-      if (authError) throw authError;
+      if (authError) {throw authError;}
 
       // Then create admin user record
       const { data, error } = await supabase
@@ -78,7 +78,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     },
     onSuccess: (data) => {
@@ -114,7 +114,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     },
     onSuccess: (data) => {
@@ -133,11 +133,11 @@ export const UserManagement: React.FC<UserManagementProps> = ({
         .update({ is_active: false })
         .eq('id', userId);
 
-      if (updateError) throw updateError;
+      if (updateError) {throw updateError;}
 
       // Then delete from auth
       const { error: authError } = await supabase.auth.admin.deleteUser(userId);
-      if (authError) throw authError;
+      if (authError) {throw authError;}
 
       return userId;
     },
@@ -153,7 +153,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/admin/reset-password`
       });
-      if (error) throw error;
+      if (error) {throw error;}
       return email;
     },
     onSuccess: (email) => {

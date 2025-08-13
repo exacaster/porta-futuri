@@ -5,10 +5,14 @@
   "type": "module",
   "main": "dist/widget.js",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --config vite.config.unified.ts",
+    "dev:widget-demo": "vite --config vite.config.ts",
+    "dev:admin": "vite --config vite.config.admin.ts",
     "build": "tsc && vite build",
     "build:widget": "vite build --config vite.config.widget.ts",
+    "build:admin": "tsc && vite build --config vite.config.admin.ts",
     "build:api": "npm run build:functions",
+    "preview:admin": "vite preview --config vite.config.admin.ts",
     "build:functions": "supabase functions deploy --no-verify-jwt",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
@@ -45,6 +49,7 @@
     "papaparse": "^5.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-dropzone": "^14.2.3",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7"
   },

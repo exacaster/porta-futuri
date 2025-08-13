@@ -28,9 +28,13 @@ export const ProductTable: React.FC<ProductTableProps> = ({
     queryFn: async () => {
       let query = supabase
         .from('products')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range((currentPage - 1) * productsPerPage, currentPage * productsPerPage - 1);
+        .select('*', { count: 'exact' });
+
+      // Add ordering only if the field exists
+      query = query.order('id', { ascending: false });
+      
+      // Add pagination
+      query = query.range((currentPage - 1) * productsPerPage, currentPage * productsPerPage - 1);
 
       if (searchTerm) {
         query = query.or(`name.ilike.%${searchTerm}%,product_id.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
@@ -42,9 +46,13 @@ export const ProductTable: React.FC<ProductTableProps> = ({
 
       const { data, error, count } = await query;
       
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+      
       return { products: data || [], total: count || 0 };
-    }
+    },
+    enabled: !!supabase
   });
 
   // Fetch categories for filter
@@ -56,10 +64,11 @@ export const ProductTable: React.FC<ProductTableProps> = ({
         .select('category')
         .order('category');
       
-      if (error) throw error;
-      const uniqueCategories = [...new Set(data?.map((p: any) => p.category))];
+      if (error) {throw error;}
+      const uniqueCategories = [...new Set(data?.map((p: any) => p.category))].filter(Boolean);
       return uniqueCategories;
-    }
+    },
+    enabled: !!supabase
   });
 
   // Delete product mutation
@@ -70,7 +79,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
         .delete()
         .eq('id', productId);
       
-      if (error) throw error;
+      if (error) {throw error;}
       return productId;
     },
     onSuccess: (productId) => {
@@ -93,7 +102,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     },
     onSuccess: (product) => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { ConversationManager } from '@/api/lib/conversation/ConversationManager';
 import { InsightExtractor } from '@/api/lib/ai/insightExtractor';
 import { ConversationState } from '@shared/types/conversation.types';

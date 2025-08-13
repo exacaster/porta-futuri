@@ -6,6 +6,7 @@ import { Login } from './components/Login';
 import { ProductUpload } from './components/ProductUpload';
 import { ProductTable } from './components/ProductTable';
 import { UserManagement } from './components/UserManagement';
+import { WidgetConfiguration } from './components/WidgetConfiguration';
 import { useAuth } from './hooks/useAuth';
 import './styles/admin.css';
 
@@ -19,19 +20,12 @@ const queryClient = new QueryClient({
 });
 
 // Initialize Supabase client
-console.log('[AdminApp] Initializing Supabase with:', {
-  url: import.meta.env.VITE_SUPABASE_URL,
-  hasAnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY
-});
-
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY
 );
 
 export function AdminApp() {
-  // Debug: Add visual indicator that component is mounting
-  console.log('[AdminApp] Component mounting...');
   
   const { 
     user, 
@@ -46,11 +40,11 @@ export function AdminApp() {
     clearError
   } = useAuth(supabase);
   
-  const [activeTab, setActiveTab] = useState<'upload' | 'products' | 'users'>('upload');
+  const [activeTab, setActiveTab] = useState<'upload' | 'products' | 'users' | 'widget'>('upload');
 
   // Log audit for admin actions
   const logAction = async (action: string, resourceType: string, resourceId?: string, changes?: any) => {
-    if (!adminUser) return;
+    if (!adminUser) {return;}
     
     await supabase
       .from('audit_logs')
@@ -64,8 +58,6 @@ export function AdminApp() {
         user_agent: navigator.userAgent
       });
   };
-
-  console.log('[AdminApp] Render state:', { loading, user: user?.email, adminUser: adminUser?.email });
 
   // Show loading only during initial auth check
   if (loading && !user) {
@@ -81,7 +73,6 @@ export function AdminApp() {
   }
 
   if (!user) {
-    console.log('[AdminApp] Rendering Login component...');
     return (
       <Login
         onLogin={signInWithEmail}
@@ -113,6 +104,7 @@ export function AdminApp() {
   const canViewProducts = hasPermission('products', 'read');
   const canUploadProducts = hasPermission('products', 'write');
   const canManageUsers = hasPermission('users', 'read');
+  const canConfigureWidget = hasPermission('api_keys', 'read');
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -158,6 +150,14 @@ export function AdminApp() {
                   User Management
                 </button>
               )}
+              {canConfigureWidget && (
+                <button
+                  className={`pb-2 px-1 ${activeTab === 'widget' ? 'border-b-2 border-primary font-medium' : 'text-gray-600'}`}
+                  onClick={() => setActiveTab('widget')}
+                >
+                  Porta Futuri Widget
+                </button>
+              )}
             </nav>
           </div>
 
@@ -186,6 +186,13 @@ export function AdminApp() {
               canDelete={hasPermission('users', 'delete')}
               onUserAction={(action, userId, changes) => {
                 logAction(`users.${action}`, 'admin_user', userId, changes);
+              }}
+            />
+          ) : activeTab === 'widget' && canConfigureWidget ? (
+            <WidgetConfiguration 
+              supabase={supabase}
+              onApiKeyAction={(action, keyId) => {
+                logAction(`api_keys.${action}`, 'api_key', keyId);
               }}
             />
           ) : (

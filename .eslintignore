@@ -17,8 +17,9 @@ supabase/functions/
 *.config.ts
 postcss.config.js
 tailwind.config.ts
+tailwind.config.*.ts
 vite.config.ts
-vite.config.widget.ts
+vite.config.*.ts
 
 # Environment files
 .env
