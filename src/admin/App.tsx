@@ -7,6 +7,7 @@ import { ProductUpload } from './components/ProductUpload';
 import { ProductTable } from './components/ProductTable';
 import { UserManagement } from './components/UserManagement';
 import { WidgetConfiguration } from './components/WidgetConfiguration';
+import { IntegrationsTab } from './components/IntegrationsTab';
 import { useAuth } from './hooks/useAuth';
 import './styles/admin.css';
 
@@ -50,7 +51,7 @@ export function AdminApp() {
     clearError
   } = useAuth(supabase);
   
-  const [activeTab, setActiveTab] = useState<'upload' | 'products' | 'users' | 'widget'>('upload');
+  const [activeTab, setActiveTab] = useState<'upload' | 'products' | 'users' | 'widget' | 'integrations'>('upload');
 
   // Log audit for admin actions
   const logAction = async (action: string, resourceType: string, resourceId?: string, changes?: any) => {
@@ -112,6 +113,7 @@ export function AdminApp() {
   const canUploadProducts = hasPermission('products', 'write');
   const canManageUsers = hasPermission('users', 'read');
   const canConfigureWidget = hasPermission('api_keys', 'read');
+  const canManageIntegrations = hasPermission('settings', 'write');
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -165,6 +167,14 @@ export function AdminApp() {
                   Porta Futuri Widget
                 </button>
               )}
+              {canManageIntegrations && (
+                <button
+                  className={`pb-2 px-1 ${activeTab === 'integrations' ? 'border-b-2 border-primary font-medium' : 'text-gray-600'}`}
+                  onClick={() => setActiveTab('integrations')}
+                >
+                  Integrations
+                </button>
+              )}
             </nav>
           </div>
 
@@ -200,6 +210,13 @@ export function AdminApp() {
               supabase={supabase}
               onApiKeyAction={(action, keyId) => {
                 logAction(`api_keys.${action}`, 'api_key', keyId);
+              }}
+            />
+          ) : activeTab === 'integrations' && canManageIntegrations ? (
+            <IntegrationsTab 
+              supabase={supabase}
+              onIntegrationAction={(action, integrationId) => {
+                logAction(`integrations.${action}`, 'cdp_integration', integrationId);
               }}
             />
           ) : (

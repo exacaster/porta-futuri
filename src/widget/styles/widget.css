@@ -196,6 +196,49 @@
   opacity: 0.9;
 }
 
+/* Customer ID Input */
+.pf-widget-customer-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  flex: 1;
+  gap: 1rem;
+}
+
+.pf-widget-customer-input h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--pf-foreground));
+}
+
+.pf-widget-customer-input .pf-input {
+  width: 100%;
+  max-width: 250px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid hsl(var(--pf-border));
+  border-radius: calc(var(--pf-radius) * 0.75);
+  background: hsl(var(--pf-background));
+  color: hsl(var(--pf-foreground));
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.pf-widget-customer-input .pf-input:focus {
+  outline: none;
+  border-color: hsl(var(--pf-primary));
+  box-shadow: 0 0 0 3px hsla(var(--pf-primary), 0.1);
+}
+
+.pf-widget-customer-input .pf-text-small {
+  font-size: 0.85rem;
+  color: hsl(var(--pf-muted-foreground));
+  margin-top: 0.5rem;
+}
+
 /* Loading State */
 .pf-widget-loading {
   display: flex;

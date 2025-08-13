@@ -9,6 +9,24 @@ export interface CustomerProfile {
   segment?: string;
   created_at?: string;
   last_active?: string;
+  cdp_data?: CDPCustomerData;
+}
+
+export interface CDPCustomerData {
+  cdp_available: boolean;
+  current_phone?: string;
+  subscriptions?: {
+    netflix: boolean;
+    hbo: boolean;
+    amazon_prime: boolean;
+    mobile_count: number;
+    home_count: number;
+  };
+  mobile_revenue?: number;
+  last_updated?: string;
+  version?: number;
+  fallback_reason?: string;
+  raw_data?: Record<string, any>;
 }
 
 export interface CustomerSegment {

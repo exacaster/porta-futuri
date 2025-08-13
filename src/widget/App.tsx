@@ -47,13 +47,96 @@ function AppContent({ config }: AppProps) {
   const [contextEvents, setContextEvents] = useState<ContextEvent[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [showCustomerIdInput, setShowCustomerIdInput] = useState(false);
 
   const { widgetConfig } = useWidgetConfig(config.apiKey);
 
-  // Load CSV data on mount
+  // Get customer ID from multiple sources
+  const getCustomerId = (): string | null => {
+    // 1. Check JavaScript variable (highest priority)
+    if (window.PortaFuturi?.customerId) {return window.PortaFuturi.customerId;}
+    
+    // 2. Check URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlCustomerId = urlParams.get('customer_id');
+    if (urlCustomerId) {return urlCustomerId;}
+    
+    // 3. Check cookie
+    const cookieValue = getCookie('porta_futuri_customer_id');
+    if (cookieValue) {return cookieValue;}
+    
+    // 4. Check sessionStorage (for persistence)
+    const sessionValue = sessionStorage.getItem('porta_futuri_customer_id');
+    if (sessionValue) {return sessionValue;}
+    
+    // 5. Return null to trigger manual entry UI
+    return null;
+  };
+
+  // Helper function to get cookie value
+  const getCookie = (name: string): string | null => {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') {c = c.substring(1, c.length);}
+      if (c.indexOf(nameEQ) === 0) {return c.substring(nameEQ.length, c.length);}
+    }
+    return null;
+  };
+
+  // Initialize customer ID on mount
   useEffect(() => {
+    const id = getCustomerId();
+    if (id) {
+      setCustomerId(id);
+      fetchCDPData(id);
+    } else {
+      setShowCustomerIdInput(true);
+    }
     loadData();
   }, [config.data]);
+
+  // Fetch CDP data if customer ID is available
+  const fetchCDPData = async (customerId: string) => {
+    try {
+      const response = await fetch(`${config.apiUrl || '/api/v1'}/cdp-proxy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': config.apiKey
+        },
+        body: JSON.stringify({
+          action: 'fetch',
+          customer_id: customerId
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.cdp_available) {
+          // Enhance customer profile with CDP data
+          setCustomerProfile(prev => ({
+            ...prev,
+            customer_id: customerId,
+            cdp_data: data
+          } as CustomerProfileType));
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to fetch CDP data:', error);
+      // Fallback to CSV data
+    }
+  };
+
+  // Handle manual customer ID submission
+  const handleCustomerIdSubmit = (id: string) => {
+    setCustomerId(id);
+    sessionStorage.setItem('porta_futuri_customer_id', id);
+    setShowCustomerIdInput(false);
+    fetchCDPData(id);
+  };
 
   const loadData = async () => {
     setDataLoading(true);
@@ -209,7 +292,33 @@ function AppContent({ config }: AppProps) {
             </div>
           </div>
 
-          {dataLoading ? (
+          {showCustomerIdInput && !customerId ? (
+            <div className="pf-widget-customer-input">
+              <h4>Welcome! Please enter your Customer ID</h4>
+              <input
+                type="text"
+                placeholder="e.g., CUST123"
+                className="pf-input"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.currentTarget.value) {
+                    handleCustomerIdSubmit(e.currentTarget.value);
+                  }
+                }}
+              />
+              <button 
+                onClick={(e) => {
+                  const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                  if (input?.value) {
+                    handleCustomerIdSubmit(input.value);
+                  }
+                }}
+                className="pf-btn-primary"
+              >
+                Continue
+              </button>
+              <p className="pf-text-small">Your Customer ID helps us provide personalized recommendations</p>
+            </div>
+          ) : dataLoading ? (
             <div className="pf-widget-loading">
               <div className="pf-spinner"></div>
               <p>Loading data...</p>

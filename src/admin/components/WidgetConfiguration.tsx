@@ -55,7 +55,7 @@ export const WidgetConfiguration: React.FC<WidgetConfigurationProps> = ({
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {throw error;}
       
       setApiKeys(data || []);
       

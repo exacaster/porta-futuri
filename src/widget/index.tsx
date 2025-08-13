@@ -9,6 +9,7 @@ interface PortaFuturiWidget {
   update: (config: any) => void;
   getMetrics: () => any;
   trackEvent: (event: any) => void;
+  customerId?: string;
   metrics: {
     loadTime: number;
     responseTime: number[];

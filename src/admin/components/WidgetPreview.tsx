@@ -23,7 +23,7 @@ export const WidgetPreview: React.FC<WidgetPreviewProps> = ({
   const widgetConfig = {
     apiKey,
     apiUrl: `${supabaseUrl}/functions/v1/recommendations`,  // Always use cloud Edge Function
-    position: 'relative', // Use relative positioning in preview
+    position: 'relative' as any, // Use relative positioning in preview (cast to any for custom position)
     theme: {
       primaryColor: config.primaryColor || '#007bff'
     },
