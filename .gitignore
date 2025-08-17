@@ -65,4 +65,4 @@ playwright/.cache/
 *.vitest-result.json
 
 # Temporary files
-tmp/
+tmp/.vite-demo/

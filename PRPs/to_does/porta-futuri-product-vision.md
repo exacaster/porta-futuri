@@ -664,7 +664,7 @@ Referrer-Policy: strict-origin-when-cross-origin
 │  │       AI Recommendation Core        │    │
 │  │  ┌─────────┐  ┌──────────────────┐  │    │
 │  │  │ Context │  │  LLM Integration │  │    │
-│  │  │ Builder │  │  (Claude/GPT-4)  │  │    │
+│  │  │ Builder │  │      (Claude)    │  │    │
 │  │  └─────────┘  └──────────────────┘  │    │
 │  │  ┌─────────────────────────────────┐│    │
 │  │  │   Intent Detection Engine       ││    │
@@ -690,12 +690,12 @@ Referrer-Policy: strict-origin-when-cross-origin
 │         Porta Futuri Admin                  │
 │                                             │
 │  ┌──────────────┐  ┌──────────────────┐     │
-│  │  CSV Upload  │  │  CDP Integration │     │
+│  │   Products   │  │  CDP Integration │     │
 │  │   Manager    │  │   Configuration  │     │
 │  └──────────────┘  └──────────────────┘     │
 │  ┌──────────────┐  ┌──────────────────┐     │
-│  │  Analytics   │  │    API Key       │     │
-│  │  Dashboard   │  │    Management    │     │
+│  │   Widget     │  │    API Key       │     │
+│  │   Manager    │  │    Management    │     │
 │  └──────────────┘  └──────────────────┘     │
 └─────────────────────────────────────────────┘
                   │

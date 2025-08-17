@@ -2,7 +2,14 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Product, CustomerProfile, ContextEvent, ConversationState, Topic } from '@shared/types';
 import { ConversationManager } from '../services/conversation/ConversationManager';
 import { useConversation } from '../hooks/useConversation';
-import { GREETING_PROMPTS } from '@/api/lib/ai/prompts/conversational.prompts';
+
+// Greeting prompts for demo
+const GREETING_PROMPTS = [
+  "Sveiki! Kuo galiu jums padėti?",
+  "Labas! Ieškote ko nors ypatingo?",
+  "Sveiki atvykę! Kaip galiu padėti su jūsų pirkimu?",
+  "Sveiki! Turite klausimų apie mūsų produktus?"
+];
 
 interface ChatInterfaceProps {
   apiKey: string;

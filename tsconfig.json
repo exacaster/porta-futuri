@@ -20,10 +20,17 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./src/demo-site/*", "./src/*"],
       "@widget/*": ["./src/widget/*"],
       "@api/*": ["./src/api/*"],
-      "@shared/*": ["./src/shared/*"]
+      "@shared/*": ["./src/shared/*"],
+      "@components/*": ["./src/demo-site/components/*"],
+      "@pages/*": ["./src/demo-site/pages/*"],
+      "@services/*": ["./src/demo-site/services/*"],
+      "@hooks/*": ["./src/demo-site/hooks/*"],
+      "@contexts/*": ["./src/demo-site/contexts/*"],
+      "@utils/*": ["./src/demo-site/utils/*"],
+      "@styles/*": ["./src/demo-site/styles/*"]
     },
     "types": ["node", "vitest/globals"]
   },
