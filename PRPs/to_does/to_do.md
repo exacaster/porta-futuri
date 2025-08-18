@@ -32,8 +32,11 @@
     
 - [ ] Padaryti demo puslapį
     - [+] Create PRP
-    - [ ] Make the version #1
-    - [ ] Debug 
+    - [+] Make the version #1
+    - [ ] Fix URLs
+    - [ ] Make it in Lithuanian language
+    - [ ] Fix widget
+    - [ ] Fix product Comments
     - [ ] Cleanup code
 
 - [ ] Real-time user context

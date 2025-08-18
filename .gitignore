@@ -66,3 +66,5 @@ playwright/.cache/
 
 # Temporary files
 tmp/.vite-demo/
+.vite-demo/
+.vite-admin/

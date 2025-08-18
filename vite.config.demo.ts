@@ -6,7 +6,22 @@ import autoprefixer from 'autoprefixer';
 
 // Demo site Vite configuration for iTelecom e-commerce
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'redirect-to-demo',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url === '/') {
+            res.writeHead(302, { Location: '/demo.html' });
+            res.end();
+            return;
+          }
+          next();
+        });
+      },
+    },
+  ],
   css: {
     postcss: {
       plugins: [
@@ -49,7 +64,13 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+    // Redirect root path to demo.html
+    middlewareMode: false,
   },
+  preview: {
+    port: 3002,
+  },
+  appType: 'mpa',
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
   },
