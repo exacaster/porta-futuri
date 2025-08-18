@@ -1067,7 +1067,38 @@ npm run test:integration:cdp-fallback
 npm run test:integration:rate-limit
 ```
 
+## Quick Launch Instructions
+
+### Launching Admin Panel and Demo Site
+**IMPORTANT: The project dependencies are already installed and environment is configured. Do NOT reinstall packages unless explicitly needed.**
+
+To launch the applications:
+```bash
+# Launch Admin Panel (port 5174)
+npm run dev:admin
+
+# Launch Demo E-commerce Site (port 3002)  
+npm run dev:demo
+
+# Or run both in background
+npm run dev:admin &
+npm run dev:demo &
+```
+
+### Key Points to Remember:
+1. **Dependencies are pre-installed** - Never reinstall unless there's a specific error
+2. **Environment is configured** - Cloud Supabase credentials are in .env files
+3. **Simple npm scripts work** - Just use `npm run dev:admin` and `npm run dev:demo`
+4. **Ports are fixed** - Admin: 5174, Demo: 3002
+5. **Vite configs are separate** - vite.config.admin.ts and vite.config.demo.ts
+
+### Common Mistakes to Avoid:
+- DO NOT try to reinstall packages first
+- DO NOT check/fix npm cache issues unless there's a real error
+- DO NOT overcomplicate - just run the npm scripts directly
+- Trust that the environment is properly configured
+
 ---
 
 *Last Updated: January 2025*
-*Version: 2.0*
+*Version: 2.1*
