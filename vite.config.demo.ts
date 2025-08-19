@@ -8,19 +8,6 @@ import autoprefixer from 'autoprefixer';
 export default defineConfig({
   plugins: [
     react(),
-    {
-      name: 'redirect-to-demo',
-      configureServer(server) {
-        server.middlewares.use((req, res, next) => {
-          if (req.url === '/') {
-            res.writeHead(302, { Location: '/demo.html' });
-            res.end();
-            return;
-          }
-          next();
-        });
-      },
-    },
   ],
   css: {
     postcss: {
@@ -32,6 +19,7 @@ export default defineConfig({
   },
   root: '.',
   cacheDir: '.vite-demo',
+  publicDir: 'public',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src/demo-site'),
@@ -50,13 +38,13 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'demo.html'),
+        main: path.resolve(__dirname, 'index.html'),
       },
     },
   },
   server: {
     port: 3002,
-    open: '/demo.html',
+    open: true,
     cors: true,
     proxy: {
       '/api': {
@@ -64,13 +52,10 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-    // Redirect root path to demo.html
-    middlewareMode: false,
   },
   preview: {
     port: 3002,
   },
-  appType: 'mpa',
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
   },
