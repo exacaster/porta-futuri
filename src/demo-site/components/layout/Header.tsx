@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, ShoppingCart, Menu, X, Phone, Wifi, Smartphone, Tv } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useCart } from '@contexts/CartContext';
 import { productService } from '@services/productService';
+import { LanguageSwitcher } from '@components/common/LanguageSwitcher';
 
 export function Header() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { totalItems } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -40,11 +43,11 @@ export function Header() {
       <div className="bg-gradient-primary text-white py-2">
         <div className="container flex justify-between items-center text-sm">
           <div className="flex items-center gap-4">
-            <span>📞 24/7 Support: 1-800-TELECOM</span>
+            <span>📞 {t('features.support247')}: 1-800-TELECOM</span>
             <span className="hidden sm:inline">✉️ support@itelecom.com</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="hidden sm:inline">🚀 Free shipping on orders over €50</span>
+            <span className="hidden sm:inline">🚀 {t('features.freeShipping')} - {t('features.ordersOver')}</span>
           </div>
         </div>
       </div>
@@ -59,7 +62,7 @@ export function Header() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gradient">iTelecom</h1>
-              <p className="text-xs text-gray-500">Smart Telecom Solutions</p>
+              <p className="text-xs text-gray-500">{t('hero.smartConnectivity')}</p>
             </div>
           </Link>
 
@@ -69,13 +72,13 @@ export function Header() {
               to="/" 
               className="text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
             >
-              Home
+              {t('nav.home')}
             </Link>
             
             {/* Categories Dropdown */}
             <div className="relative group">
               <button className="flex items-center gap-1 text-gray-700 hover:text-[#6d02a3] transition-colors font-medium">
-                Products
+                {t('nav.products')}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -87,7 +90,7 @@ export function Header() {
                     className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#6d02a3] transition-colors"
                   >
                     <Phone className="w-4 h-4" />
-                    All Products
+                    {t('nav.allProducts')}
                   </Link>
                   {categories.slice(0, 5).map((category) => (
                     <Link
@@ -107,30 +110,32 @@ export function Header() {
               to="/deals" 
               className="text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
             >
-              Deals
+              {t('nav.deals')}
             </Link>
             <Link 
               to="/business" 
               className="text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
             >
-              Business
+              {t('nav.business')}
             </Link>
             <Link 
               to="/support" 
               className="text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
             >
-              Support
+              {t('nav.support')}
             </Link>
           </nav>
 
           {/* Actions */}
           <div className="flex items-center gap-4">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
             {/* Search */}
             <div className="hidden md:block">
               <form onSubmit={handleSearch} className="relative">
                 <input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder={t('nav.search')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#6d02a3] focus:ring-1 focus:ring-[#6d02a3]"
@@ -200,11 +205,11 @@ export function Header() {
               className="block text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
-              Home
+              {t('nav.home')}
             </Link>
             
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-gray-500 uppercase">Categories</p>
+              <p className="text-sm font-semibold text-gray-500 uppercase">{t('nav.products')}</p>
               {categories.slice(0, 5).map((category) => (
                 <Link
                   key={category}
@@ -222,7 +227,7 @@ export function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <Phone className="w-4 h-4" />
-                View All Products
+                {t('nav.allProducts')}
               </Link>
             </div>
 
@@ -231,21 +236,21 @@ export function Header() {
               className="block text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
-              Deals
+              {t('nav.deals')}
             </Link>
             <Link
               to="/business"
               className="block text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
-              Business
+              {t('nav.business')}
             </Link>
             <Link
               to="/support"
               className="block text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
-              Support
+              {t('nav.support')}
             </Link>
           </nav>
         </div>

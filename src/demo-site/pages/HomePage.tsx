@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { ChevronRight, Zap, Shield, Headphones, Truck } from 'lucide-react';
 import { ProductGrid } from '@components/products/ProductGrid';
 import { productService } from '@services/productService';
 
 export function HomePage() {
+  const { t } = useTranslation();
+  
   // Fetch featured products
   const { data: featuredProducts, isLoading: loadingFeatured } = useQuery({
     queryKey: ['featuredProducts'],
@@ -26,19 +29,18 @@ export function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
-                Welcome to the Future of
-                <span className="block text-[#b12df4]">Telecom Solutions</span>
+                {t('hero.title')}
               </h1>
               <p className="text-xl text-white/90">
-                Discover cutting-edge mobile plans, lightning-fast internet, and innovative business solutions tailored for your digital lifestyle.
+                {t('hero.subtitle')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/category/all" className="btn-secondary bg-white hover:bg-gray-100 text-[#6d02a3] px-8 py-3 text-lg font-semibold rounded-lg inline-flex items-center justify-center">
-                  Shop Now
+                  {t('hero.shopNow')}
                   <ChevronRight className="ml-2 w-5 h-5" />
                 </Link>
                 <Link to="/business" className="btn-secondary border-white text-white hover:bg-white/10 px-8 py-3 text-lg font-semibold rounded-lg inline-flex items-center justify-center">
-                  Business Solutions
+                  {t('hero.businessSolutions')}
                 </Link>
               </div>
             </div>
@@ -46,8 +48,8 @@ export function HomePage() {
               <div className="aspect-square bg-white/10 backdrop-blur rounded-2xl p-8 flex items-center justify-center">
                 <div className="text-center">
                   <div className="text-8xl mb-4">📱</div>
-                  <p className="text-2xl font-semibold">Smart Connectivity</p>
-                  <p className="text-white/80 mt-2">Powered by AI Recommendations</p>
+                  <p className="text-2xl font-semibold">{t('hero.smartConnectivity')}</p>
+                  <p className="text-white/80 mt-2">{t('hero.poweredByAI')}</p>
                 </div>
               </div>
               {/* Floating badges */}
@@ -71,8 +73,8 @@ export function HomePage() {
                 <Truck className="w-6 h-6 text-[#6d02a3]" />
               </div>
               <div>
-                <p className="font-semibold text-gray-900">Free Shipping</p>
-                <p className="text-sm text-gray-600">Orders over €50</p>
+                <p className="font-semibold text-gray-900">{t('features.freeShipping')}</p>
+                <p className="text-sm text-gray-600">{t('features.ordersOver')}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -80,8 +82,8 @@ export function HomePage() {
                 <Zap className="w-6 h-6 text-[#6d02a3]" />
               </div>
               <div>
-                <p className="font-semibold text-gray-900">Fast Setup</p>
-                <p className="text-sm text-gray-600">Same day activation</p>
+                <p className="font-semibold text-gray-900">{t('features.fastSetup')}</p>
+                <p className="text-sm text-gray-600">{t('features.sameDayActivation')}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -89,8 +91,8 @@ export function HomePage() {
                 <Shield className="w-6 h-6 text-[#6d02a3]" />
               </div>
               <div>
-                <p className="font-semibold text-gray-900">Secure</p>
-                <p className="text-sm text-gray-600">Protected payments</p>
+                <p className="font-semibold text-gray-900">{t('features.secure')}</p>
+                <p className="text-sm text-gray-600">{t('features.protectedPayments')}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -98,8 +100,8 @@ export function HomePage() {
                 <Headphones className="w-6 h-6 text-[#6d02a3]" />
               </div>
               <div>
-                <p className="font-semibold text-gray-900">24/7 Support</p>
-                <p className="text-sm text-gray-600">Always here to help</p>
+                <p className="font-semibold text-gray-900">{t('features.support247')}</p>
+                <p className="text-sm text-gray-600">{t('features.alwaysHere')}</p>
               </div>
             </div>
           </div>
@@ -111,8 +113,8 @@ export function HomePage() {
         <section className="py-16">
           <div className="container">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Shop by Category</h2>
-              <p className="text-lg text-gray-600">Find the perfect solution for your needs</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('sections.shopByCategory')}</h2>
+              <p className="text-lg text-gray-600">{t('sections.findPerfectSolution')}</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {categories.slice(0, 8).map((category) => (
@@ -136,7 +138,7 @@ export function HomePage() {
                       <h3 className="font-semibold text-gray-900 group-hover:text-[#6d02a3] transition-colors">
                         {category}
                       </h3>
-                      <p className="text-sm text-gray-600 mt-1">Explore products →</p>
+                      <p className="text-sm text-gray-600 mt-1">{t('product.exploreProducts')}</p>
                     </div>
                   </div>
                 </Link>
@@ -151,14 +153,14 @@ export function HomePage() {
         <div className="container">
           <div className="flex items-center justify-between mb-12">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Products</h2>
-              <p className="text-lg text-gray-600">Handpicked selections just for you</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('sections.featuredProducts')}</h2>
+              <p className="text-lg text-gray-600">{t('sections.handpickedSelections')}</p>
             </div>
             <Link
               to="/category/all"
               className="hidden sm:flex items-center gap-2 text-[#6d02a3] hover:text-[#4e0174] font-semibold transition-colors"
             >
-              View All
+              {t('sections.viewAll')}
               <ChevronRight className="w-5 h-5" />
             </Link>
           </div>
@@ -168,7 +170,7 @@ export function HomePage() {
               to="/category/all"
               className="inline-flex items-center gap-2 text-[#6d02a3] hover:text-[#4e0174] font-semibold transition-colors"
             >
-              View All Products
+              {t('nav.allProducts')}
               <ChevronRight className="w-5 h-5" />
             </Link>
           </div>
@@ -182,32 +184,31 @@ export function HomePage() {
             <div className="grid lg:grid-cols-2 gap-8 items-center">
               <div>
                 <h3 className="text-3xl font-bold mb-4">
-                  Get AI-Powered Recommendations
+                  {t('ai.title')}
                 </h3>
                 <p className="text-lg text-white/90 mb-6">
-                  Our intelligent assistant helps you find the perfect telecom solutions based on your needs and preferences. 
-                  Experience personalized shopping like never before!
+                  {t('ai.description')}
                 </p>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">🤖</span>
-                    <span className="font-semibold">Smart Assistant</span>
+                    <span className="font-semibold">{t('ai.smartAssistant')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">⚡</span>
-                    <span className="font-semibold">Instant Help</span>
+                    <span className="font-semibold">{t('ai.instantHelp')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">🎯</span>
-                    <span className="font-semibold">Personalized</span>
+                    <span className="font-semibold">{t('ai.personalized')}</span>
                   </div>
                 </div>
               </div>
               <div className="flex justify-center">
                 <div className="bg-white/10 backdrop-blur rounded-2xl p-8 text-center">
                   <div className="text-6xl mb-4">💬</div>
-                  <p className="text-xl font-semibold mb-2">Chat with AI Assistant</p>
-                  <p className="text-white/80 mb-4">Available 24/7 to help you</p>
+                  <p className="text-xl font-semibold mb-2">{t('ai.chatWithAI')}</p>
+                  <p className="text-white/80 mb-4">{t('ai.available247')}</p>
                   <button
                     onClick={() => {
                       // The widget should be visible and can be triggered
@@ -216,7 +217,7 @@ export function HomePage() {
                     }}
                     className="bg-white text-[#6d02a3] px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
                   >
-                    Start Chat
+                    {t('ai.startChat')}
                   </button>
                 </div>
               </div>
@@ -230,26 +231,26 @@ export function HomePage() {
         <div className="container">
           <div className="max-w-2xl mx-auto text-center">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Stay Updated with Latest Offers
+              {t('newsletter.title')}
             </h3>
             <p className="text-gray-600 mb-8">
-              Subscribe to our newsletter and never miss exclusive deals and new product launches
+              {t('newsletter.subtitle')}
             </p>
             <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
               <input
                 type="email"
-                placeholder="Enter your email address"
+                placeholder={t('newsletter.emailPlaceholder')}
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#6d02a3] focus:ring-1 focus:ring-[#6d02a3]"
               />
               <button
                 type="submit"
                 className="btn-primary px-8 py-3 font-semibold"
               >
-                Subscribe
+                {t('newsletter.subscribe')}
               </button>
             </form>
             <p className="text-sm text-gray-500 mt-4">
-              By subscribing, you agree to our Privacy Policy and Terms of Service
+              {t('newsletter.privacyNote')}
             </p>
           </div>
         </div>

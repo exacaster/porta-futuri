@@ -1,36 +1,34 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, ShoppingCart, Eye, Heart } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useCart } from '@contexts/CartContext';
 import { ProductWithId } from '@services/productService';
+import { useFormatters } from '@utils/formatters';
 
 interface ProductCardProps {
   product: ProductWithId;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { t } = useTranslation();
   const { addToCart } = useCart();
+  const { formatPrice } = useFormatters();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     addToCart(product);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(price);
-  };
 
   const getStockBadge = () => {
     switch (product.stock_status) {
       case 'in_stock':
-        return <span className="badge badge-success">In Stock</span>;
+        return <span className="badge badge-success">{t('product.inStock')}</span>;
       case 'limited':
-        return <span className="badge badge-warning">Limited Stock</span>;
+        return <span className="badge badge-warning">{t('product.limitedStock')}</span>;
       case 'out_of_stock':
-        return <span className="badge badge-error">Out of Stock</span>;
+        return <span className="badge badge-error">{t('product.outOfStock')}</span>;
       default:
         return null;
     }
@@ -61,14 +59,14 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="absolute top-4 right-4 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <button
                 className="p-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
-                aria-label="Quick view"
+                aria-label={t('product.quickView')}
                 onClick={(e) => e.preventDefault()}
               >
                 <Eye className="w-4 h-4 text-gray-700" />
               </button>
               <button
                 className="p-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
-                aria-label="Add to wishlist"
+                aria-label={t('product.addToWishlist')}
                 onClick={(e) => e.preventDefault()}
               >
                 <Heart className="w-4 h-4 text-gray-700" />
@@ -170,11 +168,11 @@ export function ProductCard({ product }: ProductCardProps) {
                     : 'bg-[#6d02a3] hover:bg-[#4e0174] text-white hover:shadow-md'
                 }
               `}
-              aria-label={isOutOfStock ? 'Out of stock' : 'Add to cart'}
+              aria-label={isOutOfStock ? t('product.outOfStock') : t('product.addToCart')}
             >
               <ShoppingCart className="w-4 h-4" />
               <span className="hidden sm:inline">
-                {isOutOfStock ? 'Out of Stock' : 'Add'}
+                {isOutOfStock ? t('product.outOfStock') : t('product.add')}
               </span>
             </button>
           </div>

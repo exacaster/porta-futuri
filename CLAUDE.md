@@ -809,6 +809,35 @@ When working with this codebase:
 9. Use TypeScript's type system effectively
 10. Keep security as a top priority
 
+### Package Management Best Practices
+**CRITICAL**: Before installing any packages or dependencies:
+1. **Always check if a package is already installed** - Use `npm ls <package-name>` to verify
+2. **Check package.json first** - Review both dependencies and devDependencies
+3. **Verify the actual need** - Many common packages are likely already available
+4. **Avoid redundant installations** - Installing already-present packages can cause:
+   - Version conflicts
+   - Dependency tree corruption
+   - Build failures
+   - Unexpected behavior changes
+5. **If a package appears missing** - First verify it's truly not installed before adding it
+
+Example workflow:
+```bash
+# WRONG: Don't do this
+npm install express
+
+# RIGHT: Check first, then install only if needed
+npm ls express
+# If not found, then:
+npm install express
+```
+
+This prevents common issues like:
+- Duplicate package installations
+- Version downgrades/upgrades that break existing code
+- Unnecessary package.json modifications
+- Build and runtime errors from conflicting versions
+
 ## Quick Reference
 
 ### Key Files

@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function Footer() {
+  const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -12,20 +14,20 @@ export function Footer() {
         <div className="container">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-white">
-              <h3 className="text-xl font-semibold mb-1">Stay Connected</h3>
-              <p className="text-white/80">Get exclusive offers and updates straight to your inbox</p>
+              <h3 className="text-xl font-semibold mb-1">{t('newsletter.title')}</h3>
+              <p className="text-white/80">{t('newsletter.subtitle')}</p>
             </div>
             <form className="flex gap-2 w-full md:w-auto">
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('newsletter.emailPlaceholder')}
                 className="px-4 py-2 rounded-lg bg-white/10 backdrop-blur text-white placeholder-white/60 border border-white/20 focus:outline-none focus:border-white/40 flex-1 md:w-64"
               />
               <button
                 type="submit"
                 className="px-6 py-2 bg-white text-[#6d02a3] font-semibold rounded-lg hover:bg-gray-100 transition-colors"
               >
-                Subscribe
+                {t('newsletter.subscribe')}
               </button>
             </form>
           </div>
@@ -44,7 +46,7 @@ export function Footer() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white">iTelecom</h2>
-                  <p className="text-xs text-gray-400">Smart Telecom Solutions</p>
+                  <p className="text-xs text-gray-400">{t('hero.smartConnectivity')}</p>
                 </div>
               </div>
               <p className="text-gray-400 mb-4">
@@ -69,36 +71,36 @@ export function Footer() {
 
             {/* Quick Links */}
             <div>
-              <h3 className="text-white font-semibold mb-4">Quick Links</h3>
+              <h3 className="text-white font-semibold mb-4">{t('common.showMore')}</h3>
               <ul className="space-y-2">
                 <li>
                   <Link to="/about" className="hover:text-white transition-colors">
-                    About Us
+                    {t('footer.aboutUs')}
                   </Link>
                 </li>
                 <li>
                   <Link to="/products" className="hover:text-white transition-colors">
-                    Products
+                    {t('nav.products')}
                   </Link>
                 </li>
                 <li>
                   <Link to="/deals" className="hover:text-white transition-colors">
-                    Special Offers
+                    {t('nav.deals')}
                   </Link>
                 </li>
                 <li>
                   <Link to="/business" className="hover:text-white transition-colors">
-                    Business Solutions
+                    {t('hero.businessSolutions')}
                   </Link>
                 </li>
                 <li>
                   <Link to="/careers" className="hover:text-white transition-colors">
-                    Careers
+                    {t('footer.careers')}
                   </Link>
                 </li>
                 <li>
                   <Link to="/blog" className="hover:text-white transition-colors">
-                    Blog
+                    {t('footer.blog')}
                   </Link>
                 </li>
               </ul>
@@ -106,26 +108,26 @@ export function Footer() {
 
             {/* Customer Service */}
             <div>
-              <h3 className="text-white font-semibold mb-4">Customer Service</h3>
+              <h3 className="text-white font-semibold mb-4">{t('nav.support')}</h3>
               <ul className="space-y-2">
                 <li>
                   <Link to="/support" className="hover:text-white transition-colors">
-                    Help Center
+                    {t('footer.helpCenter')}
                   </Link>
                 </li>
                 <li>
                   <Link to="/contact" className="hover:text-white transition-colors">
-                    Contact Us
+                    {t('footer.contact')}
                   </Link>
                 </li>
                 <li>
                   <Link to="/shipping" className="hover:text-white transition-colors">
-                    Shipping Info
+                    {t('footer.shipping')}
                   </Link>
                 </li>
                 <li>
                   <Link to="/returns" className="hover:text-white transition-colors">
-                    Returns & Exchanges
+                    {t('footer.returns')}
                   </Link>
                 </li>
                 <li>
@@ -147,12 +149,12 @@ export function Footer() {
               <ul className="space-y-2">
                 <li>
                   <Link to="/privacy" className="hover:text-white transition-colors">
-                    Privacy Policy
+                    {t('footer.privacy')}
                   </Link>
                 </li>
                 <li>
                   <Link to="/terms" className="hover:text-white transition-colors">
-                    Terms of Service
+                    {t('footer.terms')}
                   </Link>
                 </li>
                 <li>
@@ -181,7 +183,7 @@ export function Footer() {
         <div className="container">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-sm text-gray-400">
-              © {currentYear} iTelecom. All rights reserved. | Powered by{' '}
+              {t('footer.copyright')} | Powered by{' '}
               <a
                 href="https://portafuturi.com"
                 target="_blank"
