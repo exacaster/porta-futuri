@@ -1,3 +1,11 @@
+export interface ProductComment {
+  reviewer_name: string;
+  rating: number;
+  date: string;
+  comment: string;
+  helpful_count: number;
+}
+
 export interface Product {
   product_id: string;
   name: string;
@@ -11,6 +19,8 @@ export interface Product {
   image_url?: string;
   ratings?: number;
   review_count?: number;
+  attributes?: Record<string, any>;  // Flexible attributes stored in metadata field
+  comments?: ProductComment[];       // Customer reviews
 }
 
 export interface Recommendation extends Product {
@@ -59,7 +69,36 @@ export const isValidProduct = (data: any): data is Product => {
   );
 };
 
+export const sanitizeComment = (raw: any): ProductComment => {
+  return {
+    reviewer_name: String(raw.reviewer_name || 'Anonymous'),
+    rating: Number(raw.rating) || 0,
+    date: String(raw.date || new Date().toISOString()),
+    comment: String(raw.comment || ''),
+    helpful_count: Number(raw.helpful_count) || 0
+  };
+};
+
 export const sanitizeProduct = (raw: any): Product => {
+  // Parse JSON fields if they are strings
+  let attributes = raw.attributes || raw.metadata;
+  if (typeof attributes === 'string') {
+    try {
+      attributes = JSON.parse(attributes);
+    } catch {
+      attributes = undefined;
+    }
+  }
+  
+  let comments = raw.comments;
+  if (typeof comments === 'string') {
+    try {
+      comments = JSON.parse(comments);
+    } catch {
+      comments = undefined;
+    }
+  }
+  
   return {
     product_id: String(raw.product_id || ''),
     name: String(raw.name || ''),
@@ -75,5 +114,11 @@ export const sanitizeProduct = (raw: any): Product => {
     image_url: raw.image_url ? String(raw.image_url) : undefined,
     ratings: raw.ratings ? Number(raw.ratings) : undefined,
     review_count: raw.review_count ? Number(raw.review_count) : undefined,
+    attributes: typeof attributes === 'object' && attributes !== null && !Array.isArray(attributes) 
+      ? attributes 
+      : undefined,
+    comments: Array.isArray(comments) 
+      ? comments.slice(0, 100).map(sanitizeComment) // Limit to 100 comments
+      : undefined
   };
 };

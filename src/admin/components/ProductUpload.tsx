@@ -107,15 +107,25 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
         const { data: userData } = await supabase.auth.getUser();
         
         // Transform products for database
-        const dbProducts = chunk.map(product => ({
-          ...product,
-          upload_batch_id: batch.id,
-          uploaded_by: userData.user?.id
-        }));
+        const dbProducts = chunk.map(product => {
+          // Map attributes to metadata field and ensure comments are properly formatted
+          const { attributes, comments, ...rest } = product;
+          
+          return {
+            ...rest,
+            metadata: attributes || {}, // Store attributes in metadata JSONB field
+            comments: comments || [],   // Store comments in comments JSONB field
+            upload_batch_id: batch.id,
+            uploaded_by: userData.user?.id
+          };
+        });
 
         const { error: insertError } = await supabase
           .from('products')
-          .upsert(dbProducts, { onConflict: 'product_id' });
+          .upsert(dbProducts, { 
+            onConflict: 'product_id',
+            ignoreDuplicates: false  // Ensure updates happen for existing products
+          });
 
         if (insertError) {
           failCount += chunk.length;

@@ -20,6 +20,59 @@ export class CSVProcessor {
   private readonly MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
   /**
+   * Parse JSON field with error handling
+   */
+  private parseJSONField(value: any, fieldName: string): any {
+    if (value === null || value === undefined || value === '') {
+      return undefined;
+    }
+    
+    if (typeof value === 'string') {
+      try {
+        // Remove any BOM or special characters
+        const cleanValue = value.replace(/^\uFEFF/, '').trim();
+        if (cleanValue === '') {return undefined;}
+        return JSON.parse(cleanValue);
+      } catch (error) {
+        console.warn(`Failed to parse JSON for ${fieldName}: ${error}`);
+        return undefined;
+      }
+    }
+    
+    // If it's already an object/array, return as is
+    if (typeof value === 'object') {
+      return value;
+    }
+    
+    return undefined;
+  }
+
+  /**
+   * Validate comments structure
+   */
+  private validateComments(comments: any[]): boolean {
+    if (!Array.isArray(comments)) {return false;}
+    
+    return comments.every(comment => 
+      comment && 
+      typeof comment === 'object' &&
+      comment.reviewer_name && 
+      typeof comment.rating === 'number' &&
+      comment.date &&
+      comment.comment
+    );
+  }
+
+  /**
+   * Validate attributes structure
+   */
+  private validateAttributes(attributes: any): boolean {
+    return typeof attributes === 'object' && 
+           attributes !== null && 
+           !Array.isArray(attributes);
+  }
+
+  /**
    * Process product catalog CSV
    */
   async processProductCSV(file: File): Promise<CSVParseResult<Product>> {
@@ -83,6 +136,35 @@ export class CSVProcessor {
             }
 
             try {
+              // Parse JSON fields before sanitization
+              if (row.attributes) {
+                row.attributes = this.parseJSONField(row.attributes, 'attributes');
+                if (row.attributes && !this.validateAttributes(row.attributes)) {
+                  errors.push({
+                    type: 'InvalidValue',
+                    code: 'INVALID_ATTRIBUTES',
+                    message: 'Invalid attributes format (must be a JSON object)',
+                    row: rowCount,
+                    field: 'attributes'
+                  });
+                  row.attributes = undefined;
+                }
+              }
+              
+              if (row.comments) {
+                row.comments = this.parseJSONField(row.comments, 'comments');
+                if (row.comments && !this.validateComments(row.comments)) {
+                  errors.push({
+                    type: 'InvalidValue',
+                    code: 'INVALID_COMMENTS',
+                    message: 'Invalid comments format (must be a JSON array of comment objects)',
+                    row: rowCount,
+                    field: 'comments'
+                  });
+                  row.comments = undefined;
+                }
+              }
+              
               const product = sanitizeProduct(row);
               if (isValidProduct(product)) {
                 products.push(product);
