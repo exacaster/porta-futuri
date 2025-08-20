@@ -26,27 +26,41 @@
 
 - [ ] Prepare project report:
     - [+] Version 1
-    - [ ] Version 2
-    - [ ] Version 3
-    - [ ] Version 4 word document with all screan-shots
     
-- [ ] Padaryti demo puslapį
+- [+] Padaryti demo puslapį
     - [+] Create PRP
     - [+] Make the version #1
-    - [ ] Fix URLs
-    - [ ] Make it in Lithuanian language
-    - [ ] Fix widget
+    - [+] Fix URLs
+    - [+] Make it in Lithuanian language
+    - [+] Fix widget
+    - [+] Cleanup code
+
+- [ ] Finish project report for the Admin pannel:
+    - [+] Fix login page
+    - [+] Add login screan-shot
+    - [+] Add the screanshot for .csv file, for upload, and edit functionalities
+    - [+] Add the sreanshot for user management
+    - [+] Add the screanshots for Porta futuri widget management
+    - [+] Add the screanshot for integrations management
+    - [ ] Enable product comments upload
+        - [+] Create the PRP
+        - [ ] Run the PRP
+        - [ ] Debug until it works
+
+
+- [ ] Finish project report for demo site
+    - [ ] Fix the landing page
     - [ ] Fix product Comments
-    - [ ] Cleanup code
 
-- [ ] Real-time user context
-    - [ ] Prepare PRP
-    - [ ] Padaryti loginimą userio veiksmų realiu laiku
-    - [ ] Praplėsti widget, kad useris realiu laiku matytų savo kontekstą, t.y. kokius pageus browsino
-    - [ ] Padaryti, kad chat'as is karto sveikintusi lietuviskai
+- [ ] Finish the widget report examples:
+    - [ ] Real-time user context
+        - [ ] Prepare PRP
+        - [ ] Padaryti loginimą userio veiksmų realiu laiku
+        - [ ] Praplėsti widget, kad useris realiu laiku matytų savo kontekstą, t.y. kokius pageus browsino
+        - [ ] Padaryti, kad chat'as is karto sveikintusi lietuviskai
 
-- [ ] Add capability to dismiss offers for the clients
-    - [ ] Create PRP
+    - [ ] Add capability to dismiss offers for the clients
+        - [ ] Create PRP
     
     
 - [ ] Padaryti landing page’ą

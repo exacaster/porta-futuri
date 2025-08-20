@@ -4,7 +4,12 @@ import path from 'path'
 
 // Widget-specific Vite configuration for < 50KB bundle
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({
+    jsxRuntime: 'automatic',  // Use automatic runtime to avoid React scope issues
+    babel: {
+      plugins: [],
+    },
+  })],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -21,13 +26,9 @@ export default defineConfig({
     },
     outDir: 'dist',
     rollupOptions: {
-      // Externalize React to reduce bundle size
-      external: ['react', 'react-dom'],
+      // Bundle React with the widget for standalone operation
+      external: [],
       output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM'
-        },
         inlineDynamicImports: true,
         // Ensure single file output for widget
         manualChunks: undefined,
@@ -36,9 +37,8 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
+        drop_console: false,  // Keep console for debugging
         drop_debugger: true,
-        pure_funcs: ['console.log'],
       },
       mangle: {
         safari10: true,

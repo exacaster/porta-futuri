@@ -33,11 +33,15 @@ const startTime = Date.now();
 
 // Initialize widget
 function init(config: any) {
+  console.log('[Porta Futuri] Init called with config:', config);
+  
   // Validate config
   if (!config.apiKey) {
     console.error('[Porta Futuri] API key is required');
     return;
   }
+  
+  console.log('[Porta Futuri] Starting widget initialization...');
 
   // Create or get container
   if (config.containerId) {
@@ -187,8 +191,12 @@ function trackEvent(event: any) {
   
 }
 
-// Initialize global widget object
+// Initialize global widget object - preserve any existing config
+const existingConfig = window.PortaFuturi || {};
+console.log('[Porta Futuri] Existing config:', existingConfig);
+
 window.PortaFuturi = {
+  ...existingConfig, // Preserve any existing properties (like apiKey, customerId, config)
   init,
   destroy,
   update,
@@ -203,33 +211,58 @@ window.PortaFuturi = {
   }
 };
 
-// Auto-initialize if config is present in script tag
+console.log('[Porta Futuri] Widget object initialized:', window.PortaFuturi);
+
+// Auto-initialize if config is present
 if (typeof document !== 'undefined') {
-  const script = document.currentScript as HTMLScriptElement;
-  if (script && script.dataset.apiKey) {
-    // Auto-init with data attributes
+  console.log('[Porta Futuri] Checking for auto-init config...');
+  // Check if there's already a config on window.PortaFuturi (from demo site setup)
+  if (window.PortaFuturi && window.PortaFuturi.apiKey) {
+    console.log('[Porta Futuri] Found apiKey, preparing auto-init with:', window.PortaFuturi.apiKey);
     const config = {
-      apiKey: script.dataset.apiKey,
-      apiUrl: script.dataset.apiUrl,
-      position: script.dataset.position,
-      containerId: script.dataset.containerId,
-      theme: {
-        primaryColor: script.dataset.themePrimary,
-        secondaryColor: script.dataset.themeSecondary,
-        fontFamily: script.dataset.themeFont
-      },
-      data: {
-        productCatalogUrl: script.dataset.productCatalogUrl,
-        customerProfileUrl: script.dataset.customerProfileUrl,
-        contextUrl: script.dataset.contextUrl
-      }
+      apiKey: window.PortaFuturi.apiKey,
+      customerId: window.PortaFuturi.customerId,
+      ...window.PortaFuturi.config,
+      position: window.PortaFuturi.config?.position || 'bottom-right'
     };
+    console.log('[Porta Futuri] Auto-init config:', config);
     
     // Wait for DOM ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => init(config));
     } else {
-      init(config);
+      // Small delay to ensure DOM is fully ready
+      setTimeout(() => init(config), 100);
+    }
+  } 
+  // Fallback to script tag attributes
+  else {
+    const script = document.currentScript as HTMLScriptElement;
+    if (script && script.dataset.apiKey) {
+      // Auto-init with data attributes
+      const config = {
+        apiKey: script.dataset.apiKey,
+        apiUrl: script.dataset.apiUrl,
+        position: script.dataset.position,
+        containerId: script.dataset.containerId,
+        theme: {
+          primaryColor: script.dataset.themePrimary,
+          secondaryColor: script.dataset.themeSecondary,
+          fontFamily: script.dataset.themeFont
+        },
+        data: {
+          productCatalogUrl: script.dataset.productCatalogUrl,
+          customerProfileUrl: script.dataset.customerProfileUrl,
+          contextUrl: script.dataset.contextUrl
+        }
+      };
+      
+      // Wait for DOM ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => init(config));
+      } else {
+        init(config);
+      }
     }
   }
 }

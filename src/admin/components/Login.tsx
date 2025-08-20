@@ -165,12 +165,6 @@ export const Login: React.FC<LoginProps> = ({
               <h1 className="text-4xl font-bold mb-2">Porta Futuri</h1>
               <p className="text-xl opacity-90">Admin Portal</p>
             </div>
-            <div className="space-y-4 text-sm opacity-80">
-              <p>• Manage Product Catalog</p>
-              <p>• Upload CSV Files</p>
-              <p>• User Administration</p>
-              <p>• Analytics & Insights</p>
-            </div>
           </div>
         </div>
 
@@ -277,11 +271,6 @@ export const Login: React.FC<LoginProps> = ({
               </div>
             </form>
 
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <p className="text-xs text-gray-500 text-center">
-                Default credentials: egidijus@exacaster.com / 123456789
-              </p>
-            </div>
           </div>
         </div>
       </div>
