@@ -2,12 +2,52 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Zap, Shield, Headphones, Truck } from 'lucide-react';
+import { ChevronRight, Zap, Shield, Headphones, Truck, Phone, Wifi, Tv, Briefcase, Speaker, Home, Satellite, Watch, Laptop, Tablet } from 'lucide-react';
 import { ProductGrid } from '@components/products/ProductGrid';
 import { productService } from '@services/productService';
 
 export function HomePage() {
   const { t } = useTranslation();
+  
+  // Helper function to get icon for category
+  const getCategoryIcon = (category: string) => {
+    const categoryLower = category.toLowerCase();
+    
+    // Map Lithuanian category names to icons
+    if (categoryLower.includes('telefon') || categoryLower.includes('phone')) {
+      return <Phone className="w-12 h-12 text-[#6d02a3]" />;
+    }
+    if (categoryLower.includes('ausinės') || categoryLower.includes('ausines') || categoryLower.includes('headphone')) {
+      return <Headphones className="w-12 h-12 text-[#6d02a3]" />;
+    }
+    if (categoryLower.includes('garso') || categoryLower.includes('kolonėlės') || categoryLower.includes('koloneles') || categoryLower.includes('speaker')) {
+      return <Speaker className="w-12 h-12 text-[#6d02a3]" />;
+    }
+    if (categoryLower.includes('planšet') || categoryLower.includes('planset') || categoryLower.includes('tablet')) {
+      return <Tablet className="w-12 h-12 text-[#6d02a3]" />;
+    }
+    if (categoryLower.includes('kompiuter') || categoryLower.includes('nešiojam') || categoryLower.includes('nesiojam') || categoryLower.includes('laptop')) {
+      return <Laptop className="w-12 h-12 text-[#6d02a3]" />;
+    }
+    if (categoryLower.includes('laikrod') || categoryLower.includes('išman') || categoryLower.includes('isman') || categoryLower.includes('watch') || categoryLower.includes('smart')) {
+      return <Watch className="w-12 h-12 text-[#6d02a3]" />;
+    }
+    if (categoryLower.includes('internet') || categoryLower.includes('wifi')) {
+      return <Wifi className="w-12 h-12 text-[#6d02a3]" />;
+    }
+    if (categoryLower.includes('tv') || categoryLower.includes('televizor')) {
+      return <Tv className="w-12 h-12 text-[#6d02a3]" />;
+    }
+    if (categoryLower.includes('verslo') || categoryLower.includes('business')) {
+      return <Briefcase className="w-12 h-12 text-[#6d02a3]" />;
+    }
+    if (categoryLower.includes('namai') || categoryLower.includes('home')) {
+      return <Home className="w-12 h-12 text-[#6d02a3]" />;
+    }
+    
+    // Default fallback icon
+    return <Satellite className="w-12 h-12 text-[#6d02a3]" />;
+  };
   
   // Fetch featured products
   const { data: featuredProducts, isLoading: loadingFeatured } = useQuery({
@@ -39,7 +79,7 @@ export function HomePage() {
                   {t('hero.shopNow')}
                   <ChevronRight className="ml-2 w-5 h-5" />
                 </Link>
-                <Link to="/business" className="btn-secondary border-white text-white hover:bg-white/10 px-8 py-3 text-lg font-semibold rounded-lg inline-flex items-center justify-center">
+                <Link to="/business" className="border-2 border-white text-white hover:bg-white/10 px-8 py-3 text-lg font-semibold rounded-lg inline-flex items-center justify-center transition-colors">
                   {t('hero.businessSolutions')}
                 </Link>
               </div>
@@ -125,14 +165,7 @@ export function HomePage() {
                 >
                   <div className="card hover:shadow-xl transition-all duration-200 group-hover:-translate-y-1">
                     <div className="aspect-square bg-gradient-to-br from-[#6d02a3]/10 to-[#b12df4]/10 rounded-t-lg flex items-center justify-center">
-                      <span className="text-6xl">
-                        {category.toLowerCase().includes('mobile') ? '📱' :
-                         category.toLowerCase().includes('internet') ? '🌐' :
-                         category.toLowerCase().includes('tv') ? '📺' :
-                         category.toLowerCase().includes('business') ? '💼' :
-                         category.toLowerCase().includes('accessories') ? '🎧' :
-                         category.toLowerCase().includes('smart') ? '🏠' : '📡'}
-                      </span>
+                      {getCategoryIcon(category)}
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-gray-900 group-hover:text-[#6d02a3] transition-colors">

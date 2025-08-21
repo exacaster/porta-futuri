@@ -13,29 +13,29 @@ export const WidgetTrigger: React.FC<WidgetTriggerProps> = ({ onClick, isOpen })
       className="pf-widget-trigger"
       aria-label={isOpen ? 'Close chat' : 'Open chat'}
       style={{
-        width: '56px',
-        height: '56px',
+        width: '60px',
+        height: '60px',
         borderRadius: '50%',
-        background: 'hsl(var(--pf-primary, 220 90% 56%))',
-        border: 'none',
+        background: 'linear-gradient(135deg, #6d02a3 0%, #b12df4 100%)',
+        border: '2px solid white',
         color: 'white',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        boxShadow: '0 8px 16px -2px rgba(109, 2, 163, 0.4), 0 4px 8px -2px rgba(0, 0, 0, 0.2)',
         transition: 'transform 0.2s, box-shadow 0.2s',
         fontSize: '24px',
         position: 'relative',
         zIndex: 1,
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'scale(1.05)';
-        e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+        e.currentTarget.style.transform = 'scale(1.1)';
+        e.currentTarget.style.boxShadow = '0 12px 20px -3px rgba(109, 2, 163, 0.5), 0 6px 10px -2px rgba(0, 0, 0, 0.25)';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'scale(1)';
-        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+        e.currentTarget.style.boxShadow = '0 8px 16px -2px rgba(109, 2, 163, 0.4), 0 4px 8px -2px rgba(0, 0, 0, 0.2)';
       }}
     >
       {isOpen ? (
