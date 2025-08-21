@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -6,6 +6,8 @@ import {
   Check, Truck, Shield, RefreshCw, Package, X
 } from 'lucide-react';
 import { ProductGrid } from '@components/products/ProductGrid';
+import { ProductFeatures } from '@components/products/ProductFeatures';
+import { ProductReviews } from '@components/products/ProductReviews';
 import { productService } from '@services/productService';
 import { useCartWithToast } from '@contexts/CartContext';
 
@@ -297,7 +299,7 @@ export function ProductPage() {
               >
                 Description
               </button>
-              {product.features && product.features.length > 0 && (
+              {((product.features && product.features.length > 0) || product.attributes) && (
                 <button
                   onClick={() => setActiveTab('features')}
                   className={`pb-4 px-2 font-medium transition-colors relative ${
@@ -317,7 +319,7 @@ export function ProductPage() {
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                Reviews ({product.review_count || 0})
+                Reviews ({product.comments?.length || 0})
               </button>
             </div>
           </div>
@@ -332,23 +334,38 @@ export function ProductPage() {
               </div>
             )}
 
-            {activeTab === 'features' && product.features && (
-              <ul className="space-y-3">
-                {product.features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-green-500 mt-0.5" />
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
+            {activeTab === 'features' && (
+              <>
+                {product.features && product.features.length > 0 && (
+                  <ul className="space-y-3 mb-6">
+                    {product.features.map((feature, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <Check className="w-5 h-5 text-green-500 mt-0.5" />
+                        <span className="text-gray-700">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {product.attributes && (
+                  <ProductFeatures attributes={product.attributes} />
+                )}
+              </>
             )}
 
             {activeTab === 'reviews' && (
-              <div className="text-center py-12">
-                <div className="text-5xl mb-4">💬</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
-                <p className="text-gray-600">Be the first to review this product!</p>
-              </div>
+              product.comments && product.comments.length > 0 ? (
+                <ProductReviews 
+                  comments={product.comments}
+                  productRating={product.ratings}
+                  reviewCount={product.review_count}
+                />
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-5xl mb-4">💬</div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
+                  <p className="text-gray-600">Be the first to review this product!</p>
+                </div>
+              )
             )}
           </div>
         </div>

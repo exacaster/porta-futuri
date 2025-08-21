@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Product } from '@shared/types/product.types';
+import { sanitizeProduct } from '@shared/types/product.types';
 
 // Initialize Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'http://localhost:54321';
@@ -91,7 +92,11 @@ export const productService = {
         throw error;
       }
 
-      return (data as ProductWithId[]) || [];
+      // Apply sanitization to all products
+      return (data || []).map(product => {
+        const sanitized = sanitizeProduct(product);
+        return { ...sanitized, id: product.id, created_at: product.created_at, updated_at: product.updated_at };
+      });
     } catch (error) {
       console.error('Failed to fetch products:', error);
       return [];
@@ -114,7 +119,9 @@ export const productService = {
         return null;
       }
 
-      return data as ProductWithId;
+      // Apply sanitization to parse metadata and comments
+      const sanitized = sanitizeProduct(data);
+      return { ...sanitized, id: data.id, created_at: data.created_at, updated_at: data.updated_at };
     } catch (error) {
       console.error('Failed to fetch product:', error);
       return null;
@@ -145,7 +152,11 @@ export const productService = {
         return [];
       }
 
-      return (data as ProductWithId[]) || [];
+      // Apply sanitization to all products
+      return (data || []).map(product => {
+        const sanitized = sanitizeProduct(product);
+        return { ...sanitized, id: product.id, created_at: product.created_at, updated_at: product.updated_at };
+      });
     } catch (error) {
       console.error('Failed to fetch featured products:', error);
       return [];
@@ -224,7 +235,11 @@ export const productService = {
         return [];
       }
 
-      return (data as ProductWithId[]) || [];
+      // Apply sanitization to all products
+      return (data || []).map(product => {
+        const sanitized = sanitizeProduct(product);
+        return { ...sanitized, id: product.id, created_at: product.created_at, updated_at: product.updated_at };
+      });
     } catch (error) {
       console.error('Failed to fetch related products:', error);
       return [];
