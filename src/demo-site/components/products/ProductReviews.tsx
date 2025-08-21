@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Star, ThumbsUp, ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { ProductComment } from '@shared/types/product.types';
 
 interface ProductReviewsProps {
@@ -64,6 +65,7 @@ function ReviewCard({ comment }: ReviewCardProps) {
 }
 
 export function ProductReviews({ comments, productRating, reviewCount }: ProductReviewsProps) {
+  const { t } = useTranslation();
   const [sortBy, setSortBy] = useState<'newest' | 'highest' | 'lowest' | 'helpful'>('newest');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
@@ -118,7 +120,7 @@ export function ProductReviews({ comments, productRating, reviewCount }: Product
           <div className="grid md:grid-cols-2 gap-8">
             {/* Average Rating */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Reviews</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('product.customerReviews')}</h3>
               <div className="flex items-center gap-4">
                 <div className="text-4xl font-bold text-[#6d02a3]">
                   {averageRating.toFixed(1)}
@@ -143,7 +145,7 @@ export function ProductReviews({ comments, productRating, reviewCount }: Product
 
             {/* Rating Distribution */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Rating Distribution</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('product.ratingDistribution')}</h3>
               <div className="space-y-2">
                 {[5, 4, 3, 2, 1].map(rating => {
                   const count = ratingDistribution[rating];
@@ -171,7 +173,7 @@ export function ProductReviews({ comments, productRating, reviewCount }: Product
       {/* Sort Options */}
       {comments.length > 1 && (
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">All Reviews</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('product.reviews')}</h3>
           <div className="relative">
             <button
               onClick={() => setShowSortDropdown(!showSortDropdown)}
@@ -213,8 +215,8 @@ export function ProductReviews({ comments, productRating, reviewCount }: Product
       ) : (
         <div className="text-center py-12">
           <div className="text-5xl mb-4">💬</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
-          <p className="text-gray-600">Be the first to review this product!</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('product.noReviews')}</h3>
+          <p className="text-gray-600">{t('product.beFirstReview')}</p>
         </div>
       )}
     </div>

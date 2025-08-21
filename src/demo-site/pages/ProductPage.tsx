@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { 
   Star, ShoppingCart, Heart, Share2, ChevronLeft, 
   Check, Truck, Shield, RefreshCw, Package, X
@@ -15,6 +16,7 @@ export function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart, isInCart } = useCartWithToast();
+  const { t } = useTranslation();
   
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'description' | 'features' | 'reviews'>('description');
@@ -98,7 +100,7 @@ export function ProductPage() {
       <div className="bg-white border-b">
         <div className="container py-4">
           <nav className="flex items-center gap-2 text-sm text-gray-600">
-            <Link to="/" className="hover:text-[#6d02a3]">Home</Link>
+            <Link to="/" className="hover:text-[#6d02a3]">{t('nav.home')}</Link>
             <span>/</span>
             <Link to={`/category/${encodeURIComponent(product.category)}`} className="hover:text-[#6d02a3]">
               {product.category}
@@ -116,7 +118,7 @@ export function ProductPage() {
           className="flex items-center gap-2 text-gray-600 hover:text-[#6d02a3] mb-6 transition-colors"
         >
           <ChevronLeft className="w-5 h-5" />
-          Back to products
+          {t('product.backToProducts')}
         </button>
 
         <div className="grid lg:grid-cols-2 gap-12">
@@ -140,11 +142,11 @@ export function ProductPage() {
             <div className="flex gap-4 mt-6">
               <button className="flex-1 flex items-center justify-center gap-2 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                 <Heart className="w-4 h-4" />
-                Add to Wishlist
+                {t('product.addToWishlist')}
               </button>
               <button className="flex-1 flex items-center justify-center gap-2 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                 <Share2 className="w-4 h-4" />
-                Share
+                {t('product.share')}
               </button>
             </div>
           </div>
@@ -194,7 +196,7 @@ export function ProductPage() {
                 </span>
                 {/* You could add original price here if there's a discount */}
               </div>
-              <p className="text-sm text-gray-600 mt-1">VAT included</p>
+              <p className="text-sm text-gray-600 mt-1">{t('product.vatIncluded')}</p>
             </div>
 
             {/* Stock Status */}
@@ -202,19 +204,19 @@ export function ProductPage() {
               {product.stock_status === 'in_stock' && (
                 <div className="flex items-center gap-2 text-green-600">
                   <Check className="w-5 h-5" />
-                  <span className="font-medium">In Stock</span>
+                  <span className="font-medium">{t('product.inStock')}</span>
                 </div>
               )}
               {isLimitedStock && (
                 <div className="flex items-center gap-2 text-yellow-600">
                   <Package className="w-5 h-5" />
-                  <span className="font-medium">Limited Stock - Order Soon!</span>
+                  <span className="font-medium">{t('product.limitedStockOrder')}</span>
                 </div>
               )}
               {isOutOfStock && (
                 <div className="flex items-center gap-2 text-red-600">
                   <X className="w-5 h-5" />
-                  <span className="font-medium">Out of Stock</span>
+                  <span className="font-medium">{t('product.outOfStock')}</span>
                 </div>
               )}
             </div>
@@ -254,7 +256,7 @@ export function ProductPage() {
                 }`}
               >
                 <ShoppingCart className="w-5 h-5" />
-                {isOutOfStock ? 'Out of Stock' : isInCart(product.id) ? 'Added to Cart' : 'Add to Cart'}
+                {isOutOfStock ? t('product.outOfStock') : isInCart(product.id) ? t('product.addToCart') : t('product.addToCart')}
               </button>
             </div>
 
@@ -263,22 +265,22 @@ export function ProductPage() {
               <div className="flex items-center gap-3">
                 <Truck className="w-5 h-5 text-[#6d02a3]" />
                 <div>
-                  <p className="font-medium text-gray-900">Free Delivery</p>
-                  <p className="text-sm text-gray-600">On orders over €50</p>
+                  <p className="font-medium text-gray-900">{t('product.freeDelivery')}</p>
+                  <p className="text-sm text-gray-600">{t('product.freeDeliveryOrders')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <RefreshCw className="w-5 h-5 text-[#6d02a3]" />
                 <div>
-                  <p className="font-medium text-gray-900">30-Day Returns</p>
-                  <p className="text-sm text-gray-600">Easy returns & exchanges</p>
+                  <p className="font-medium text-gray-900">{t('product.dayReturns')}</p>
+                  <p className="text-sm text-gray-600">{t('product.easyReturns')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Shield className="w-5 h-5 text-[#6d02a3]" />
                 <div>
-                  <p className="font-medium text-gray-900">Warranty</p>
-                  <p className="text-sm text-gray-600">2-year manufacturer warranty</p>
+                  <p className="font-medium text-gray-900">{t('product.warranty')}</p>
+                  <p className="text-sm text-gray-600">{t('product.yearWarranty')}</p>
                 </div>
               </div>
             </div>
@@ -297,7 +299,7 @@ export function ProductPage() {
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                Description
+                {t('product.description')}
               </button>
               {((product.features && product.features.length > 0) || product.attributes) && (
                 <button
@@ -308,7 +310,7 @@ export function ProductPage() {
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  Features
+                  {t('product.features')}
                 </button>
               )}
               <button
@@ -319,7 +321,7 @@ export function ProductPage() {
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                Reviews ({product.comments?.length || 0})
+                {t('product.reviews')} ({product.comments?.length || 0})
               </button>
             </div>
           </div>
@@ -362,8 +364,8 @@ export function ProductPage() {
               ) : (
                 <div className="text-center py-12">
                   <div className="text-5xl mb-4">💬</div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
-                  <p className="text-gray-600">Be the first to review this product!</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('product.noReviews')}</h3>
+                  <p className="text-gray-600">{t('product.beFirstReview')}</p>
                 </div>
               )
             )}
@@ -373,7 +375,7 @@ export function ProductPage() {
         {/* Related Products */}
         {relatedProducts && relatedProducts.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">Related Products</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">{t('product.relatedProducts')}</h2>
             <ProductGrid products={relatedProducts} />
           </div>
         )}
