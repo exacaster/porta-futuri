@@ -35,24 +35,38 @@
     - [+] Fix widget
     - [+] Cleanup code
 
-- [ ] Finish project report for the Admin pannel:
+- [+] Finish project report for the Admin pannel:
     - [+] Fix login page
     - [+] Add login screan-shot
     - [+] Add the screanshot for .csv file, for upload, and edit functionalities
     - [+] Add the sreanshot for user management
     - [+] Add the screanshots for Porta futuri widget management
     - [+] Add the screanshot for integrations management
-    - [ ] Enable product comments upload
+    - [+] Enable product comments upload
         - [+] Create the PRP
-        - [ ] Run the PRP
-        - [ ] Debug until it works
+        - [+] Run the PRP
+        - [+] Debug until it works
 
-
-- [ ] Finish project report for demo site
-    - [ ] Fix the landing page
-    - [ ] Fix product Comments
+- [+] Finish project report for demo site
+    - [+] Fix the landing page
+        - [+] fix the button
+        - [+] fix recommendations
+        - [+] fix category icons
+        - [+] make the chat icon not transparent
+    - [+] Fix product categories
+        - [+] Make sure the menu has all categories in place
+    - [+] Fix product preview
+        - [+] Create PRP
+        - [+] Add product features
+        - [+] Add product Comments
+        - [+] Debug the lithuanian language
+        - [+] Debug the missing images
+    - [+] Fill in the project report
 
 - [ ] Finish the widget report examples:
+
+    - [ ] Fix UI of chat
+
     - [ ] Real-time user context
         - [ ] Prepare PRP
         - [ ] Padaryti loginimą userio veiksmų realiu laiku

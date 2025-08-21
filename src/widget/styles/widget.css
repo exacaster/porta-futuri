@@ -3,8 +3,18 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-/* CSS Variables for theming */
+/* CSS Variables for theming - OpenAI-inspired modern design */
 :root {
+  /* Modern color palette */
+  --pf-modern-bg: #ffffff;
+  --pf-modern-surface: #f7f7f8;
+  --pf-modern-border: #e5e5e7;
+  --pf-modern-text: #0d0d0d;
+  --pf-modern-muted: #6e6e80;
+  --pf-modern-primary: #10a37f;
+  --pf-modern-primary-dark: #0ea570;
+  
+  /* Legacy variables (for compatibility) */
   --pf-primary: 220 90% 56%;
   --pf-primary-foreground: 0 0% 100%;
   --pf-secondary: 220 14% 96%;
@@ -16,7 +26,19 @@
   --pf-accent: 220 14% 96%;
   --pf-accent-foreground: 220 9% 46%;
   --pf-border: 220 14% 90%;
+  
+  /* Modern radius values */
   --pf-radius: 0.5rem;
+  --pf-modern-radius-sm: 6px;
+  --pf-modern-radius-md: 12px;
+  --pf-modern-radius-lg: 16px;
+  
+  /* Modern shadows */
+  --pf-modern-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --pf-modern-shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+  --pf-modern-shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  
+  /* Typography */
   --pf-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
@@ -286,6 +308,37 @@
   }
 }
 
+@keyframes pf-slide-up {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes pf-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pf-bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  30% {
+    transform: translateY(-10px);
+    opacity: 0.7;
+  }
+}
+
 @keyframes pf-spin {
   to {
     transform: rotate(360deg);
@@ -298,6 +351,74 @@
     width: calc(100vw - 40px);
     max-width: 380px;
   }
+}
+
+/* Modern Modal Styles */
+.pf-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  animation: pf-fade-in 0.2s ease-out;
+}
+
+.pf-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 440px;
+  width: calc(100% - 40px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  z-index: 10001;
+  animation: pf-slide-up 0.3s ease-out;
+}
+
+/* Modern Profile Button */
+.pf-profile-button {
+  transition: all 0.2s;
+}
+
+.pf-profile-button:hover {
+  transform: scale(1.05);
+}
+
+.pf-profile-indicator {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 163, 127, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 163, 127, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 163, 127, 0);
+  }
+}
+
+/* Modern Input Styles */
+.pf-modern-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  border: 1px solid #e5e5e7;
+  border-radius: 8px;
+  background: white;
+  color: #0d0d0d;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.pf-modern-input:focus {
+  border-color: #10a37f;
+  box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
 }
 
 /* Ensure widget styles don't affect host page */

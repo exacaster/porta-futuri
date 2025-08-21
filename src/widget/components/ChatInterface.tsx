@@ -2,14 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Product, CustomerProfile, ContextEvent, ConversationState, Topic } from '@shared/types';
 import { ConversationManager } from '../services/conversation/ConversationManager';
 import { useConversation } from '../hooks/useConversation';
-
-// Greeting prompts for demo
-const GREETING_PROMPTS = [
-  "Sveiki! Kuo galiu jums padėti?",
-  "Labas! Ieškote ko nors ypatingo?",
-  "Sveiki atvykę! Kaip galiu padėti su jūsų pirkimu?",
-  "Sveiki! Turite klausimų apie mūsų produktus?"
-];
+import { useLanguage } from '../hooks/useLanguage';
 
 interface ChatInterfaceProps {
   apiKey: string;
@@ -41,6 +34,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(`session-${Date.now()}`);
+  const { t } = useLanguage();
   
   const conversationManager = useRef<ConversationManager>(new ConversationManager(sessionId));
   const {
@@ -61,11 +55,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     const greetingMessage: Message = {
       id: `msg-${Date.now()}`,
       role: 'assistant',
-      content: GREETING_PROMPTS[Math.floor(Math.random() * GREETING_PROMPTS.length)],
+      content: t('greeting'), // This will return a random greeting in the current language
       timestamp: new Date()
     };
     setMessages([greetingMessage]);
-  }, []);
+  }, [t]);
   
   // Auto-scroll to bottom
   useEffect(() => {
@@ -204,7 +198,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       const fallbackMsg: Message = {
         id: `msg-${Date.now()}`,
         role: 'assistant',
-        content: 'I apologize, but I encountered an issue. Let me try to help you anyway. What kind of products are you interested in?',
+        content: t('chat.errorMessage'),
         timestamp: new Date()
       };
       setMessages(prev => [...prev, fallbackMsg]);
@@ -227,7 +221,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     addInsight,
     addTopic,
     updateShoppingIntent,
-    incrementRedirectAttempts
+    incrementRedirectAttempts,
+    t
   ]);
   
   const renderMessage = (msg: Message) => {
@@ -258,21 +253,31 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       }}>
         <div
           style={{
-            padding: '0.75rem',
-            borderRadius: 'var(--pf-radius)',
+            padding: '12px 16px',
+            borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
             background: msg.role === 'user' 
-              ? '#3b82f6'  // Solid blue background for user messages
+              ? 'linear-gradient(135deg, #10a37f 0%, #0ea570 100%)'
               : msg.isRedirect 
-                ? 'hsl(var(--pf-accent))'
-                : 'hsl(var(--pf-secondary))',
+                ? '#fff3cd'
+                : 'white',
             color: msg.role === 'user' 
-              ? '#ffffff'  // White text for user messages
-              : 'hsl(var(--pf-foreground))',
+              ? 'white'
+              : msg.isRedirect
+                ? '#856404'
+                : '#0d0d0d',
+            border: msg.role === 'user' 
+              ? 'none'
+              : '1px solid #e5e5e7',
+            boxShadow: msg.role === 'user'
+              ? '0 2px 5px rgba(16, 163, 127, 0.2)'
+              : '0 1px 2px rgba(0, 0, 0, 0.05)',
             wordWrap: 'break-word',
             overflowWrap: 'break-word',
             maxWidth: '70%',
             minWidth: '100px',
             boxSizing: 'border-box',
+            fontSize: '14px',
+            lineHeight: '1.5',
           }}
         >
           {msg.content}
@@ -425,12 +430,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     };
     
     const stateLabels: Record<ConversationState, string> = {
-      [ConversationState.GREETING]: 'Welcome',
-      [ConversationState.GENERAL_CHAT]: 'Chatting',
-      [ConversationState.PRODUCT_DISCOVERY]: 'Exploring',
-      [ConversationState.RECOMMENDATION]: 'Recommending',
-      [ConversationState.COMPARISON]: 'Comparing',
-      [ConversationState.CHECKOUT_ASSISTANCE]: 'Checkout'
+      [ConversationState.GREETING]: t('chat.stateWelcome'),
+      [ConversationState.GENERAL_CHAT]: t('chat.stateChatting'),
+      [ConversationState.PRODUCT_DISCOVERY]: t('chat.stateExploring'),
+      [ConversationState.RECOMMENDATION]: t('chat.stateRecommending'),
+      [ConversationState.COMPARISON]: t('chat.stateComparing'),
+      [ConversationState.CHECKOUT_ASSISTANCE]: t('chat.stateCheckout')
     };
     
     return (
@@ -466,7 +471,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         {renderStateIndicator()}
         {insights.length > 0 && (
           <span style={{ fontSize: '0.75rem', color: 'hsl(var(--pf-muted-foreground))' }}>
-            {insights.length} insights gathered
+            {insights.length} {t('chat.insightsGathered')}
           </span>
         )}
       </div>
@@ -483,10 +488,32 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       }}>
         {messages.map(renderMessage)}
         {isLoading && (
-          <div style={{ textAlign: 'center' }}>
-            <span className="pf-spinner" style={{ width: '20px', height: '20px' }}></span>
-            <p style={{ fontSize: '0.8rem', color: 'hsl(var(--pf-muted-foreground))' }}>
-              Thinking...
+          <div style={{ textAlign: 'center', padding: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginBottom: '8px' }}>
+              <span style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: '#10a37f',
+                animation: 'pf-bounce 1.4s ease-in-out infinite'
+              }} />
+              <span style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: '#10a37f',
+                animation: 'pf-bounce 1.4s ease-in-out 0.2s infinite'
+              }} />
+              <span style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: '#10a37f',
+                animation: 'pf-bounce 1.4s ease-in-out 0.4s infinite'
+              }} />
+            </div>
+            <p style={{ fontSize: '0.8rem', color: '#6e6e80', margin: 0 }}>
+              {t('chat.thinking')}
             </p>
           </div>
         )}
@@ -508,26 +535,58 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
           placeholder={
             conversationState === ConversationState.GENERAL_CHAT 
-              ? "Chat about anything or ask for product recommendations..."
-              : "Ask me anything or tell me what you're looking for..."
+              ? t('chat.placeholderGeneral')
+              : t('chat.placeholder')
           }
           disabled={isLoading}
           style={{
             flex: 1,
-            padding: '0.5rem',
-            border: '1px solid hsl(var(--pf-border))',
-            borderRadius: 'calc(var(--pf-radius) - 2px)',
-            background: 'hsl(var(--pf-background))',
-            color: 'hsl(var(--pf-foreground))',
+            padding: '10px 14px',
+            border: '1px solid #e5e5e7',
+            borderRadius: '8px',
+            background: 'white',
+            color: '#0d0d0d',
+            fontSize: '14px',
+            transition: 'border-color 0.2s',
+            outline: 'none'
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = '#10a37f';
+            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(16, 163, 127, 0.1)';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = '#e5e5e7';
+            e.currentTarget.style.boxShadow = 'none';
           }}
         />
         <button
           onClick={sendMessage}
           disabled={isLoading || !input.trim()}
-          className="pf-btn-primary"
-          style={{ padding: '0.5rem 1rem' }}
+          style={{
+            padding: '10px 20px',
+            background: isLoading || !input.trim()
+              ? '#e5e5e7'
+              : 'linear-gradient(135deg, #10a37f 0%, #0ea570 100%)',
+            color: isLoading || !input.trim() ? '#6e6e80' : 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading && input.trim()) {
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.07)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
         >
-          Send
+          {t('chat.send')}
         </button>
       </div>
     </div>

@@ -3,7 +3,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChatInterface } from './components/ChatInterface';
 import { WidgetTrigger } from './components/WidgetTrigger';
 import { CustomerProfile } from './components/CustomerProfile';
+import { CustomerIdModal } from './components/CustomerIdModal';
 import { useWidgetConfig } from './hooks/useWidgetConfig';
+import { useLanguage } from './hooks/useLanguage';
 import { csvProcessor } from './services/csvParser';
 import { Product, CustomerProfile as CustomerProfileType, ContextEvent } from '@shared/types';
 import './styles/widget.css';
@@ -48,9 +50,10 @@ function AppContent({ config }: AppProps) {
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
   const [customerId, setCustomerId] = useState<string | null>(null);
-  const [showCustomerIdInput, setShowCustomerIdInput] = useState(false);
+  const [showCustomerIdModal, setShowCustomerIdModal] = useState(false);
 
   const { widgetConfig } = useWidgetConfig(config.apiKey);
+  const { t } = useLanguage();
 
   // Get customer ID from multiple sources
   const getCustomerId = (): string | null => {
@@ -86,15 +89,14 @@ function AppContent({ config }: AppProps) {
     return null;
   };
 
-  // Initialize customer ID on mount
+  // Initialize customer ID on mount (deferred - don't prompt upfront)
   useEffect(() => {
     const id = getCustomerId();
     if (id) {
       setCustomerId(id);
       fetchCDPData(id);
-    } else {
-      setShowCustomerIdInput(true);
     }
+    // Don't show customer ID input automatically - let users start chatting immediately
     loadData();
   }, [config.data]);
 
@@ -134,8 +136,17 @@ function AppContent({ config }: AppProps) {
   const handleCustomerIdSubmit = (id: string) => {
     setCustomerId(id);
     sessionStorage.setItem('porta_futuri_customer_id', id);
-    setShowCustomerIdInput(false);
+    setShowCustomerIdModal(false);
     fetchCDPData(id);
+  };
+
+  // Handle profile button click
+  const handleProfileClick = () => {
+    if (!customerId) {
+      setShowCustomerIdModal(true);
+    } else {
+      setShowProfile(!showProfile);
+    }
   };
 
   const loadData = async () => {
@@ -273,61 +284,53 @@ function AppContent({ config }: AppProps) {
       {isOpen && (
         <div className="pf-widget-panel">
           <div className="pf-widget-header">
-            <h3 className="pf-widget-title">AI Shopping Assistant</h3>
+            <h3 className="pf-widget-title">{t('chat.title')}</h3>
             <div className="pf-widget-actions">
               <button
-                onClick={() => setShowProfile(!showProfile)}
-                className="pf-btn-icon"
-                title="View Profile"
+                onClick={handleProfileClick}
+                className="pf-btn-icon pf-profile-button"
+                title={t('profile.viewProfile')}
+                style={{
+                  position: 'relative',
+                  background: customerId ? 'linear-gradient(135deg, #10a37f 0%, #0ea570 100%)' : 'transparent',
+                  color: customerId ? 'white' : 'inherit',
+                  border: customerId ? 'none' : '1px solid hsl(var(--pf-border))'
+                }}
               >
                 👤
+                {customerId && (
+                  <span className="pf-profile-indicator" style={{
+                    position: 'absolute',
+                    top: '-2px',
+                    right: '-2px',
+                    width: '8px',
+                    height: '8px',
+                    background: '#10a37f',
+                    borderRadius: '50%',
+                    border: '2px solid white'
+                  }} />
+                )}
               </button>
               <button
                 onClick={() => setIsOpen(false)}
                 className="pf-btn-icon"
-                title="Close"
+                title={t('common.close')}
               >
                 ✕
               </button>
             </div>
           </div>
 
-          {showCustomerIdInput && !customerId ? (
-            <div className="pf-widget-customer-input">
-              <h4>Welcome! Please enter your Customer ID</h4>
-              <input
-                type="text"
-                placeholder="e.g., CUST123"
-                className="pf-input"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.currentTarget.value) {
-                    handleCustomerIdSubmit(e.currentTarget.value);
-                  }
-                }}
-              />
-              <button 
-                onClick={(e) => {
-                  const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                  if (input?.value) {
-                    handleCustomerIdSubmit(input.value);
-                  }
-                }}
-                className="pf-btn-primary"
-              >
-                Continue
-              </button>
-              <p className="pf-text-small">Your Customer ID helps us provide personalized recommendations</p>
-            </div>
-          ) : dataLoading ? (
+          {dataLoading ? (
             <div className="pf-widget-loading">
               <div className="pf-spinner"></div>
-              <p>Loading data...</p>
+              <p>{t('chat.loadingData')}</p>
             </div>
           ) : dataError ? (
             <div className="pf-widget-error">
               <p>{dataError}</p>
               <button onClick={loadData} className="pf-btn-primary">
-                Retry
+                {t('chat.retryButton')}
               </button>
             </div>
           ) : showProfile ? (
@@ -348,6 +351,14 @@ function AppContent({ config }: AppProps) {
           )}
         </div>
       )}
+
+      {/* Customer ID Modal */}
+      <CustomerIdModal
+        isOpen={showCustomerIdModal}
+        onClose={() => setShowCustomerIdModal(false)}
+        onSubmit={handleCustomerIdSubmit}
+        allowSkip={true}
+      />
     </div>
   );
 }

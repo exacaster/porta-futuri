@@ -1,0 +1,96 @@
+-- Update a product with sample metadata (product attributes/features)
+UPDATE public.products 
+SET metadata = '{
+  "processor": "Intel Core i7-11800H",
+  "screen_size": "15.6 inches",
+  "ram": "16GB DDR4",
+  "storage": "512GB SSD",
+  "battery_life": "8 hours",
+  "weight": "1.8 kg",
+  "warranty": "2 years",
+  "color_options": ["Space Gray", "Silver"],
+  "connectivity": ["WiFi 6", "Bluetooth 5.0", "USB-C"],
+  "special_features": ["Backlit Keyboard", "Fingerprint Reader", "HD Webcam"]
+}'::jsonb
+WHERE name LIKE '%Laptop%' 
+LIMIT 1;
+
+-- Update a product with sample reviews/comments
+UPDATE public.products 
+SET comments = '[
+  {
+    "reviewer_name": "John Smith",
+    "rating": 5,
+    "date": "2024-12-15T10:30:00Z",
+    "comment": "Excellent laptop for the price. Fast performance and great battery life. The display is crisp and bright.",
+    "helpful_count": 42
+  },
+  {
+    "reviewer_name": "Sarah Johnson",
+    "rating": 4,
+    "date": "2024-12-10T14:20:00Z",
+    "comment": "Good overall, but the speakers could be better. Everything else is perfect - great build quality and performance.",
+    "helpful_count": 18
+  },
+  {
+    "reviewer_name": "Mike Chen",
+    "rating": 5,
+    "date": "2024-12-08T09:15:00Z",
+    "comment": "Amazing machine! Runs all my development tools smoothly. The keyboard is comfortable for long coding sessions.",
+    "helpful_count": 35
+  },
+  {
+    "reviewer_name": "Emily Davis",
+    "rating": 3,
+    "date": "2024-12-05T16:45:00Z",
+    "comment": "Decent laptop but arrived with a minor scratch. Performance is good but expected better cooling.",
+    "helpful_count": 8
+  },
+  {
+    "reviewer_name": "Robert Wilson",
+    "rating": 5,
+    "date": "2024-12-01T11:00:00Z",
+    "comment": "Perfect for both work and gaming. The SSD is super fast and the screen quality is outstanding!",
+    "helpful_count": 25
+  }
+]'::jsonb
+WHERE name LIKE '%Laptop%' 
+LIMIT 1;
+
+-- Update another product with different metadata
+UPDATE public.products 
+SET metadata = '{
+  "screen_size": "6.1 inches",
+  "display_type": "OLED",
+  "camera": "48MP Triple Camera",
+  "battery": "4500mAh",
+  "5g_enabled": true,
+  "storage_options": ["128GB", "256GB", "512GB"],
+  "water_resistance": "IP68",
+  "wireless_charging": true,
+  "face_id": true,
+  "colors": ["Midnight Black", "Pearl White", "Ocean Blue"]
+}'::jsonb
+WHERE name LIKE '%Phone%' OR name LIKE '%iPhone%'
+LIMIT 1;
+
+-- Add reviews to a phone
+UPDATE public.products 
+SET comments = '[
+  {
+    "reviewer_name": "Alex Turner",
+    "rating": 5,
+    "date": "2024-12-18T13:00:00Z",
+    "comment": "Best phone I have ever owned! The camera quality is incredible and battery lasts all day.",
+    "helpful_count": 67
+  },
+  {
+    "reviewer_name": "Lisa Brown",
+    "rating": 4,
+    "date": "2024-12-14T10:30:00Z",
+    "comment": "Great phone but quite expensive. The display is gorgeous and performance is smooth.",
+    "helpful_count": 23
+  }
+]'::jsonb
+WHERE name LIKE '%Phone%' OR name LIKE '%iPhone%'
+LIMIT 1;

@@ -31,9 +31,9 @@ export function Header() {
 
   const getCategoryIcon = (category: string) => {
     const lowerCategory = category.toLowerCase();
-    if (lowerCategory.includes('mobile') || lowerCategory.includes('phone')) return <Smartphone className="w-4 h-4" />;
-    if (lowerCategory.includes('internet') || lowerCategory.includes('broadband')) return <Wifi className="w-4 h-4" />;
-    if (lowerCategory.includes('tv') || lowerCategory.includes('television')) return <Tv className="w-4 h-4" />;
+    if (lowerCategory.includes('mobile') || lowerCategory.includes('phone')) {return <Smartphone className="w-4 h-4" />;}
+    if (lowerCategory.includes('internet') || lowerCategory.includes('broadband')) {return <Wifi className="w-4 h-4" />;}
+    if (lowerCategory.includes('tv') || lowerCategory.includes('television')) {return <Tv className="w-4 h-4" />;}
     return <Phone className="w-4 h-4" />;
   };
 
