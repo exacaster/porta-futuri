@@ -83,17 +83,17 @@
 
 /* Widget Trigger Button */
 .pf-widget-trigger {
-  width: 56px !important;
-  height: 56px !important;
+  width: 60px !important;
+  height: 60px !important;
   border-radius: 50% !important;
-  background: hsl(var(--pf-primary, 220 90% 56%)) !important;
-  border: none !important;
+  background: linear-gradient(135deg, #6d02a3 0%, #b12df4 100%) !important;
+  border: 2px solid white !important;
   color: white !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 8px 16px -2px rgba(109, 2, 163, 0.4), 0 4px 8px -2px rgba(0, 0, 0, 0.2) !important;
   transition: transform 0.2s, box-shadow 0.2s !important;
   font-size: 24px !important;
   position: relative !important;
@@ -102,8 +102,8 @@
 }
 
 .pf-widget-trigger:hover {
-  transform: scale(1.05) !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 12px 20px -3px rgba(109, 2, 163, 0.5), 0 6px 10px -2px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* Widget Panel */
