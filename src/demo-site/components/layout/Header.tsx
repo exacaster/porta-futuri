@@ -83,7 +83,7 @@ export function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[70vh] overflow-y-auto">
                 <div className="py-2">
                   <Link 
                     to="/category/all" 
@@ -92,7 +92,7 @@ export function Header() {
                     <Phone className="w-4 h-4" />
                     {t('nav.allProducts')}
                   </Link>
-                  {categories.slice(0, 5).map((category) => (
+                  {categories.map((category) => (
                     <Link
                       key={category}
                       to={`/category/${encodeURIComponent(category)}`}
@@ -210,7 +210,7 @@ export function Header() {
             
             <div className="space-y-2">
               <p className="text-sm font-semibold text-gray-500 uppercase">{t('nav.products')}</p>
-              {categories.slice(0, 5).map((category) => (
+              {categories.map((category) => (
                 <Link
                   key={category}
                   to={`/category/${encodeURIComponent(category)}`}
