@@ -58,6 +58,7 @@ function AppContent({ config }: AppProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'profile' | 'context'>('chat');
   const [widgetSize, setWidgetSize] = useState({ width: 380, height: 600 });
+  const [isResizing, setIsResizing] = useState(false);
   
   // Data state
   const [products, setProducts] = useState<Product[]>([]);
@@ -119,6 +120,36 @@ function AppContent({ config }: AppProps) {
     };
     sessionStorage.setItem('porta_futuri_widget_state', JSON.stringify(state));
   }, [activeTab, widgetSize, isOpen, customerId, sessionId]);
+
+  // Handle resize from top-left corner
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startWidth = widgetSize.width;
+    const startHeight = widgetSize.height;
+    
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = startX - moveEvent.clientX;
+      const deltaY = startY - moveEvent.clientY;
+      
+      const newWidth = Math.min(Math.max(startWidth + deltaX, 320), 600);
+      const newHeight = Math.min(Math.max(startHeight + deltaY, 400), window.innerHeight * 0.9);
+      
+      setWidgetSize({ width: newWidth, height: newHeight });
+    };
+    
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
 
   // Get customer ID from multiple sources
   const getCustomerId = (): string | null => {
@@ -371,7 +402,22 @@ function AppContent({ config }: AppProps) {
       />
 
       {isOpen && (
-        <div className="pf-widget-panel pf-widget-panel-resizable" style={{ width: `${widgetSize.width}px`, height: `${widgetSize.height}px` }}>
+        <div className="pf-widget-panel" style={{ width: `${widgetSize.width}px`, height: `${widgetSize.height}px`, cursor: isResizing ? 'nwse-resize' : 'auto' }}>
+          {/* Top-left resize handle */}
+          <div 
+            className="pf-resize-handle-topleft" 
+            onMouseDown={handleResizeStart}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '20px',
+              height: '20px',
+              cursor: 'nwse-resize',
+              zIndex: 10,
+              background: 'linear-gradient(-45deg, transparent 45%, var(--pf-modern-border) 45%, var(--pf-modern-border) 55%, transparent 55%)',
+            }}
+          />
           <div className="pf-widget-header-enhanced">
             <h3 className="pf-widget-title-enhanced">{t("chat.title")}</h3>
             <div className="pf-widget-navigation">
