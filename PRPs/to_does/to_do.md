@@ -65,15 +65,15 @@
 
 - [ ] Finish the widget report examples:
 
-    - [ ] Fix UI of chat
+    - [+] Fix UI of chat
         - [+] Do not require to enter user id on the load instead ask it only when pressed on the prifile icon
         - [+] Make a much more beautiful UI for the customer profile in the chat, aim for the design which would be inspired by an openai.com
         - [+] By default speak in the language which is set for the page
-        - [] Fix CVM Platform integration bugs
+        - [+] Fix CVM Platform integration bugs
             - [+] Fix API integration
-            - [] Fix showed profile fields
-            - [] Make sure it's beautiful
-            - [] Cleanup the widget code
+            - [+] Fix showed profile fields
+            - [+] Make sure it's beautiful
+            - [+] Cleanup the widget code
     
     - [] Fix chat recommendations
         - [] Fix recommendations delivery bugs
