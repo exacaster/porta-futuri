@@ -22,7 +22,7 @@ import { productService } from "@services/productService";
 import { useCartWithToast } from "@contexts/CartContext";
 
 export function ProductPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id, category, productName } = useParams<{ id?: string; category?: string; productName?: string }>();
   const navigate = useNavigate();
   const { addToCart, isInCart } = useCartWithToast();
   const { t } = useTranslation();
@@ -38,16 +38,44 @@ export function ProductPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["product", id],
-    queryFn: () => productService.getProductById(id!),
-    enabled: !!id,
+    queryKey: ["product", id, category, productName],
+    queryFn: async () => {
+      // If we have an ID, use it directly (old URL format)
+      if (id) {
+        return productService.getProductById(id);
+      }
+      
+      // Otherwise, try to find by semantic URL (new format)
+      if (category && productName) {
+        const products = await productService.getProducts();
+        const found = products.find((p: any) => {
+          const pCategory = p.category.toLowerCase().replace(/\s+/g, '-');
+          const pName = p.name.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-');
+          return pCategory === category && pName === productName;
+        });
+        
+        if (found) return found;
+        
+        // Fallback: productName might actually be an ID
+        try {
+          return await productService.getProductById(productName);
+        } catch {
+          return null;
+        }
+      }
+      
+      return null;
+    },
+    enabled: !!id || (!!category && !!productName),
   });
 
   // Fetch related products
   const { data: relatedProducts } = useQuery({
-    queryKey: ["relatedProducts", product?.category, id],
-    queryFn: () => productService.getRelatedProducts(id!, product!.category, 4),
-    enabled: !!product && !!id,
+    queryKey: ["relatedProducts", product?.category, product?.id],
+    queryFn: () => productService.getRelatedProducts(product!.id, product!.category, 4),
+    enabled: !!product && !!product.id,
   });
 
   const handleAddToCart = () => {
@@ -396,7 +424,7 @@ export function ProductPage() {
               <>
                 {product.features && product.features.length > 0 && (
                   <ul className="space-y-3 mb-6">
-                    {product.features.map((feature, index) => (
+                    {product.features.map((feature: any, index: any) => (
                       <li key={index} className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-green-500 mt-0.5" />
                         <span className="text-gray-700">{feature}</span>

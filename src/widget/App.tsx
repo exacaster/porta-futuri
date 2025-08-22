@@ -4,8 +4,10 @@ import { ChatInterface } from "./components/ChatInterface";
 import { WidgetTrigger } from "./components/WidgetTrigger";
 import { CustomerProfile } from "./components/CustomerProfile";
 import { CustomerIdModal } from "./components/CustomerIdModal";
+import { BrowsingHistory } from "./components/BrowsingHistory";
 import { useWidgetConfig } from "./hooks/useWidgetConfig";
 import { useLanguage } from "./hooks/useLanguage";
+import { useBrowsingHistory } from "./hooks/useBrowsingHistory";
 import { csvProcessor } from "./services/csvParser";
 import {
   Product,
@@ -53,6 +55,7 @@ interface AppProps {
 function AppContent({ config }: AppProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showBrowsingHistory, setShowBrowsingHistory] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [customerProfile, setCustomerProfile] =
     useState<CustomerProfileType | null>(null);
@@ -64,6 +67,18 @@ function AppContent({ config }: AppProps) {
 
   const { widgetConfig } = useWidgetConfig(config.apiKey);
   const { t } = useLanguage();
+  
+  // Generate session ID for browsing history
+  const [sessionId] = useState(() => {
+    const stored = sessionStorage.getItem('porta_futuri_session_id');
+    if (stored) return stored;
+    const newId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    sessionStorage.setItem('porta_futuri_session_id', newId);
+    return newId;
+  });
+  
+  // Initialize browsing history tracking
+  const { events, detectedIntent, clearHistory, trackEvent, trackProductView, trackSearch, trackCartAction } = useBrowsingHistory(sessionId);
 
   // Get customer ID from multiple sources
   const getCustomerId = (): string | null => {
@@ -176,6 +191,7 @@ function AppContent({ config }: AppProps) {
       setShowCustomerIdModal(true);
     } else {
       setShowProfile(!showProfile);
+      setShowBrowsingHistory(false);
     }
   };
 
@@ -312,6 +328,41 @@ function AppContent({ config }: AppProps) {
             <h3 className="pf-widget-title">{t("chat.title")}</h3>
             <div className="pf-widget-actions">
               <button
+                onClick={() => {
+                  setShowBrowsingHistory(!showBrowsingHistory);
+                  setShowProfile(false);
+                }}
+                className="pf-btn-icon"
+                title="View Browsing History"
+                style={{
+                  position: "relative",
+                  background: showBrowsingHistory
+                    ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                    : "transparent",
+                  color: showBrowsingHistory ? "white" : "inherit",
+                  border: showBrowsingHistory
+                    ? "none"
+                    : "1px solid hsl(var(--pf-border))",
+                }}
+              >
+                📊
+                {detectedIntent && (
+                  <span
+                    className="pf-profile-indicator"
+                    style={{
+                      position: "absolute",
+                      top: "-2px",
+                      right: "-2px",
+                      width: "8px",
+                      height: "8px",
+                      background: "#10a37f",
+                      borderRadius: "50%",
+                      border: "2px solid white",
+                    }}
+                  />
+                )}
+              </button>
+              <button
                 onClick={handleProfileClick}
                 className="pf-btn-icon pf-profile-button"
                 title={t("profile.viewProfile")}
@@ -365,6 +416,13 @@ function AppContent({ config }: AppProps) {
                 {t("chat.retryButton")}
               </button>
             </div>
+          ) : showBrowsingHistory ? (
+            <BrowsingHistory
+              events={events}
+              detectedIntent={detectedIntent}
+              onClearHistory={clearHistory}
+              onClose={() => setShowBrowsingHistory(false)}
+            />
           ) : showProfile ? (
             <CustomerProfile
               profile={customerProfile}

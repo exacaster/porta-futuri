@@ -14,6 +14,14 @@ export function ProductCard({ product }: ProductCardProps) {
   const { t } = useTranslation();
   const { addToCart } = useCart();
   const { formatPrice } = useFormatters();
+  
+  const generateSemanticUrl = (product: ProductWithId): string => {
+    const category = product.category.toLowerCase().replace(/\s+/g, '-');
+    const name = product.name.toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-');
+    return `/${category}/${name}`;
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -44,7 +52,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const isOutOfStock = product.stock_status === "out_of_stock";
 
   return (
-    <Link to={`/product/${product.id}`} className="group">
+    <Link to={generateSemanticUrl(product)} className="group">
       <div className="card h-full flex flex-col hover:shadow-lg transition-all duration-200">
         {/* Image Container */}
         <div className="relative aspect-square overflow-hidden bg-gray-100">
