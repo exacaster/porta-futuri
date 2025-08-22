@@ -75,20 +75,29 @@
             - [+] Make sure it's beautiful
             - [+] Cleanup the widget code
     
-    - [] Fix chat recommendations
-        - [] Fix recommendations delivery bugs
-        - [] Make sure that the products and their prices are comming from the catalogue
-        - [] Make sure that the chat asks relevant followup questions
-        - [] Make sure that the prompts are written properly
+    - [+] Fix chat recommendations
+        - [+] Refactor to use Gemini
+        - [+] Make sure that the full product info is in prompt
+        - [+] Make sure that the full customer profile is in prompt
+        - [+] Make sure that the opening question opens with the language of the website
+        - [+] Make sure that the recommendations are relevant
+        - [+] Make sure that the chat asks relevant followup questions
+        - [+] Make sure that the products and their prices are comming from the catalogue
+        - [+] Fix issue with missing recommendations
 
     - [ ] Add real-time user context to chat
-        - [ ] Prepare PRP
-        - [ ] Padaryti loginimą userio veiksmų realiu laiku
-        - [ ] Praplėsti widget, kad useris realiu laiku matytų savo kontekstą, t.y. kokius pageus browsino
-        - [ ] Padaryti, kad chat'as is karto sveikintusi lietuviskai
-
-    - [ ] Add capability to dismiss offers for the clients
-        - [ ] Create PRP
+        - [+] Prepare PRP
+        - [+] Refactor, kad URLs būtų su produktų pavadinimais
+        - [+] Padaryti loginimą userio veiksmų realiu laiku
+        - [+] Praplėsti widget, kad useris realiu laiku matytų savo kontekstą, t.y. kokius pageus browsino
+        - [] Fix UI for URLS
+        - [] Fix UI for intent detection
+        - [] Make intent detection better
+        - [] Add this context to the recommendations
+        - [] Fix URL links in recommendations
+        - [] Add capability to dismiss offers for the clients
+        - [] Add capability to change the chat size, make it bigger or smaller
+        - [] Make tabs more beautiful
     
     
 - [ ] Padaryti landing page’ą
