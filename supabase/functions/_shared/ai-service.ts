@@ -121,7 +121,7 @@ export class AIRecommendationService {
       const fullPrompt = `${this.getSystemPrompt()}\n\n${prompt}`;
       
       const result = await this.gemini.models.generateContent({
-        model: 'gemini-2.0-flash-001',  // Using Gemini 2.0 Flash
+        model: 'gemini-2.5-flash',  // Using Gemini 2.5 Flash
         contents: fullPrompt,
         config: {
           generationConfig: {
@@ -177,6 +177,15 @@ CRITICAL RECOMMENDATION RULES:
    - "Will you mainly use this for work or entertainment?"
    - "What's your budget range for this?"
    - Don't guess - gather information to make perfect recommendations
+4. **NO RECOMMENDATIONS DURING CLARIFICATIONS**: Critical rule enforcement:
+   - When asking clarifying questions → DO NOT include recommendations
+   - Return ONLY your question in the message field
+   - Set recommendations array to empty []
+   - Examples of clarifying scenarios:
+     * "What aspects are most important to you?"
+     * "What's your budget range?"
+     * "Will you use this for work or entertainment?"
+   - Only provide recommendations AFTER receiving answers to your questions
 
 CORE BEHAVIOR:
 1. Always respond naturally to what they actually said first
@@ -215,6 +224,17 @@ IMPORTANT:
 - Be memorable and fun, not robotic
 - Format your response as JSON for easy parsing
 - Recommend 3-5 products ONLY when you have that many relevant matches
+
+RESPONSE FORMAT RULES:
+- When asking clarifying questions: Return empty recommendations array []
+- When making recommendations: Include 3-5 products based on relevance
+- Always return valid JSON structure:
+  {
+    "message": "Your response",
+    "intent": { "understood": "what you understood", "confidence": 0.0-1.0 },
+    "recommendations": [], // Empty when asking questions, populated when recommending
+    "is_clarifying": true/false // New field to indicate if asking for clarification
+  }
 
 Remember: You're the expert friend who finds EXACTLY what they need, not a salesperson pushing random products!`;
   }
@@ -408,8 +428,15 @@ Remember: You're the expert friend who finds EXACTLY what they need, not a sales
 
   private parseResponse(responseText: string, allProducts: Product[]): RecommendationResponse {
     try {
+      // Clean up the response text - remove markdown code blocks if present
+      let cleanedResponse = responseText;
+      
+      // Remove ```json and ``` markers if present
+      cleanedResponse = cleanedResponse.replace(/```json\s*/gi, '');
+      cleanedResponse = cleanedResponse.replace(/```\s*/g, '');
+      
       // Try to extract JSON from the response
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error('No JSON found in response');
       }
@@ -421,25 +448,45 @@ Remember: You're the expert friend who finds EXACTLY what they need, not a sales
         .slice(0, 5)
         .map((rec: any, index: number) => {
           const product = allProducts.find(p => p.product_id === rec.product_id);
-          if (!product) return null;
+          if (!product) {
+            console.warn(`Invalid product_id from AI: ${rec.product_id}`);
+            return null;
+          }
           
+          // Return actual product data with AI metadata
           return {
-            ...product,
-            features: Array.isArray(product.features) ? product.features : product.features ? [product.features] : undefined,
+            ...product, // Use actual product data
+            id: (product as any).id, // Preserve UUID id if present
+            // Preserve only AI-specific fields
             reasoning: rec.reasoning || `Recommended based on your query`,
             match_score: rec.match_score || (90 - index * 10),
-            position: index + 1
+            position: index + 1,
+            features: Array.isArray(product.features) 
+              ? product.features 
+              : product.features ? [product.features] : undefined
           };
         })
         .filter(Boolean);
 
-      return {
+      // Validate recommendations against actual product catalog
+      const validatedRecommendations = this.validateRecommendations(
         recommendations,
-        message: parsed.message || 'Here are my recommendations for you:',
+        allProducts
+      );
+
+      // Clean the message of any leftover markdown formatting
+      let cleanMessage = parsed.message || 'Here are my recommendations for you:';
+      cleanMessage = cleanMessage.replace(/```json\s*/gi, '');
+      cleanMessage = cleanMessage.replace(/```\s*/g, '');
+      
+      return {
+        recommendations: validatedRecommendations,
+        message: cleanMessage,
         intent: parsed.intent || {
           understood: 'General product search',
           confidence: 0.7
         },
+        is_clarifying: parsed.is_clarifying || false,
         fallback_used: false
       };
     } catch (error) {
@@ -502,5 +549,48 @@ Remember: You're the expert friend who finds EXACTLY what they need, not a sales
       },
       fallback_used: true
     };
+  }
+
+  private validateRecommendations(
+    recommendations: any[],
+    actualProducts: Product[]
+  ): any[] {
+    const validatedRecs: any[] = [];
+    
+    for (const rec of recommendations) {
+      // Find the actual product in catalog
+      const actualProduct = actualProducts.find(
+        p => p.product_id === rec.product_id
+      );
+      
+      if (!actualProduct) {
+        console.warn(`Product ${rec.product_id} not found in catalog, skipping`);
+        continue;
+      }
+      
+      // Use actual product data, preserve AI's reasoning and score
+      validatedRecs.push({
+        ...actualProduct, // Use all real product data
+        id: (actualProduct as any).id, // Preserve UUID id if present
+        reasoning: rec.reasoning || 'Recommended based on your preferences',
+        match_score: rec.match_score || 75,
+        position: validatedRecs.length + 1,
+        // Ensure arrays are properly formatted
+        features: Array.isArray(actualProduct.features) 
+          ? actualProduct.features 
+          : actualProduct.features 
+            ? [actualProduct.features] 
+            : undefined
+      });
+    }
+    
+    // If no valid products found, log error
+    if (validatedRecs.length === 0 && recommendations.length > 0) {
+      console.error('All recommended products were invalid:', 
+        recommendations.map(r => r.product_id)
+      );
+    }
+    
+    return validatedRecs;
   }
 }

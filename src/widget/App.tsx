@@ -27,7 +27,7 @@ const queryClient = new QueryClient({
 interface WidgetConfig {
   apiKey: string;
   apiUrl?: string;
-  position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
+  position?: "bottom-right" | "bottom-left" | "top-right" | "top-left" | "relative";
   theme?: {
     primaryColor?: string;
     secondaryColor?: string;
@@ -38,6 +38,11 @@ interface WidgetConfig {
     customerProfileUrl?: string;
     contextUrl?: string;
     products?: Product[]; // Allow direct product data
+  };
+  navigation?: {
+    productUrlPattern?: string;
+    baseUrl?: string;
+    openInNewTab?: boolean;
   };
 }
 
@@ -374,6 +379,7 @@ function AppContent({ config }: AppProps) {
               customerProfile={customerProfile}
               contextEvents={contextEvents}
               onFileUpload={handleFileUpload}
+              navigation={config.navigation}
             />
           )}
         </div>

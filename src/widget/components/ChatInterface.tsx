@@ -21,6 +21,11 @@ interface ChatInterfaceProps {
     customer?: File;
     context?: File;
   }) => void;
+  navigation?: {
+    productUrlPattern?: string;
+    baseUrl?: string;
+    openInNewTab?: boolean;
+  };
 }
 
 interface Message {
@@ -39,6 +44,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   customerProfile,
   contextEvents,
   onFileUpload: _onFileUpload,
+  navigation,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -77,6 +83,41 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleProductClick = useCallback((productId: string) => {
+    // Build the product URL from config
+    const productUrlPattern = navigation?.productUrlPattern || '/product/{id}';
+    const productUrl = productUrlPattern.replace('{id}', productId);
+    const baseUrl = navigation?.baseUrl || 'http://localhost:3002';
+    const fullUrl = `${baseUrl}${productUrl}`;
+    
+    // Check if we're in iframe
+    if (window.parent !== window) {
+      // Send message to parent window
+      window.parent.postMessage({
+        type: 'porta-futuri-navigation',
+        action: 'navigate-to-product',
+        productId: productId,
+        url: productUrl
+      }, '*');
+    } else {
+      // If not in iframe, open in new tab or same window based on config
+      const openInNewTab = navigation?.openInNewTab !== false; // default true
+      if (openInNewTab) {
+        window.open(fullUrl, '_blank');
+      } else {
+        window.location.href = fullUrl;
+      }
+    }
+    
+    // Track the click event
+    if ((window as any).PortaFuturi?.trackEvent) {
+      (window as any).PortaFuturi.trackEvent('product_click', {
+        product_id: productId,
+        source: 'recommendation_card'
+      });
+    }
+  }, [navigation]);
 
   const sendMessage = useCallback(async () => {
     if (!input.trim() || isLoading) {
@@ -332,9 +373,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   overflow: "hidden",
                   display: "flex",
                   flexDirection: "column",
+                  transition: "all 0.2s ease",
+                  transform: "translateY(0)",
                 }}
-                onClick={() => {
-                  // Handle product click
+                onClick={() => handleProductClick((product as any).id || (product as any).product_id)}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "none";
                 }}
               >
                 {/* Product Image */}
@@ -415,7 +464,26 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       WebkitBoxOrient: "vertical",
                     }}
                   >
-                    {product.name}
+                    <div style={{ 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "4px" 
+                    }}>
+                      {product.name}
+                      <svg 
+                        width="12" 
+                        height="12" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2"
+                        style={{ opacity: 0.5 }}
+                      >
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    </div>
                   </h4>
                   <p
                     style={{

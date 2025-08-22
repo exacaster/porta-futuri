@@ -5,7 +5,7 @@
 export interface WidgetConfig {
   apiKey: string;
   apiUrl?: string;
-  position?: "bottom-right" | "bottom-left" | "top-right" | "top-left" | "relative" | string;
+  position?: "bottom-right" | "bottom-left" | "top-right" | "top-left" | "relative";
   containerId?: string;
   theme?: {
     primaryColor?: string;
@@ -17,6 +17,11 @@ export interface WidgetConfig {
     customerProfileUrl?: string;
     contextUrl?: string;
     products?: any[]; // Use any[] to avoid conflicts with shared types
+  };
+  navigation?: {
+    productUrlPattern?: string; // e.g., "/product/{id}"
+    baseUrl?: string; // e.g., "https://shop.example.com"
+    openInNewTab?: boolean; // default: true
   };
 }
 
