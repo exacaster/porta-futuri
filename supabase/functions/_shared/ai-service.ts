@@ -1,4 +1,4 @@
-import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.27.0';
+import { GoogleGenAI } from 'https://esm.sh/@google/genai@1.15.0';
 
 interface Product {
   product_id: string;
@@ -69,11 +69,11 @@ interface RecommendationResponse {
 }
 
 export class AIRecommendationService {
-  private anthropic: Anthropic;
+  private gemini: GoogleGenAI;
   private readonly MAX_CONVERSATION_HISTORY = 5;
 
   constructor(apiKey: string) {
-    this.anthropic = new Anthropic({ apiKey });
+    this.gemini = new GoogleGenAI({ apiKey });
   }
 
   async generateRecommendations(params: {
@@ -91,8 +91,8 @@ export class AIRecommendationService {
       const prompt = this.buildPrompt(params);
       console.log('AI Service: Prompt built, length:', prompt.length);
       
-      // Log the full prompt being sent to Anthropic
-      console.log('========== FULL PROMPT SENT TO ANTHROPIC ==========');
+      // Log the full prompt being sent to Gemini
+      console.log('========== FULL PROMPT SENT TO GEMINI ==========');
       console.log('SYSTEM PROMPT:');
       console.log(this.getSystemPrompt());
       console.log('\n========== USER PROMPT ==========');
@@ -100,22 +100,27 @@ export class AIRecommendationService {
       console.log('========== END OF PROMPT ==========');
       console.log('Total prompt length:', prompt.length, 'characters');
       
-      // Call Claude API with increased token limit for larger context
-      console.log('AI Service: Calling Claude API...');
-      const completion = await this.anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',  // Updated to latest model
-        max_tokens: 100000,  // Increased for more detailed responses
-        temperature: 0.7,
-        system: this.getSystemPrompt(),
-        messages: [{ role: 'user', content: prompt }]
+      // Call Gemini API with configuration
+      console.log('AI Service: Calling Gemini API...');
+      
+      // Combine system prompt and user prompt for Gemini
+      const fullPrompt = `${this.getSystemPrompt()}\n\n${prompt}`;
+      
+      const result = await this.gemini.models.generateContent({
+        model: 'gemini-2.0-flash-001',  // Using Gemini 2.0 Flash
+        contents: fullPrompt,
+        config: {
+          generationConfig: {
+            maxOutputTokens: 100000,  // Match Claude's token limit
+            temperature: 0.7,
+          }
+        }
       });
 
-      console.log('AI Service: Claude API response received');
+      console.log('AI Service: Gemini API response received');
       
       // Parse the response
-      const responseText = completion.content[0].type === 'text' 
-        ? completion.content[0].text 
-        : '';
+      const responseText = result.text || '';
       
       console.log('AI Service: Response text length:', responseText.length);
       console.log('AI Service: Response preview:', responseText.substring(0, 100));

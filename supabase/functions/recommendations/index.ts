@@ -313,20 +313,20 @@ async function generateRecommendations(request: RecommendationRequest): Promise<
       products = dbProducts || [];
     }
 
-    // Check if we have an Anthropic API key
-    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    // Check if we have a Gemini API key
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     
-    console.log('Anthropic API key exists:', !!anthropicApiKey);
-    console.log('Anthropic API key length:', anthropicApiKey?.length || 0);
-    console.log('Anthropic API key starts with:', anthropicApiKey?.substring(0, 10) || 'N/A');
+    console.log('Gemini API key exists:', !!geminiApiKey);
+    console.log('Gemini API key length:', geminiApiKey?.length || 0);
+    console.log('Gemini API key starts with:', geminiApiKey?.substring(0, 10) || 'N/A');
     console.log('Number of products:', products.length);
     console.log('Query:', request.query);
     
-    if (anthropicApiKey && products.length > 0) {
+    if (geminiApiKey && products.length > 0) {
       // Use AI service for recommendations
       console.log('Using AI service for recommendations...');
-      console.log('Creating AI service with API key length:', anthropicApiKey.length);
-      const aiService = new AIRecommendationService(anthropicApiKey);
+      console.log('Creating AI service with API key length:', geminiApiKey.length);
+      const aiService = new AIRecommendationService(geminiApiKey);
       
       const result = await aiService.generateRecommendations({
         query: request.query || '',
@@ -345,7 +345,7 @@ async function generateRecommendations(request: RecommendationRequest): Promise<
       return result;
     } else {
       // Fallback to simple recommendations if no API key or no products
-      console.log('Using fallback recommendations - API key exists:', !!anthropicApiKey, 'Products:', products.length);
+      console.log('Using fallback recommendations - API key exists:', !!geminiApiKey, 'Products:', products.length);
       return getFallbackRecommendations(request, products);
     }
   } catch (error) {
