@@ -456,11 +456,3 @@
   height: 100%;
   min-height: 0;
 }
-
-/* Ensure Radix UI tabs fill available space */
-.pf-browsing-history [data-radix-collection-item] {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-}

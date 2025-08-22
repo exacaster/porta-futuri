@@ -118,7 +118,7 @@ export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
           </Tabs.Trigger>
         </Tabs.List>
         
-        <Tabs.Content value="history" className="flex-1 overflow-hidden flex flex-col p-4" style={{ minHeight: 0 }}>
+        <Tabs.Content value="history" className="data-[state=active]:flex flex-1 overflow-hidden flex-col p-4" style={{ minHeight: 0 }}>
           <div className="mb-3 flex justify-between items-center">
             <h3 className="text-sm font-semibold text-gray-900">Your Recent Activity</h3>
             {events.length > 0 && (
@@ -177,7 +177,7 @@ export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
           </div>
         </Tabs.Content>
         
-        <Tabs.Content value="intent" className="flex-1 overflow-hidden flex flex-col p-4" style={{ minHeight: 0 }}>
+        <Tabs.Content value="intent" className="data-[state=active]:flex flex-1 overflow-hidden flex-col p-4" style={{ minHeight: 0 }}>
           {detectedIntent ? (
             <div className="flex-1 overflow-y-auto space-y-4">
               <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 shadow-sm">
