@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ChatInterface } from './components/ChatInterface';
-import { WidgetTrigger } from './components/WidgetTrigger';
-import { CustomerProfile } from './components/CustomerProfile';
-import { CustomerIdModal } from './components/CustomerIdModal';
-import { useWidgetConfig } from './hooks/useWidgetConfig';
-import { useLanguage } from './hooks/useLanguage';
-import { csvProcessor } from './services/csvParser';
-import { Product, CustomerProfile as CustomerProfileType, ContextEvent } from '@shared/types';
-import './styles/widget.css';
+import { useState, useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ChatInterface } from "./components/ChatInterface";
+import { WidgetTrigger } from "./components/WidgetTrigger";
+import { CustomerProfile } from "./components/CustomerProfile";
+import { CustomerIdModal } from "./components/CustomerIdModal";
+import { useWidgetConfig } from "./hooks/useWidgetConfig";
+import { useLanguage } from "./hooks/useLanguage";
+import { csvProcessor } from "./services/csvParser";
+import {
+  Product,
+  CustomerProfile as CustomerProfileType,
+  ContextEvent,
+} from "@shared/types";
+import "./styles/widget.css";
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -23,7 +27,7 @@ const queryClient = new QueryClient({
 interface WidgetConfig {
   apiKey: string;
   apiUrl?: string;
-  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   theme?: {
     primaryColor?: string;
     secondaryColor?: string;
@@ -33,7 +37,7 @@ interface WidgetConfig {
     productCatalogUrl?: string;
     customerProfileUrl?: string;
     contextUrl?: string;
-    products?: Product[];  // Allow direct product data
+    products?: Product[]; // Allow direct product data
   };
 }
 
@@ -45,7 +49,8 @@ function AppContent({ config }: AppProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
-  const [customerProfile, setCustomerProfile] = useState<CustomerProfileType | null>(null);
+  const [customerProfile, setCustomerProfile] =
+    useState<CustomerProfileType | null>(null);
   const [contextEvents, setContextEvents] = useState<ContextEvent[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
@@ -58,21 +63,29 @@ function AppContent({ config }: AppProps) {
   // Get customer ID from multiple sources
   const getCustomerId = (): string | null => {
     // 1. Check JavaScript variable (highest priority)
-    if (window.PortaFuturi?.customerId) {return window.PortaFuturi.customerId;}
-    
+    if (window.PortaFuturi?.customerId) {
+      return window.PortaFuturi.customerId;
+    }
+
     // 2. Check URL parameter
     const urlParams = new URLSearchParams(window.location.search);
-    const urlCustomerId = urlParams.get('customer_id');
-    if (urlCustomerId) {return urlCustomerId;}
-    
+    const urlCustomerId = urlParams.get("customer_id");
+    if (urlCustomerId) {
+      return urlCustomerId;
+    }
+
     // 3. Check cookie
-    const cookieValue = getCookie('porta_futuri_customer_id');
-    if (cookieValue) {return cookieValue;}
-    
+    const cookieValue = getCookie("porta_futuri_customer_id");
+    if (cookieValue) {
+      return cookieValue;
+    }
+
     // 4. Check sessionStorage (for persistence)
-    const sessionValue = sessionStorage.getItem('porta_futuri_customer_id');
-    if (sessionValue) {return sessionValue;}
-    
+    const sessionValue = sessionStorage.getItem("porta_futuri_customer_id");
+    if (sessionValue) {
+      return sessionValue;
+    }
+
     // 5. Return null to trigger manual entry UI
     return null;
   };
@@ -80,11 +93,15 @@ function AppContent({ config }: AppProps) {
   // Helper function to get cookie value
   const getCookie = (name: string): string | null => {
     const nameEQ = name + "=";
-    const ca = document.cookie.split(';');
+    const ca = document.cookie.split(";");
     for (let i = 0; i < ca.length; i++) {
       let c = ca[i];
-      while (c.charAt(0) === ' ') {c = c.substring(1, c.length);}
-      if (c.indexOf(nameEQ) === 0) {return c.substring(nameEQ.length, c.length);}
+      while (c.charAt(0) === " ") {
+        c = c.substring(1, c.length);
+      }
+      if (c.indexOf(nameEQ) === 0) {
+        return c.substring(nameEQ.length, c.length);
+      }
     }
     return null;
   };
@@ -104,35 +121,40 @@ function AppContent({ config }: AppProps) {
   const fetchCDPData = async (customerId: string) => {
     try {
       // Get Supabase URL and anon key from config or environment
-      const supabaseUrl = config.apiUrl?.split('/functions')[0] || import.meta.env.VITE_SUPABASE_URL;
+      const supabaseUrl =
+        config.apiUrl?.split("/functions")[0] ||
+        import.meta.env.VITE_SUPABASE_URL;
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
+
       const response = await fetch(`${supabaseUrl}/functions/v1/cdp-proxy`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': config.apiKey,
-          'Authorization': `Bearer ${supabaseAnonKey}`
+          "Content-Type": "application/json",
+          "X-API-Key": config.apiKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
         },
         body: JSON.stringify({
-          action: 'fetch',
-          customer_id: customerId
-        })
+          action: "fetch",
+          customer_id: customerId,
+        }),
       });
 
       if (response.ok) {
         const data = await response.json();
         if (data.cdp_available) {
           // Enhance customer profile with CDP data
-          setCustomerProfile(prev => ({
-            ...prev,
-            customer_id: customerId,
-            cdp_data: data
-          } as CustomerProfileType));
+          setCustomerProfile(
+            (prev) =>
+              ({
+                ...prev,
+                customer_id: customerId,
+                cdp_data: data,
+              }) as CustomerProfileType,
+          );
         }
       }
     } catch (error) {
-      console.warn('Failed to fetch CDP data:', error);
+      console.warn("Failed to fetch CDP data:", error);
       // Fallback to CSV data
     }
   };
@@ -140,7 +162,7 @@ function AppContent({ config }: AppProps) {
   // Handle manual customer ID submission
   const handleCustomerIdSubmit = (id: string) => {
     setCustomerId(id);
-    sessionStorage.setItem('porta_futuri_customer_id', id);
+    sessionStorage.setItem("porta_futuri_customer_id", id);
     setShowCustomerIdModal(false);
     fetchCDPData(id);
   };
@@ -164,20 +186,20 @@ function AppContent({ config }: AppProps) {
       // Check if products are directly provided
       if (config.data?.products && config.data.products.length > 0) {
         setProducts(config.data.products);
-      } 
+      }
       // Load product catalog from URL
       else if (config.data?.productCatalogUrl) {
         promises.push(
           fetch(config.data.productCatalogUrl)
-            .then(res => res.blob())
-            .then(blob => new File([blob], 'products.csv'))
-            .then(file => csvProcessor.processProductCSV(file))
-            .then(result => {
+            .then((res) => res.blob())
+            .then((blob) => new File([blob], "products.csv"))
+            .then((file) => csvProcessor.processProductCSV(file))
+            .then((result) => {
               if (result.errors.length > 0) {
-                console.warn('Product CSV errors:', result.errors);
+                console.warn("Product CSV errors:", result.errors);
               }
               setProducts(result.data);
-            })
+            }),
         );
       }
 
@@ -185,15 +207,15 @@ function AppContent({ config }: AppProps) {
       if (config.data?.customerProfileUrl) {
         promises.push(
           fetch(config.data.customerProfileUrl)
-            .then(res => res.blob())
-            .then(blob => new File([blob], 'customer.csv'))
-            .then(file => csvProcessor.processCustomerCSV(file))
-            .then(result => {
+            .then((res) => res.blob())
+            .then((blob) => new File([blob], "customer.csv"))
+            .then((file) => csvProcessor.processCustomerCSV(file))
+            .then((result) => {
               if (result.errors.length > 0) {
-                console.warn('Customer CSV errors:', result.errors);
+                console.warn("Customer CSV errors:", result.errors);
               }
               setCustomerProfile(result.data[0] || null);
-            })
+            }),
         );
       }
 
@@ -201,22 +223,22 @@ function AppContent({ config }: AppProps) {
       if (config.data?.contextUrl) {
         promises.push(
           fetch(config.data.contextUrl)
-            .then(res => res.blob())
-            .then(blob => new File([blob], 'context.csv'))
-            .then(file => csvProcessor.processContextCSV(file))
-            .then(result => {
+            .then((res) => res.blob())
+            .then((blob) => new File([blob], "context.csv"))
+            .then((file) => csvProcessor.processContextCSV(file))
+            .then((result) => {
               if (result.errors.length > 0) {
-                console.warn('Context CSV errors:', result.errors);
+                console.warn("Context CSV errors:", result.errors);
               }
               setContextEvents(result.data);
-            })
+            }),
         );
       }
 
       await Promise.all(promises);
     } catch (error) {
-      console.error('Error loading data:', error);
-      setDataError('Failed to load data. Please check your CSV files.');
+      console.error("Error loading data:", error);
+      setDataError("Failed to load data. Please check your CSV files.");
     } finally {
       setDataLoading(false);
     }
@@ -234,7 +256,7 @@ function AppContent({ config }: AppProps) {
       if (files.products) {
         const result = await csvProcessor.processProductCSV(files.products);
         if (result.errors.length > 0) {
-          console.warn('Product CSV errors:', result.errors);
+          console.warn("Product CSV errors:", result.errors);
         }
         setProducts(result.data);
       }
@@ -242,7 +264,7 @@ function AppContent({ config }: AppProps) {
       if (files.customer) {
         const result = await csvProcessor.processCustomerCSV(files.customer);
         if (result.errors.length > 0) {
-          console.warn('Customer CSV errors:', result.errors);
+          console.warn("Customer CSV errors:", result.errors);
         }
         setCustomerProfile(result.data[0] || null);
       }
@@ -250,76 +272,92 @@ function AppContent({ config }: AppProps) {
       if (files.context) {
         const result = await csvProcessor.processContextCSV(files.context);
         if (result.errors.length > 0) {
-          console.warn('Context CSV errors:', result.errors);
+          console.warn("Context CSV errors:", result.errors);
         }
         setContextEvents(result.data);
       }
     } catch (error) {
-      console.error('Error processing files:', error);
-      setDataError('Failed to process uploaded files.');
+      console.error("Error processing files:", error);
+      setDataError("Failed to process uploaded files.");
     } finally {
       setDataLoading(false);
     }
   };
 
-  const position = config.position || widgetConfig?.position || 'bottom-right';
+  const position = config.position || widgetConfig?.position || "bottom-right";
   const theme = { ...widgetConfig?.theme, ...config.theme };
 
   // Apply theme CSS variables
   useEffect(() => {
     if (theme.primaryColor) {
-      document.documentElement.style.setProperty('--pf-primary', theme.primaryColor);
+      document.documentElement.style.setProperty(
+        "--pf-primary",
+        theme.primaryColor,
+      );
     }
     if (theme.secondaryColor) {
-      document.documentElement.style.setProperty('--pf-secondary', theme.secondaryColor);
+      document.documentElement.style.setProperty(
+        "--pf-secondary",
+        theme.secondaryColor,
+      );
     }
     if (theme.fontFamily) {
-      document.documentElement.style.setProperty('--pf-font-family', theme.fontFamily);
+      document.documentElement.style.setProperty(
+        "--pf-font-family",
+        theme.fontFamily,
+      );
     }
   }, [theme]);
 
   return (
     <div className={`pf-widget-container pf-${position}`}>
-      <WidgetTrigger 
-        onClick={() => setIsOpen(!isOpen)} 
+      <WidgetTrigger
+        onClick={() => setIsOpen(!isOpen)}
         isOpen={isOpen}
         position={position}
       />
-      
+
       {isOpen && (
         <div className="pf-widget-panel">
           <div className="pf-widget-header">
-            <h3 className="pf-widget-title">{t('chat.title')}</h3>
+            <h3 className="pf-widget-title">{t("chat.title")}</h3>
             <div className="pf-widget-actions">
               <button
                 onClick={handleProfileClick}
                 className="pf-btn-icon pf-profile-button"
-                title={t('profile.viewProfile')}
+                title={t("profile.viewProfile")}
                 style={{
-                  position: 'relative',
-                  background: customerId ? 'linear-gradient(135deg, #10a37f 0%, #0ea570 100%)' : 'transparent',
-                  color: customerId ? 'white' : 'inherit',
-                  border: customerId ? 'none' : '1px solid hsl(var(--pf-border))'
+                  position: "relative",
+                  background: customerId
+                    ? "linear-gradient(135deg, #10a37f 0%, #0ea570 100%)"
+                    : "transparent",
+                  color: customerId ? "white" : "inherit",
+                  border: customerId
+                    ? "none"
+                    : "1px solid hsl(var(--pf-border))",
                 }}
               >
                 👤
                 {customerId && (
-                  <span className="pf-profile-indicator" style={{
-                    position: 'absolute',
-                    top: '-2px',
-                    right: '-2px',
-                    width: '8px',
-                    height: '8px',
-                    background: '#10a37f',
-                    borderRadius: '50%',
-                    border: '2px solid white'
-                  }} />
+                  <span
+                    className="pf-profile-indicator"
+                    style={{
+                      position: "absolute",
+                      top: "-2px",
+                      right: "-2px",
+                      width: "8px",
+                      height: "8px",
+                      background: "#10a37f",
+                      borderRadius: "50%",
+                      border: "2px solid white",
+                    }}
+                  />
                 )}
               </button>
               <button
                 onClick={() => setIsOpen(false)}
                 className="pf-btn-icon"
-                title={t('common.close')}
+                title={t("common.close")}
               >
                 ✕
               </button>
@@ -329,13 +367,13 @@ function AppContent({ config }: AppProps) {
           {dataLoading ? (
             <div className="pf-widget-loading">
               <div className="pf-spinner"></div>
-              <p>{t('chat.loadingData')}</p>
+              <p>{t("chat.loadingData")}</p>
             </div>
           ) : dataError ? (
             <div className="pf-widget-error">
               <p>{dataError}</p>
               <button onClick={loadData} className="pf-btn-primary">
-                {t('chat.retryButton')}
+                {t("chat.retryButton")}
               </button>
             </div>
           ) : showProfile ? (

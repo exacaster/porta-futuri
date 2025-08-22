@@ -66,8 +66,22 @@
 - [ ] Finish the widget report examples:
 
     - [ ] Fix UI of chat
+        - [+] Do not require to enter user id on the load instead ask it only when pressed on the prifile icon
+        - [+] Make a much more beautiful UI for the customer profile in the chat, aim for the design which would be inspired by an openai.com
+        - [+] By default speak in the language which is set for the page
+        - [] Fix CVM Platform integration bugs
+            - [+] Fix API integration
+            - [] Fix showed profile fields
+            - [] Make sure it's beautiful
+            - [] Cleanup the widget code
+    
+    - [] Fix chat recommendations
+        - [] Fix recommendations delivery bugs
+        - [] Make sure that the products and their prices are comming from the catalogue
+        - [] Make sure that the chat asks relevant followup questions
+        - [] Make sure that the prompts are written properly
 
-    - [ ] Real-time user context
+    - [ ] Add real-time user context to chat
         - [ ] Prepare PRP
         - [ ] Padaryti loginimą userio veiksmų realiu laiku
         - [ ] Praplėsti widget, kad useris realiu laiku matytų savo kontekstą, t.y. kokius pageus browsino

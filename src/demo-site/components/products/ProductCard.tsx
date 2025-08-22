@@ -1,10 +1,10 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Star, ShoppingCart, Eye, Heart } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { useCart } from '@contexts/CartContext';
-import { ProductWithId } from '@services/productService';
-import { useFormatters } from '@utils/formatters';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Star, ShoppingCart, Eye, Heart } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useCart } from "@contexts/CartContext";
+import { ProductWithId } from "@services/productService";
+import { useFormatters } from "@utils/formatters";
 
 interface ProductCardProps {
   product: ProductWithId;
@@ -20,21 +20,28 @@ export function ProductCard({ product }: ProductCardProps) {
     addToCart(product);
   };
 
-
   const getStockBadge = () => {
     switch (product.stock_status) {
-      case 'in_stock':
-        return <span className="badge badge-success">{t('product.inStock')}</span>;
-      case 'limited':
-        return <span className="badge badge-warning">{t('product.limitedStock')}</span>;
-      case 'out_of_stock':
-        return <span className="badge badge-error">{t('product.outOfStock')}</span>;
+      case "in_stock":
+        return (
+          <span className="badge badge-success">{t("product.inStock")}</span>
+        );
+      case "limited":
+        return (
+          <span className="badge badge-warning">
+            {t("product.limitedStock")}
+          </span>
+        );
+      case "out_of_stock":
+        return (
+          <span className="badge badge-error">{t("product.outOfStock")}</span>
+        );
       default:
         return null;
     }
   };
 
-  const isOutOfStock = product.stock_status === 'out_of_stock';
+  const isOutOfStock = product.stock_status === "out_of_stock";
 
   return (
     <Link to={`/product/${product.id}`} className="group">
@@ -59,14 +66,14 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="absolute top-4 right-4 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <button
                 className="p-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
-                aria-label={t('product.quickView')}
+                aria-label={t("product.quickView")}
                 onClick={(e) => e.preventDefault()}
               >
                 <Eye className="w-4 h-4 text-gray-700" />
               </button>
               <button
                 className="p-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
-                aria-label={t('product.addToWishlist')}
+                aria-label={t("product.addToWishlist")}
                 onClick={(e) => e.preventDefault()}
               >
                 <Heart className="w-4 h-4 text-gray-700" />
@@ -77,9 +84,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Badges */}
           <div className="absolute top-4 left-4 space-y-2">
             {product.subcategory && (
-              <span className="badge badge-primary">
-                {product.subcategory}
-              </span>
+              <span className="badge badge-primary">{product.subcategory}</span>
             )}
             {product.brand && (
               <span className="badge bg-gray-800 text-white">
@@ -117,8 +122,8 @@ export function ProductCard({ product }: ProductCardProps) {
                     key={i}
                     className={`w-4 h-4 ${
                       i < Math.floor(product.ratings || 0)
-                        ? 'text-yellow-400 fill-current'
-                        : 'text-gray-300'
+                        ? "text-yellow-400 fill-current"
+                        : "text-gray-300"
                     }`}
                   />
                 ))}
@@ -164,15 +169,17 @@ export function ProductCard({ product }: ProductCardProps) {
                 flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
                 ${
                   isOutOfStock
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-[#6d02a3] hover:bg-[#4e0174] text-white hover:shadow-md'
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-[#6d02a3] hover:bg-[#4e0174] text-white hover:shadow-md"
                 }
               `}
-              aria-label={isOutOfStock ? t('product.outOfStock') : t('product.addToCart')}
+              aria-label={
+                isOutOfStock ? t("product.outOfStock") : t("product.addToCart")
+              }
             >
               <ShoppingCart className="w-4 h-4" />
               <span className="hidden sm:inline">
-                {isOutOfStock ? t('product.outOfStock') : t('product.add')}
+                {isOutOfStock ? t("product.outOfStock") : t("product.add")}
               </span>
             </button>
           </div>

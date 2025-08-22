@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Edit2, Trash2, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Edit2,
+  Trash2,
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 interface ProductTableProps {
   supabase: any;
@@ -9,83 +16,96 @@ interface ProductTableProps {
   onProductAction: (action: string, productId: string) => void;
 }
 
-export const ProductTable: React.FC<ProductTableProps> = ({ 
-  supabase, 
-  canEdit, 
-  canDelete, 
-  onProductAction 
+export const ProductTable: React.FC<ProductTableProps> = ({
+  supabase,
+  canEdit,
+  canDelete,
+  onProductAction,
 }) => {
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const productsPerPage = 25;
 
   // Fetch products
-  const { data: productsData, isLoading, error } = useQuery({
-    queryKey: ['products', currentPage, searchTerm, categoryFilter],
+  const {
+    data: productsData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["products", currentPage, searchTerm, categoryFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('products')
-        .select('*', { count: 'exact' });
+      let query = supabase.from("products").select("*", { count: "exact" });
 
       // Add ordering only if the field exists
-      query = query.order('id', { ascending: false });
-      
+      query = query.order("id", { ascending: false });
+
       // Add pagination
-      query = query.range((currentPage - 1) * productsPerPage, currentPage * productsPerPage - 1);
+      query = query.range(
+        (currentPage - 1) * productsPerPage,
+        currentPage * productsPerPage - 1,
+      );
 
       if (searchTerm) {
-        query = query.or(`name.ilike.%${searchTerm}%,product_id.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+        query = query.or(
+          `name.ilike.%${searchTerm}%,product_id.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`,
+        );
       }
 
-      if (categoryFilter && categoryFilter !== 'all') {
-        query = query.eq('category', categoryFilter);
+      if (categoryFilter && categoryFilter !== "all") {
+        query = query.eq("category", categoryFilter);
       }
 
       const { data, error, count } = await query;
-      
+
       if (error) {
         throw error;
       }
-      
+
       return { products: data || [], total: count || 0 };
     },
-    enabled: !!supabase
+    enabled: !!supabase,
   });
 
   // Fetch categories for filter
   const { data: categories } = useQuery({
-    queryKey: ['categories'],
+    queryKey: ["categories"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('products')
-        .select('category')
-        .order('category');
-      
-      if (error) {throw error;}
-      const uniqueCategories = [...new Set(data?.map((p: any) => p.category))].filter(Boolean);
+        .from("products")
+        .select("category")
+        .order("category");
+
+      if (error) {
+        throw error;
+      }
+      const uniqueCategories = [
+        ...new Set(data?.map((p: any) => p.category)),
+      ].filter(Boolean);
       return uniqueCategories;
     },
-    enabled: !!supabase
+    enabled: !!supabase,
   });
 
   // Delete product mutation
   const deleteProductMutation = useMutation({
     mutationFn: async (productId: string) => {
       const { error } = await supabase
-        .from('products')
+        .from("products")
         .delete()
-        .eq('id', productId);
-      
-      if (error) {throw error;}
+        .eq("id", productId);
+
+      if (error) {
+        throw error;
+      }
       return productId;
     },
     onSuccess: (productId) => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      onProductAction('delete', productId);
-    }
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      onProductAction("delete", productId);
+    },
   });
 
   // Update product mutation
@@ -93,23 +113,25 @@ export const ProductTable: React.FC<ProductTableProps> = ({
     mutationFn: async (product: any) => {
       const { id, ...updates } = product;
       const { data, error } = await supabase
-        .from('products')
+        .from("products")
         .update({
           ...updates,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', id)
+        .eq("id", id)
         .select()
         .single();
-      
-      if (error) {throw error;}
+
+      if (error) {
+        throw error;
+      }
       return data;
     },
     onSuccess: (product) => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      onProductAction('update', product.id);
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      onProductAction("update", product.id);
       setEditingProduct(null);
-    }
+    },
   });
 
   const totalPages = Math.ceil((productsData?.total || 0) / productsPerPage);
@@ -131,7 +153,9 @@ export const ProductTable: React.FC<ProductTableProps> = ({
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Error loading products: {(error as Error).message}</p>
+        <p className="text-red-800">
+          Error loading products: {(error as Error).message}
+        </p>
       </div>
     );
   }
@@ -155,7 +179,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
             />
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Filter className="text-gray-400 w-5 h-5" />
           <select
@@ -168,7 +192,9 @@ export const ProductTable: React.FC<ProductTableProps> = ({
           >
             <option value="all">All Categories</option>
             {categories?.map((category: any) => (
-              <option key={category} value={category}>{category}</option>
+              <option key={category} value={category}>
+                {category}
+              </option>
             ))}
           </select>
         </div>
@@ -215,11 +241,13 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                   ${product.price}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    product.stock_status === 'in_stock' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      product.stock_status === "in_stock"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
                     {product.stock_status}
                   </span>
                 </td>
@@ -257,20 +285,20 @@ export const ProductTable: React.FC<ProductTableProps> = ({
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-700">
-            Showing {((currentPage - 1) * productsPerPage) + 1} to{' '}
-            {Math.min(currentPage * productsPerPage, productsData?.total || 0)} of{' '}
-            {productsData?.total || 0} products
+            Showing {(currentPage - 1) * productsPerPage + 1} to{" "}
+            {Math.min(currentPage * productsPerPage, productsData?.total || 0)}{" "}
+            of {productsData?.total || 0} products
           </div>
-          
+
           <div className="flex space-x-2">
             <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
               className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            
+
             {[...Array(Math.min(5, totalPages))].map((_, i) => {
               const pageNum = i + 1;
               return (
@@ -278,18 +306,18 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                   key={pageNum}
                   onClick={() => setCurrentPage(pageNum)}
                   className={`px-3 py-1 border rounded-md ${
-                    currentPage === pageNum 
-                      ? 'bg-primary text-white border-primary' 
-                      : 'border-gray-300 hover:bg-gray-50'
+                    currentPage === pageNum
+                      ? "bg-primary text-white border-primary"
+                      : "border-gray-300 hover:bg-gray-50"
                   }`}
                 >
                   {pageNum}
                 </button>
               );
             })}
-            
+
             <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
               className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
@@ -312,7 +340,12 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                 <input
                   type="text"
                   value={editingProduct.name}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      name: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
@@ -324,7 +357,12 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                   type="number"
                   step="0.01"
                   value={editingProduct.price}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, price: parseFloat(e.target.value) })}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      price: parseFloat(e.target.value),
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
@@ -334,7 +372,12 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                 </label>
                 <select
                   value={editingProduct.stock_status}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, stock_status: e.target.value })}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      stock_status: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                 >
                   <option value="in_stock">In Stock</option>

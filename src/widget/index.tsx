@@ -1,6 +1,6 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { App } from './App';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { App } from "./App";
 
 // Widget initialization interface
 interface PortaFuturiWidget {
@@ -35,69 +35,71 @@ const startTime = Date.now();
 
 // Initialize widget
 function init(config: any) {
-  console.log('[Porta Futuri] Init called with config:', config);
-  
+  console.log("[Porta Futuri] Init called with config:", config);
+
   // Validate config
   if (!config.apiKey) {
-    console.error('[Porta Futuri] API key is required');
+    console.error("[Porta Futuri] API key is required");
     return;
   }
-  
-  console.log('[Porta Futuri] Starting widget initialization...');
+
+  console.log("[Porta Futuri] Starting widget initialization...");
 
   // Create or get container
   if (config.containerId) {
     widgetContainer = document.getElementById(config.containerId);
     if (!widgetContainer) {
-      console.error(`[Porta Futuri] Container with ID "${config.containerId}" not found`);
+      console.error(
+        `[Porta Futuri] Container with ID "${config.containerId}" not found`,
+      );
       return;
     }
   } else {
     // Create container at body level
-    widgetContainer = document.createElement('div');
-    widgetContainer.id = 'porta-futuri-widget';
-    widgetContainer.style.position = 'fixed';
-    widgetContainer.style.zIndex = '9999';
+    widgetContainer = document.createElement("div");
+    widgetContainer.id = "porta-futuri-widget";
+    widgetContainer.style.position = "fixed";
+    widgetContainer.style.zIndex = "9999";
     // Remove pointer-events: none to allow interaction
     document.body.appendChild(widgetContainer);
   }
 
   // Set container styles for proper positioning
-  const position = config.position || 'bottom-right';
-  
+  const position = config.position || "bottom-right";
+
   // Special handling for relative positioning (used in preview)
-  if (position === 'relative') {
-    widgetContainer.style.position = 'relative';
-    widgetContainer.style.width = '100%';
-    widgetContainer.style.height = '100%';
-    widgetContainer.style.pointerEvents = 'auto';
+  if (position === "relative") {
+    widgetContainer.style.position = "relative";
+    widgetContainer.style.width = "100%";
+    widgetContainer.style.height = "100%";
+    widgetContainer.style.pointerEvents = "auto";
   } else {
     // Only set position styles if not using a provided container
     if (!config.containerId) {
       switch (position) {
-        case 'bottom-right':
-          widgetContainer.style.bottom = '20px';
-          widgetContainer.style.right = '20px';
-          widgetContainer.style.top = 'auto';
-          widgetContainer.style.left = 'auto';
+        case "bottom-right":
+          widgetContainer.style.bottom = "20px";
+          widgetContainer.style.right = "20px";
+          widgetContainer.style.top = "auto";
+          widgetContainer.style.left = "auto";
           break;
-        case 'bottom-left':
-          widgetContainer.style.bottom = '20px';
-          widgetContainer.style.left = '20px';
-          widgetContainer.style.top = 'auto';
-          widgetContainer.style.right = 'auto';
+        case "bottom-left":
+          widgetContainer.style.bottom = "20px";
+          widgetContainer.style.left = "20px";
+          widgetContainer.style.top = "auto";
+          widgetContainer.style.right = "auto";
           break;
-        case 'top-right':
-          widgetContainer.style.top = '20px';
-          widgetContainer.style.right = '20px';
-          widgetContainer.style.bottom = 'auto';
-          widgetContainer.style.left = 'auto';
+        case "top-right":
+          widgetContainer.style.top = "20px";
+          widgetContainer.style.right = "20px";
+          widgetContainer.style.bottom = "auto";
+          widgetContainer.style.left = "auto";
           break;
-        case 'top-left':
-          widgetContainer.style.top = '20px';
-          widgetContainer.style.left = '20px';
-          widgetContainer.style.bottom = 'auto';
-          widgetContainer.style.right = 'auto';
+        case "top-left":
+          widgetContainer.style.top = "20px";
+          widgetContainer.style.left = "20px";
+          widgetContainer.style.bottom = "auto";
+          widgetContainer.style.right = "auto";
           break;
       }
     }
@@ -108,21 +110,20 @@ function init(config: any) {
   widgetRoot.render(
     <React.StrictMode>
       <App config={config} />
-    </React.StrictMode>
+    </React.StrictMode>,
   );
 
   // Track load time
   if (window.PortaFuturi && window.PortaFuturi.metrics) {
     window.PortaFuturi.metrics.loadTime = Date.now() - startTime;
-    
+
     // Track widget loaded event
     window.PortaFuturi.trackEvent({
-      event_type: 'widget_loaded',
+      event_type: "widget_loaded",
       timestamp: new Date().toISOString(),
-      load_time: window.PortaFuturi.metrics.loadTime
+      load_time: window.PortaFuturi.metrics.loadTime,
     });
   }
-
 }
 
 // Destroy widget
@@ -132,27 +133,27 @@ function destroy() {
       widgetRoot.unmount();
       widgetRoot = null;
     }
-    
+
     if (widgetContainer) {
       // Only remove if it's our created container
-      if (widgetContainer.id === 'porta-futuri-widget') {
+      if (widgetContainer.id === "porta-futuri-widget") {
         widgetContainer.remove();
       } else {
         // Clear the contents if it's a provided container
-        widgetContainer.innerHTML = '';
+        widgetContainer.innerHTML = "";
       }
     }
-    
+
     widgetContainer = null;
   } catch (error) {
-    console.error('[Porta Futuri] Error destroying widget:', error);
+    console.error("[Porta Futuri] Error destroying widget:", error);
   }
 }
 
 // Update widget configuration
 function update(config: any) {
   if (!widgetRoot || !widgetContainer) {
-    console.error('[Porta Futuri] Widget not initialized');
+    console.error("[Porta Futuri] Widget not initialized");
     return;
   }
 
@@ -160,9 +161,8 @@ function update(config: any) {
   widgetRoot.render(
     <React.StrictMode>
       <App config={config} />
-    </React.StrictMode>
+    </React.StrictMode>,
   );
-  
 }
 
 // Get widget metrics
@@ -173,29 +173,31 @@ function getMetrics() {
 // Track custom events
 function trackEvent(event: any) {
   // Add to metrics
-  if (event.event_type === 'recommendation_clicked') {
-    const totalClicks = window.PortaFuturi.metrics.ctr * window.PortaFuturi.metrics.responseTime.length;
-    window.PortaFuturi.metrics.ctr = (totalClicks + 1) / (window.PortaFuturi.metrics.responseTime.length + 1);
+  if (event.event_type === "recommendation_clicked") {
+    const totalClicks =
+      window.PortaFuturi.metrics.ctr *
+      window.PortaFuturi.metrics.responseTime.length;
+    window.PortaFuturi.metrics.ctr =
+      (totalClicks + 1) / (window.PortaFuturi.metrics.responseTime.length + 1);
   }
-  
+
   if (event.response_time) {
     window.PortaFuturi.metrics.responseTime.push(event.response_time);
   }
-  
+
   // Send to analytics if configured
-  if (typeof window !== 'undefined' && (window as any).gtag) {
-    (window as any).gtag('event', event.event_type, {
-      event_category: 'Porta Futuri Widget',
+  if (typeof window !== "undefined" && (window as any).gtag) {
+    (window as any).gtag("event", event.event_type, {
+      event_category: "Porta Futuri Widget",
       event_label: event.label,
-      value: event.value
+      value: event.value,
     });
   }
-  
 }
 
 // Initialize global widget object - preserve any existing config
 const existingConfig = window.PortaFuturi || {};
-console.log('[Porta Futuri] Existing config:', existingConfig);
+console.log("[Porta Futuri] Existing config:", existingConfig);
 
 window.PortaFuturi = {
   ...existingConfig, // Preserve any existing properties (like apiKey, customerId, config)
@@ -209,34 +211,37 @@ window.PortaFuturi = {
     responseTime: [],
     ctr: 0,
     sessionDuration: 0,
-    errorRate: 0
-  }
+    errorRate: 0,
+  },
 };
 
-console.log('[Porta Futuri] Widget object initialized:', window.PortaFuturi);
+console.log("[Porta Futuri] Widget object initialized:", window.PortaFuturi);
 
 // Auto-initialize if config is present
-if (typeof document !== 'undefined') {
-  console.log('[Porta Futuri] Checking for auto-init config...');
+if (typeof document !== "undefined") {
+  console.log("[Porta Futuri] Checking for auto-init config...");
   // Check if there's already a config on window.PortaFuturi (from demo site setup)
   if (window.PortaFuturi && window.PortaFuturi.apiKey) {
-    console.log('[Porta Futuri] Found apiKey, preparing auto-init with:', window.PortaFuturi.apiKey);
+    console.log(
+      "[Porta Futuri] Found apiKey, preparing auto-init with:",
+      window.PortaFuturi.apiKey,
+    );
     const config = {
       apiKey: window.PortaFuturi.apiKey,
       customerId: window.PortaFuturi.customerId,
       ...window.PortaFuturi.config,
-      position: window.PortaFuturi.config?.position || 'bottom-right'
+      position: window.PortaFuturi.config?.position || "bottom-right",
     };
-    console.log('[Porta Futuri] Auto-init config:', config);
-    
+    console.log("[Porta Futuri] Auto-init config:", config);
+
     // Wait for DOM ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => init(config));
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => init(config));
     } else {
       // Small delay to ensure DOM is fully ready
       setTimeout(() => init(config), 100);
     }
-  } 
+  }
   // Fallback to script tag attributes
   else {
     const script = document.currentScript as HTMLScriptElement;
@@ -250,18 +255,18 @@ if (typeof document !== 'undefined') {
         theme: {
           primaryColor: script.dataset.themePrimary,
           secondaryColor: script.dataset.themeSecondary,
-          fontFamily: script.dataset.themeFont
+          fontFamily: script.dataset.themeFont,
         },
         data: {
           productCatalogUrl: script.dataset.productCatalogUrl,
           customerProfileUrl: script.dataset.customerProfileUrl,
-          contextUrl: script.dataset.contextUrl
-        }
+          contextUrl: script.dataset.contextUrl,
+        },
       };
-      
+
       // Wait for DOM ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => init(config));
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => init(config));
       } else {
         init(config);
       }

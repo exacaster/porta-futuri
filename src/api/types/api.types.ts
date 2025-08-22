@@ -1,4 +1,9 @@
-import { Product, Recommendation, CustomerProfile, ContextEvent } from '@shared/types';
+import {
+  Product,
+  Recommendation,
+  CustomerProfile,
+  ContextEvent,
+} from "@shared/types";
 
 // Request/Response types for API endpoints
 export interface RecommendationRequest {
@@ -30,7 +35,7 @@ export interface RecommendationResponse {
 }
 
 export interface ConversationMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   timestamp: string;
 }
@@ -59,7 +64,7 @@ export interface WidgetConfigResponse {
     border_radius?: string;
     dark_mode?: boolean;
   };
-  position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  position: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   features: {
     chat: boolean;
     profile: boolean;
@@ -70,7 +75,7 @@ export interface WidgetConfigResponse {
 
 export interface CSVUploadRequest {
   session_id: string;
-  file_type: 'products' | 'customer' | 'context';
+  file_type: "products" | "customer" | "context";
   data: string; // Base64 encoded CSV content
 }
 
@@ -90,7 +95,7 @@ export interface ErrorResponse {
 }
 
 export interface HealthCheckResponse {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   version: string;
   timestamp: string;
   services: {
@@ -103,29 +108,34 @@ export interface HealthCheckResponse {
 
 // API Headers
 export interface ApiHeaders {
-  'Authorization': string; // Bearer token
-  'X-Session-ID': string;
-  'X-Request-ID'?: string;
-  'X-Client-Version'?: string;
-  'Content-Type': 'application/json';
+  Authorization: string; // Bearer token
+  "X-Session-ID": string;
+  "X-Request-ID"?: string;
+  "X-Client-Version"?: string;
+  "Content-Type": "application/json";
 }
 
 // Rate limit response headers
 export interface RateLimitHeaders {
-  'X-RateLimit-Limit': string;
-  'X-RateLimit-Remaining': string;
-  'X-RateLimit-Reset': string;
+  "X-RateLimit-Limit": string;
+  "X-RateLimit-Remaining": string;
+  "X-RateLimit-Reset": string;
 }
 
 // WebSocket message types for real-time features
 export interface WebSocketMessage {
-  type: 'profile_update' | 'context_update' | 'recommendation' | 'ping' | 'pong';
+  type:
+    | "profile_update"
+    | "context_update"
+    | "recommendation"
+    | "ping"
+    | "pong";
   payload: any;
   timestamp: string;
 }
 
 export interface WebSocketProfileUpdate {
-  type: 'profile_update';
+  type: "profile_update";
   payload: {
     profile: CustomerProfile;
     changes: string[];
@@ -134,13 +144,13 @@ export interface WebSocketProfileUpdate {
 }
 
 export interface WebSocketContextUpdate {
-  type: 'context_update';
+  type: "context_update";
   payload: {
     event: ContextEvent;
     summary: {
       total_events: number;
       recent_categories: string[];
-      intent_signal: 'browsing' | 'comparing' | 'purchasing';
+      intent_signal: "browsing" | "comparing" | "purchasing";
     };
   };
   timestamp: string;
@@ -149,7 +159,7 @@ export interface WebSocketContextUpdate {
 // Batch operations
 export interface BatchRecommendationRequest {
   requests: RecommendationRequest[];
-  priority?: 'normal' | 'high';
+  priority?: "normal" | "high";
 }
 
 export interface BatchRecommendationResponse {
@@ -160,7 +170,12 @@ export interface BatchRecommendationResponse {
 
 // Analytics event types
 export interface AnalyticsEvent {
-  event_type: 'widget_loaded' | 'recommendation_requested' | 'recommendation_clicked' | 'profile_viewed' | 'chat_initiated';
+  event_type:
+    | "widget_loaded"
+    | "recommendation_requested"
+    | "recommendation_clicked"
+    | "profile_viewed"
+    | "chat_initiated";
   session_id: string;
   timestamp: string;
   properties?: Record<string, any>;
@@ -180,7 +195,11 @@ export interface CSVParseResult<T> {
 }
 
 export interface CSVParseError {
-  type: 'FieldMismatch' | 'InvalidValue' | 'MissingRequiredField' | 'TooManyFields';
+  type:
+    | "FieldMismatch"
+    | "InvalidValue"
+    | "MissingRequiredField"
+    | "TooManyFields";
   code: string;
   message: string;
   row: number;
@@ -196,18 +215,18 @@ export interface StaticRecommendation {
 
 // API Error codes
 export enum ApiErrorCode {
-  INVALID_API_KEY = 'INVALID_API_KEY',
-  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
-  SESSION_EXPIRED = 'SESSION_EXPIRED',
-  INVALID_CSV_FORMAT = 'INVALID_CSV_FORMAT',
-  CSV_TOO_LARGE = 'CSV_TOO_LARGE',
-  AI_SERVICE_ERROR = 'AI_SERVICE_ERROR',
-  DATABASE_ERROR = 'DATABASE_ERROR',
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  INTERNAL_ERROR = 'INTERNAL_ERROR',
+  INVALID_API_KEY = "INVALID_API_KEY",
+  RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED",
+  SESSION_EXPIRED = "SESSION_EXPIRED",
+  INVALID_CSV_FORMAT = "INVALID_CSV_FORMAT",
+  CSV_TOO_LARGE = "CSV_TOO_LARGE",
+  AI_SERVICE_ERROR = "AI_SERVICE_ERROR",
+  DATABASE_ERROR = "DATABASE_ERROR",
+  VALIDATION_ERROR = "VALIDATION_ERROR",
+  INTERNAL_ERROR = "INTERNAL_ERROR",
 }
 
 // Utility type for API responses
-export type ApiResponse<T> = 
+export type ApiResponse<T> =
   | { success: true; data: T }
   | { success: false; error: ErrorResponse };

@@ -1,10 +1,10 @@
-declare module 'react-dropzone' {
-  import { ReactNode } from 'react';
-  
+declare module "react-dropzone" {
+  import { ReactNode } from "react";
+
   export interface FileWithPath extends File {
     path?: string;
   }
-  
+
   export interface DropzoneOptions {
     onDrop?: (acceptedFiles: File[], rejectedFiles: File[]) => void;
     accept?: Record<string, string[]>;
@@ -13,7 +13,7 @@ declare module 'react-dropzone' {
     multiple?: boolean;
     disabled?: boolean;
   }
-  
+
   export interface DropzoneState {
     isDragActive: boolean;
     isDragAccept: boolean;
@@ -21,15 +21,15 @@ declare module 'react-dropzone' {
     isFileDialogActive: boolean;
     isFocused: boolean;
   }
-  
+
   export interface DropzoneRootProps {
     [key: string]: any;
   }
-  
+
   export interface DropzoneInputProps {
     [key: string]: any;
   }
-  
+
   export function useDropzone(options?: DropzoneOptions): {
     getRootProps: (props?: DropzoneRootProps) => DropzoneRootProps;
     getInputProps: (props?: DropzoneInputProps) => DropzoneInputProps;

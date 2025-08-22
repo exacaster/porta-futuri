@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 interface WidgetConfig {
   theme?: {
@@ -6,7 +6,7 @@ interface WidgetConfig {
     secondaryColor?: string;
     fontFamily?: string;
   };
-  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   features?: {
     chat: boolean;
     profile: boolean;
@@ -25,7 +25,7 @@ export function useWidgetConfig(apiKey: string) {
     // In production, this would fetch from the API
     setWidgetConfig({
       theme: {},
-      position: 'bottom-right',
+      position: "bottom-right",
       features: {
         chat: true,
         profile: true,

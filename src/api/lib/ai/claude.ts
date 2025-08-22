@@ -1,11 +1,16 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { Product, Recommendation, ConversationContext, ConversationState } from '@shared/types';
-import { promptBuilder } from './promptBuilder';
+import Anthropic from "@anthropic-ai/sdk";
+import {
+  Product,
+  Recommendation,
+  ConversationContext,
+  ConversationState,
+} from "@shared/types";
+import { promptBuilder } from "./promptBuilder";
 import {
   buildConversationalPrompt,
-  getBridgeProducts
-} from './prompts/conversational.prompts';
-import { InsightExtractor } from './insightExtractor';
+  getBridgeProducts,
+} from "./prompts/conversational.prompts";
+import { InsightExtractor } from "./insightExtractor";
 
 export class ClaudeService {
   private client: Anthropic | null = null;
@@ -36,10 +41,10 @@ export class ClaudeService {
     products: Product[],
     profile: any,
     context: any,
-    conversationHistory?: any[]
+    conversationHistory?: any[],
   ): Promise<{ recommendations: Recommendation[]; message: string }> {
     if (!this.client) {
-      throw new Error('Claude service not configured');
+      throw new Error("Claude service not configured");
     }
 
     const systemPrompt = promptBuilder.buildSystemPrompt();
@@ -48,34 +53,38 @@ export class ClaudeService {
       products,
       profile,
       context,
-      conversationHistory
+      conversationHistory,
     );
 
     return this.withRetry(async () => {
       const response = await this.client!.messages.create({
-        model: 'claude-3-sonnet-20240229',
+        model: "claude-3-sonnet-20240229",
         max_tokens: 1000,
         temperature: 0.7,
         system: systemPrompt,
         messages: [
           {
-            role: 'user',
-            content: userPrompt
-          }
-        ]
+            role: "user",
+            content: userPrompt,
+          },
+        ],
       });
 
       // Extract text from response
       const responseText = response.content
-        .filter(block => block.type === 'text')
-        .map(block => block.text)
-        .join('');
+        .filter((block) => block.type === "text")
+        .map((block) => block.text)
+        .join("");
 
       // Parse the response
-      const { recommendations, message } = promptBuilder.parseRecommendationResponse(responseText);
+      const { recommendations, message } =
+        promptBuilder.parseRecommendationResponse(responseText);
 
       // Enrich recommendations with product data
-      const enrichedRecommendations = this.enrichRecommendations(recommendations, products);
+      const enrichedRecommendations = this.enrichRecommendations(
+        recommendations,
+        products,
+      );
 
       return { recommendations: enrichedRecommendations, message };
     });
@@ -89,10 +98,10 @@ export class ClaudeService {
     products: Product[],
     profile: any,
     context: any,
-    conversationHistory?: any[]
+    conversationHistory?: any[],
   ): AsyncGenerator<string, void, unknown> {
     if (!this.client) {
-      throw new Error('Claude service not configured');
+      throw new Error("Claude service not configured");
     }
 
     const systemPrompt = promptBuilder.buildSystemPrompt();
@@ -101,25 +110,28 @@ export class ClaudeService {
       products,
       profile,
       context,
-      conversationHistory
+      conversationHistory,
     );
 
     const stream = await this.client.messages.create({
-      model: 'claude-3-sonnet-20240229',
+      model: "claude-3-sonnet-20240229",
       max_tokens: 1000,
       temperature: 0.7,
       system: systemPrompt,
       messages: [
         {
-          role: 'user',
-          content: userPrompt
-        }
+          role: "user",
+          content: userPrompt,
+        },
       ],
-      stream: true
+      stream: true,
     });
 
     for await (const chunk of stream) {
-      if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+      if (
+        chunk.type === "content_block_delta" &&
+        chunk.delta.type === "text_delta"
+      ) {
         yield chunk.delta.text;
       }
     }
@@ -130,20 +142,22 @@ export class ClaudeService {
    */
   private enrichRecommendations(
     recommendations: any[],
-    products: Product[]
+    products: Product[],
   ): Recommendation[] {
-    const productMap = new Map(products.map(p => [p.product_id, p]));
-    
+    const productMap = new Map(products.map((p) => [p.product_id, p]));
+
     return recommendations
-      .map(rec => {
+      .map((rec) => {
         const product = productMap.get(rec.product_id);
-        if (!product) {return null;}
+        if (!product) {
+          return null;
+        }
 
         return {
           ...product,
-          reasoning: rec.reasoning || 'Recommended based on your preferences',
+          reasoning: rec.reasoning || "Recommended based on your preferences",
           match_score: rec.match_score || 75,
-          position: rec.position
+          position: rec.position,
         } as Recommendation;
       })
       .filter((rec): rec is Recommendation => rec !== null);
@@ -154,21 +168,21 @@ export class ClaudeService {
    */
   private async withRetry<T>(
     fn: () => Promise<T>,
-    retries: number = this.MAX_RETRIES
+    retries: number = this.MAX_RETRIES,
   ): Promise<T> {
     let lastError: Error | null = null;
-    
+
     for (let i = 0; i < retries; i++) {
       try {
         return await fn();
       } catch (error) {
         lastError = error as Error;
-        
+
         // Don't retry on non-retryable errors
         if (this.isNonRetryableError(error)) {
           throw error;
         }
-        
+
         // Wait before retrying (exponential backoff)
         if (i < retries - 1) {
           const delay = this.RETRY_DELAY * Math.pow(2, i);
@@ -176,8 +190,8 @@ export class ClaudeService {
         }
       }
     }
-    
-    throw lastError || new Error('Max retries exceeded');
+
+    throw lastError || new Error("Max retries exceeded");
   }
 
   /**
@@ -195,7 +209,7 @@ export class ClaudeService {
    * Delay helper
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -208,88 +222,97 @@ export class ClaudeService {
     context: any,
     conversationHistory: any[],
     conversationContext: ConversationContext,
-    redirectPrompt?: string
-  ): Promise<{ 
-    response: string; 
-    recommendations?: Recommendation[]; 
+    redirectPrompt?: string,
+  ): Promise<{
+    response: string;
+    recommendations?: Recommendation[];
     nextState: ConversationState;
     bridgeProducts?: string[];
   }> {
     if (!this.client) {
-      throw new Error('Claude service not configured');
+      throw new Error("Claude service not configured");
     }
 
     // Extract insights from conversation
     const insightExtractor = new InsightExtractor();
-    const insights = insightExtractor.extractFromConversation(conversationHistory);
-    
+    const insights =
+      insightExtractor.extractFromConversation(conversationHistory);
+
     // Build conversational system prompt
     const systemPrompt = buildConversationalPrompt(
       conversationContext.currentState.toString(),
       conversationContext,
       insights,
-      conversationContext.topicStack[conversationContext.topicStack.length - 1]?.subject
+      conversationContext.topicStack[conversationContext.topicStack.length - 1]
+        ?.subject,
     );
-    
+
     // Build user prompt with conversation context
     let userPrompt = promptBuilder.buildUserPrompt(
       query,
       products,
       profile,
       context,
-      conversationHistory
+      conversationHistory,
     );
-    
+
     // Add redirect instruction if needed
     if (redirectPrompt) {
       userPrompt += `\n\nIMPORTANT: Naturally incorporate this transition into your response: "${redirectPrompt}"\n`;
     }
-    
+
     // Add conversation state guidance
     userPrompt += this.getStateGuidance(conversationContext.currentState);
-    
+
     return this.withRetry(async () => {
       const response = await this.client!.messages.create({
-        model: 'claude-3-sonnet-20240229',
+        model: "claude-3-sonnet-20240229",
         max_tokens: 1500,
         temperature: 0.8, // Slightly higher for more natural conversation
         system: systemPrompt,
         messages: [
           {
-            role: 'user',
-            content: userPrompt
-          }
-        ]
+            role: "user",
+            content: userPrompt,
+          },
+        ],
       });
 
       // Extract text from response
       const responseText = response.content
-        .filter(block => block.type === 'text')
-        .map(block => block.text)
-        .join('');
+        .filter((block) => block.type === "text")
+        .map((block) => block.text)
+        .join("");
 
       // Parse conversational response
-      const parsed = this.parseConversationalResponse(responseText, conversationContext);
-      
+      const parsed = this.parseConversationalResponse(
+        responseText,
+        conversationContext,
+      );
+
       // Get bridge products if transitioning topics
-      const bridgeProducts = conversationContext.topicStack.length > 0 ?
-        getBridgeProducts(
-          conversationContext.topicStack[conversationContext.topicStack.length - 1].subject
-        ) : [];
-      
+      const bridgeProducts =
+        conversationContext.topicStack.length > 0
+          ? getBridgeProducts(
+              conversationContext.topicStack[
+                conversationContext.topicStack.length - 1
+              ].subject,
+            )
+          : [];
+
       return {
         ...parsed,
-        bridgeProducts
+        bridgeProducts,
       };
     });
   }
-  
+
   /**
    * Parse conversational response with state awareness
    */
   private parseConversationalResponse(
     response: string,
-    context: ConversationContext
+    context: ConversationContext,
   ): {
     response: string;
     recommendations?: Recommendation[];
@@ -299,7 +322,7 @@ export class ClaudeService {
     const jsonMatch = response.match(/```json([\s\S]*?)```/);
     let recommendations: Recommendation[] | undefined;
     let cleanResponse = response;
-    
+
     if (jsonMatch) {
       try {
         const data = JSON.parse(jsonMatch[1]);
@@ -307,46 +330,61 @@ export class ClaudeService {
           recommendations = data.recommendations;
         }
         // Remove JSON from response
-        cleanResponse = response.replace(/```json[\s\S]*?```/, '').trim();
+        cleanResponse = response.replace(/```json[\s\S]*?```/, "").trim();
       } catch (e) {
         // JSON parsing failed, continue with plain response
       }
     }
-    
+
     // Determine next state based on response content
     let nextState = context.currentState;
-    
-    if (cleanResponse.toLowerCase().includes('recommendation') || recommendations) {
+
+    if (
+      cleanResponse.toLowerCase().includes("recommendation") ||
+      recommendations
+    ) {
       nextState = ConversationState.RECOMMENDATION;
-    } else if (cleanResponse.toLowerCase().includes('compare') || cleanResponse.toLowerCase().includes('difference')) {
+    } else if (
+      cleanResponse.toLowerCase().includes("compare") ||
+      cleanResponse.toLowerCase().includes("difference")
+    ) {
       nextState = ConversationState.COMPARISON;
-    } else if (cleanResponse.toLowerCase().includes('checkout') || cleanResponse.toLowerCase().includes('purchase')) {
+    } else if (
+      cleanResponse.toLowerCase().includes("checkout") ||
+      cleanResponse.toLowerCase().includes("purchase")
+    ) {
       nextState = ConversationState.CHECKOUT_ASSISTANCE;
     } else if (context.generalTurns >= 2) {
       nextState = ConversationState.PRODUCT_DISCOVERY;
     }
-    
+
     return {
       response: cleanResponse,
       recommendations,
-      nextState
+      nextState,
     };
   }
-  
+
   /**
    * Get state-specific guidance for the AI
    */
   private getStateGuidance(state: ConversationState): string {
     const guidance: Record<ConversationState, string> = {
-      [ConversationState.GREETING]: '\n\nBe welcoming and ask how you can help today.',
-      [ConversationState.GENERAL_CHAT]: '\n\nEngage naturally but look for opportunities to help with shopping.',
-      [ConversationState.PRODUCT_DISCOVERY]: '\n\nHelp explore product options based on their needs.',
-      [ConversationState.RECOMMENDATION]: '\n\nProvide specific product recommendations with clear reasoning.',
-      [ConversationState.COMPARISON]: '\n\nHelp compare products clearly and objectively.',
-      [ConversationState.CHECKOUT_ASSISTANCE]: '\n\nGuide through the purchase process helpfully.'
+      [ConversationState.GREETING]:
+        "\n\nBe welcoming and ask how you can help today.",
+      [ConversationState.GENERAL_CHAT]:
+        "\n\nEngage naturally but look for opportunities to help with shopping.",
+      [ConversationState.PRODUCT_DISCOVERY]:
+        "\n\nHelp explore product options based on their needs.",
+      [ConversationState.RECOMMENDATION]:
+        "\n\nProvide specific product recommendations with clear reasoning.",
+      [ConversationState.COMPARISON]:
+        "\n\nHelp compare products clearly and objectively.",
+      [ConversationState.CHECKOUT_ASSISTANCE]:
+        "\n\nGuide through the purchase process helpfully.",
     };
-    
-    return guidance[state] || '';
+
+    return guidance[state] || "";
   }
 
   /**
@@ -362,37 +400,45 @@ export class ClaudeService {
    */
   optimizePrompt(prompt: string, maxTokens: number = 3000): string {
     const estimated = this.estimateTokens(prompt);
-    
+
     if (estimated <= maxTokens) {
       return prompt;
     }
-    
+
     // Truncate prompt intelligently
     // Priority: Keep query, recent context, trim product list
-    const lines = prompt.split('\n');
+    const lines = prompt.split("\n");
     const priorityLines: string[] = [];
     const productLines: string[] = [];
     let inProductSection = false;
-    
+
     for (const line of lines) {
-      if (line.includes('AVAILABLE PRODUCTS:')) {
+      if (line.includes("AVAILABLE PRODUCTS:")) {
         inProductSection = true;
-      } else if (line.includes('CUSTOMER REQUEST:') || line.includes('TASK:')) {
+      } else if (line.includes("CUSTOMER REQUEST:") || line.includes("TASK:")) {
         inProductSection = false;
       }
-      
+
       if (inProductSection) {
         productLines.push(line);
       } else {
         priorityLines.push(line);
       }
     }
-    
+
     // Keep priority lines and trim product lines
-    const maxProductTokens = maxTokens - this.estimateTokens(priorityLines.join('\n'));
-    const trimmedProductLines = this.trimToTokenLimit(productLines, maxProductTokens);
-    
-    return [...priorityLines.slice(0, -1), ...trimmedProductLines, priorityLines[priorityLines.length - 1]].join('\n');
+    const maxProductTokens =
+      maxTokens - this.estimateTokens(priorityLines.join("\n"));
+    const trimmedProductLines = this.trimToTokenLimit(
+      productLines,
+      maxProductTokens,
+    );
+
+    return [
+      ...priorityLines.slice(0, -1),
+      ...trimmedProductLines,
+      priorityLines[priorityLines.length - 1],
+    ].join("\n");
   }
 
   /**
@@ -401,7 +447,7 @@ export class ClaudeService {
   private trimToTokenLimit(lines: string[], maxTokens: number): string[] {
     const result: string[] = [];
     let currentTokens = 0;
-    
+
     for (const line of lines) {
       const lineTokens = this.estimateTokens(line);
       if (currentTokens + lineTokens > maxTokens) {
@@ -410,7 +456,7 @@ export class ClaudeService {
       result.push(line);
       currentTokens += lineTokens;
     }
-    
+
     return result;
   }
 }

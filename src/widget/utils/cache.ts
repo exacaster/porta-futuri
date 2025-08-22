@@ -19,22 +19,22 @@ export class LRUCache<T> {
    */
   get(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return null;
     }
-    
+
     // Check if entry has expired
     if (this.isExpired(entry)) {
       this.cache.delete(key);
       return null;
     }
-    
+
     // Update access order (move to end) for LRU
     this.cache.delete(key);
     entry.hits++;
     this.cache.set(key, entry);
-    
+
     return entry.data;
   }
 
@@ -46,17 +46,17 @@ export class LRUCache<T> {
     if (this.cache.has(key)) {
       this.cache.delete(key);
     }
-    
+
     // Check if we need to evict items
     if (this.cache.size >= this.maxSize) {
       this.evictLRU();
     }
-    
+
     // Add new entry
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      hits: 0
+      hits: 0,
     });
   }
 
@@ -65,13 +65,15 @@ export class LRUCache<T> {
    */
   has(key: string): boolean {
     const entry = this.cache.get(key);
-    if (!entry) {return false;}
-    
+    if (!entry) {
+      return false;
+    }
+
     if (this.isExpired(entry)) {
       this.cache.delete(key);
       return false;
     }
-    
+
     return true;
   }
 
@@ -108,21 +110,21 @@ export class LRUCache<T> {
     let totalHits = 0;
     const now = Date.now();
     const entries: Array<{ key: string; hits: number; age: number }> = [];
-    
+
     this.cache.forEach((entry, key) => {
       totalHits += entry.hits;
       entries.push({
         key,
         hits: entry.hits,
-        age: now - entry.timestamp
+        age: now - entry.timestamp,
       });
     });
-    
+
     return {
       size: this.cache.size,
       maxSize: this.maxSize,
       hitRate: this.cache.size > 0 ? totalHits / this.cache.size : 0,
-      entries: entries.sort((a, b) => b.hits - a.hits)
+      entries: entries.sort((a, b) => b.hits - a.hits),
     };
   }
 
@@ -132,14 +134,14 @@ export class LRUCache<T> {
   cleanup(): number {
     let removed = 0;
     const now = Date.now();
-    
+
     this.cache.forEach((entry, key) => {
       if (now - entry.timestamp > this.ttl) {
         this.cache.delete(key);
         removed++;
       }
     });
-    
+
     return removed;
   }
 
@@ -166,8 +168,10 @@ export class LRUCache<T> {
    */
   getTTL(key: string): number | null {
     const entry = this.cache.get(key);
-    if (!entry) {return null;}
-    
+    if (!entry) {
+      return null;
+    }
+
     const remaining = this.ttl - (Date.now() - entry.timestamp);
     return remaining > 0 ? remaining : 0;
   }
@@ -177,8 +181,10 @@ export class LRUCache<T> {
    */
   refresh(key: string): boolean {
     const entry = this.cache.get(key);
-    if (!entry) {return false;}
-    
+    if (!entry) {
+      return false;
+    }
+
     entry.timestamp = Date.now();
     return true;
   }
@@ -200,13 +206,13 @@ export class RecommendationCache extends LRUCache<any> {
     category?: string;
   }): string {
     const parts = [
-      params.query || 'default',
-      params.profileHash || 'no-profile',
-      params.contextHash || 'no-context',
-      params.category || 'all'
+      params.query || "default",
+      params.profileHash || "no-profile",
+      params.contextHash || "no-context",
+      params.category || "all",
     ];
-    
-    return parts.join(':');
+
+    return parts.join(":");
   }
 
   /**
@@ -219,12 +225,12 @@ export class RecommendationCache extends LRUCache<any> {
       responseTime: number;
       model: string;
       fallback: boolean;
-    }
+    },
   ): void {
     this.set(key, {
       recommendations,
       metadata,
-      cachedAt: new Date().toISOString()
+      cachedAt: new Date().toISOString(),
     });
   }
 }

@@ -28,6 +28,41 @@ interface CDPResponse {
   [key: string]: any;
 }
 
+// Helper functions for dynamic field transformation
+function transformAllFields(rawData: CDPResponse): Record<string, any> {
+  const fields: Record<string, any> = {};
+  
+  Object.entries(rawData).forEach(([key, value]) => {
+    // Skip metadata
+    if (['userIdType', 'userId', 'dt', 'version'].includes(key)) return;
+    
+    fields[key] = {
+      value,
+      type: detectFieldType(value),
+      display_name: generateDisplayName(key)
+    };
+  });
+  
+  return fields;
+}
+
+function detectFieldType(value: any): string {
+  if (value === null || value === undefined) return 'string';
+  if (typeof value === 'boolean') return 'boolean';
+  if (typeof value === 'number') return 'number';
+  if (Array.isArray(value)) return 'array';
+  if (typeof value === 'object') return 'object';
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return 'date';
+  return 'string';
+}
+
+function generateDisplayName(key: string): string {
+  return key
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, l => l.toUpperCase())
+    .trim();
+}
+
 serve(async (req: Request) => {
   // Handle CORS
   if (req.method === 'OPTIONS') {
@@ -368,21 +403,13 @@ async function handleFetchCustomer(
       );
     }
 
-    // Transform response
+    // Transform response dynamically
     const transformedData = {
-      customer_id: customerData.userId || customerId,
       cdp_available: true,
-      current_phone: customerData.current_phone,
-      subscriptions: {
-        netflix: Boolean(customerData.has_netflix),
-        hbo: Boolean(customerData.has_hbo),
-        amazon_prime: Boolean(customerData.has_amazon_prime),
-        mobile_count: customerData.mobile_subscriptions_count_daily || 0,
-        home_count: customerData.home_subscriptions_count_daily || 0
-      },
-      mobile_revenue: customerData.mobile_subscriptions_revenue,
       last_updated: customerData.dt,
       version: customerData.version,
+      // Pass through all fields dynamically
+      fields: transformAllFields(customerData),
       response_time_ms: responseTime
     };
 

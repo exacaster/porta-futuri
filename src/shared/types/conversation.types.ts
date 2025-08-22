@@ -1,10 +1,10 @@
 export enum ConversationState {
-  GREETING = 'greeting',
-  GENERAL_CHAT = 'general_chat',
-  PRODUCT_DISCOVERY = 'product_discovery',
-  RECOMMENDATION = 'recommendation',
-  COMPARISON = 'comparison',
-  CHECKOUT_ASSISTANCE = 'checkout_assistance'
+  GREETING = "greeting",
+  GENERAL_CHAT = "general_chat",
+  PRODUCT_DISCOVERY = "product_discovery",
+  RECOMMENDATION = "recommendation",
+  COMPARISON = "comparison",
+  CHECKOUT_ASSISTANCE = "checkout_assistance",
 }
 
 export interface ConversationContext {
@@ -22,7 +22,7 @@ export interface ConversationContext {
 
 export interface Topic {
   id: string;
-  type: 'shopping' | 'general';
+  type: "shopping" | "general";
   subject: string;
   timestamp: Date;
   messages: number;
@@ -34,22 +34,22 @@ export interface ShoppingIntent {
   category?: string;
   priceRange?: [number, number];
   features?: string[];
-  urgency: 'immediate' | 'researching' | 'browsing';
+  urgency: "immediate" | "researching" | "browsing";
   confidence: number;
 }
 
 export interface CustomerInsight {
   id: string;
-  type: 'preference' | 'need' | 'concern' | 'interest';
+  type: "preference" | "need" | "concern" | "interest";
   value: string;
   confidence: number;
   timestamp: Date;
-  source: 'explicit' | 'inferred';
+  source: "explicit" | "inferred";
 }
 
 export interface MessageAnalysis {
-  intent: 'shopping' | 'general' | 'mixed';
-  sentiment: 'positive' | 'neutral' | 'negative';
+  intent: "shopping" | "general" | "mixed";
+  sentiment: "positive" | "neutral" | "negative";
   topic?: string;
   category?: string;
   entities: string[];

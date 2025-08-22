@@ -1,6 +1,6 @@
-import OpenAI from 'openai';
-import { Product, Recommendation } from '@shared/types';
-import { promptBuilder } from './promptBuilder';
+import OpenAI from "openai";
+import { Product, Recommendation } from "@shared/types";
+import { promptBuilder } from "./promptBuilder";
 
 export class OpenAIService {
   private client: OpenAI | null = null;
@@ -31,10 +31,10 @@ export class OpenAIService {
     products: Product[],
     profile: any,
     context: any,
-    conversationHistory?: any[]
+    conversationHistory?: any[],
   ): Promise<{ recommendations: Recommendation[]; message: string }> {
     if (!this.client) {
-      throw new Error('OpenAI service not configured');
+      throw new Error("OpenAI service not configured");
     }
 
     const systemPrompt = promptBuilder.buildSystemPrompt();
@@ -43,34 +43,38 @@ export class OpenAIService {
       products,
       profile,
       context,
-      conversationHistory
+      conversationHistory,
     );
 
     return this.withRetry(async () => {
       const response = await this.client!.chat.completions.create({
-        model: 'gpt-4-turbo-preview',
+        model: "gpt-4-turbo-preview",
         messages: [
           {
-            role: 'system',
-            content: systemPrompt
+            role: "system",
+            content: systemPrompt,
           },
           {
-            role: 'user',
-            content: userPrompt
-          }
+            role: "user",
+            content: userPrompt,
+          },
         ],
         temperature: 0.7,
         max_tokens: 1000,
-        response_format: { type: 'json_object' }
+        response_format: { type: "json_object" },
       });
 
-      const responseText = response.choices[0]?.message?.content || '';
-      
+      const responseText = response.choices[0]?.message?.content || "";
+
       // Parse the response
-      const { recommendations, message } = promptBuilder.parseRecommendationResponse(responseText);
+      const { recommendations, message } =
+        promptBuilder.parseRecommendationResponse(responseText);
 
       // Enrich recommendations with product data
-      const enrichedRecommendations = this.enrichRecommendations(recommendations, products);
+      const enrichedRecommendations = this.enrichRecommendations(
+        recommendations,
+        products,
+      );
 
       return { recommendations: enrichedRecommendations, message };
     });
@@ -84,10 +88,10 @@ export class OpenAIService {
     products: Product[],
     profile: any,
     context: any,
-    conversationHistory?: any[]
+    conversationHistory?: any[],
   ): AsyncGenerator<string, void, unknown> {
     if (!this.client) {
-      throw new Error('OpenAI service not configured');
+      throw new Error("OpenAI service not configured");
     }
 
     const systemPrompt = promptBuilder.buildSystemPrompt();
@@ -96,24 +100,24 @@ export class OpenAIService {
       products,
       profile,
       context,
-      conversationHistory
+      conversationHistory,
     );
 
     const stream = await this.client.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
+      model: "gpt-4-turbo-preview",
       messages: [
         {
-          role: 'system',
-          content: systemPrompt
+          role: "system",
+          content: systemPrompt,
         },
         {
-          role: 'user',
-          content: userPrompt
-        }
+          role: "user",
+          content: userPrompt,
+        },
       ],
       temperature: 0.7,
       max_tokens: 1000,
-      stream: true
+      stream: true,
     });
 
     for await (const chunk of stream) {
@@ -129,20 +133,22 @@ export class OpenAIService {
    */
   private enrichRecommendations(
     recommendations: any[],
-    products: Product[]
+    products: Product[],
   ): Recommendation[] {
-    const productMap = new Map(products.map(p => [p.product_id, p]));
-    
+    const productMap = new Map(products.map((p) => [p.product_id, p]));
+
     return recommendations
-      .map(rec => {
+      .map((rec) => {
         const product = productMap.get(rec.product_id);
-        if (!product) {return null;}
+        if (!product) {
+          return null;
+        }
 
         return {
           ...product,
-          reasoning: rec.reasoning || 'Recommended based on your preferences',
+          reasoning: rec.reasoning || "Recommended based on your preferences",
           match_score: rec.match_score || 75,
-          position: rec.position
+          position: rec.position,
         } as Recommendation;
       })
       .filter((rec): rec is Recommendation => rec !== null);
@@ -153,21 +159,21 @@ export class OpenAIService {
    */
   private async withRetry<T>(
     fn: () => Promise<T>,
-    retries: number = this.MAX_RETRIES
+    retries: number = this.MAX_RETRIES,
   ): Promise<T> {
     let lastError: Error | null = null;
-    
+
     for (let i = 0; i < retries; i++) {
       try {
         return await fn();
       } catch (error) {
         lastError = error as Error;
-        
+
         // Don't retry on non-retryable errors
         if (this.isNonRetryableError(error)) {
           throw error;
         }
-        
+
         // Wait before retrying (exponential backoff)
         if (i < retries - 1) {
           const delay = this.RETRY_DELAY * Math.pow(2, i);
@@ -175,8 +181,8 @@ export class OpenAIService {
         }
       }
     }
-    
-    throw lastError || new Error('Max retries exceeded');
+
+    throw lastError || new Error("Max retries exceeded");
   }
 
   /**
@@ -194,7 +200,7 @@ export class OpenAIService {
    * Delay helper
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**

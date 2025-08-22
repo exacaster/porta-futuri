@@ -1,25 +1,25 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Trash2, Plus, Minus, ShoppingBag, ChevronRight } from 'lucide-react';
-import { useCartWithToast } from '@contexts/CartContext';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Trash2, Plus, Minus, ShoppingBag, ChevronRight } from "lucide-react";
+import { useCartWithToast } from "@contexts/CartContext";
 
 export function CartPage() {
-  const { 
-    items, 
-    removeFromCart, 
-    updateQuantity, 
+  const {
+    items,
+    removeFromCart,
+    updateQuantity,
     clearCart,
     totalItems,
     subtotal,
     tax,
     shipping,
-    totalPrice 
+    totalPrice,
   } = useCartWithToast();
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "EUR",
     }).format(price);
   };
 
@@ -30,11 +30,16 @@ export function CartPage() {
           <div className="max-w-2xl mx-auto text-center">
             <div className="bg-white rounded-lg shadow-sm p-12">
               <ShoppingBag className="w-24 h-24 text-gray-300 mx-auto mb-6" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Cart is Empty</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Your Cart is Empty
+              </h2>
               <p className="text-gray-600 mb-8">
                 Looks like you haven't added anything to your cart yet.
               </p>
-              <Link to="/category/all" className="btn-primary inline-flex items-center gap-2">
+              <Link
+                to="/category/all"
+                className="btn-primary inline-flex items-center gap-2"
+              >
                 Start Shopping
                 <ChevronRight className="w-4 h-4" />
               </Link>
@@ -52,7 +57,7 @@ export function CartPage() {
         <div className="container py-8">
           <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
           <p className="text-gray-600 mt-2">
-            {totalItems} {totalItems === 1 ? 'item' : 'items'} in your cart
+            {totalItems} {totalItems === 1 ? "item" : "items"} in your cart
           </p>
         </div>
       </div>
@@ -64,7 +69,9 @@ export function CartPage() {
             <div className="bg-white rounded-lg shadow-sm">
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900">Cart Items</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Cart Items
+                  </h2>
                   <button
                     onClick={clearCart}
                     className="text-sm text-red-600 hover:text-red-700 transition-colors"
@@ -97,15 +104,19 @@ export function CartPage() {
                       <div className="flex-1">
                         <div className="flex justify-between">
                           <div>
-                            <Link 
+                            <Link
                               to={`/product/${item.id}`}
                               className="font-semibold text-gray-900 hover:text-[#6d02a3] transition-colors"
                             >
                               {item.name}
                             </Link>
-                            <p className="text-sm text-gray-600 mt-1">{item.category}</p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {item.category}
+                            </p>
                             {item.brand && (
-                              <p className="text-sm text-gray-500">{item.brand}</p>
+                              <p className="text-sm text-gray-500">
+                                {item.brand}
+                              </p>
                             )}
                           </div>
                           <button
@@ -121,15 +132,21 @@ export function CartPage() {
                           {/* Quantity Controls */}
                           <div className="flex items-center border border-gray-300 rounded-lg">
                             <button
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              onClick={() =>
+                                updateQuantity(item.id, item.quantity - 1)
+                              }
                               className="p-2 hover:bg-gray-50 transition-colors"
                               disabled={item.quantity <= 1}
                             >
                               <Minus className="w-4 h-4" />
                             </button>
-                            <span className="px-4 py-2 font-medium">{item.quantity}</span>
+                            <span className="px-4 py-2 font-medium">
+                              {item.quantity}
+                            </span>
                             <button
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              onClick={() =>
+                                updateQuantity(item.id, item.quantity + 1)
+                              }
                               className="p-2 hover:bg-gray-50 transition-colors"
                               disabled={item.quantity >= 10}
                             >
@@ -171,7 +188,9 @@ export function CartPage() {
           {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Order Summary</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-6">
+                Order Summary
+              </h2>
 
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-gray-600">
@@ -201,7 +220,9 @@ export function CartPage() {
 
               <div className="border-t pt-4 mb-6">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-lg font-semibold text-gray-900">Total</span>
+                  <span className="text-lg font-semibold text-gray-900">
+                    Total
+                  </span>
                   <span className="text-2xl font-bold text-[#6d02a3]">
                     {formatPrice(totalPrice)}
                   </span>

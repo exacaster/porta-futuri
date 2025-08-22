@@ -1,6 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { ProductWithId } from '@services/productService';
-import { useToast } from '@/components/ui/Toaster';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import { ProductWithId } from "@services/productService";
+import { useToast } from "@/components/ui/Toaster";
 
 export interface CartItem {
   id: string;
@@ -32,7 +38,7 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = 'itelecom_cart';
+const CART_STORAGE_KEY = "itelecom_cart";
 const TAX_RATE = 0.21; // 21% VAT
 const FREE_SHIPPING_THRESHOLD = 50;
 const SHIPPING_COST = 5.99;
@@ -53,7 +59,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
     } catch (error) {
-      console.error('Failed to save cart to localStorage:', error);
+      console.error("Failed to save cart to localStorage:", error);
     }
   }, [items]);
 
@@ -66,7 +72,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         return currentItems.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
-            : item
+            : item,
         );
       } else {
         // Add new item to cart
@@ -76,21 +82,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const removeFromCart = useCallback((productId: string) => {
-    setItems((currentItems) => currentItems.filter((item) => item.id !== productId));
+    setItems((currentItems) =>
+      currentItems.filter((item) => item.id !== productId),
+    );
   }, []);
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
+  const updateQuantity = useCallback(
+    (productId: string, quantity: number) => {
+      if (quantity <= 0) {
+        removeFromCart(productId);
+        return;
+      }
 
-    setItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
-      )
-    );
-  }, [removeFromCart]);
+      setItems((currentItems) =>
+        currentItems.map((item) =>
+          item.id === productId ? { ...item, quantity } : item,
+        ),
+      );
+    },
+    [removeFromCart],
+  );
 
   const clearCart = useCallback(() => {
     setItems([]);
@@ -101,18 +112,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const item = items.find((item) => item.id === productId);
       return item?.quantity || 0;
     },
-    [items]
+    [items],
   );
 
   const isInCart = useCallback(
     (productId: string) => {
       return items.some((item) => item.id === productId);
     },
-    [items]
+    [items],
   );
 
   // Calculate totals
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
   const tax = subtotal * TAX_RATE;
   const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   const totalPrice = subtotal + tax + shipping;
@@ -139,7 +153,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
-    throw new Error('useCart must be used within CartProvider');
+    throw new Error("useCart must be used within CartProvider");
   }
   return context;
 };
@@ -153,13 +167,13 @@ export const useCartWithToast = () => {
     (product: ProductWithId, quantity = 1) => {
       cart.addToCart(product, quantity);
       addToast({
-        title: 'Added to cart',
+        title: "Added to cart",
         description: `${product.name} has been added to your cart`,
-        type: 'success',
+        type: "success",
         duration: 3000,
       });
     },
-    [cart, addToast]
+    [cart, addToast],
   );
 
   const removeFromCartWithToast = useCallback(
@@ -168,22 +182,22 @@ export const useCartWithToast = () => {
       cart.removeFromCart(productId);
       if (item) {
         addToast({
-          title: 'Removed from cart',
+          title: "Removed from cart",
           description: `${item.name} has been removed from your cart`,
-          type: 'info',
+          type: "info",
           duration: 3000,
         });
       }
     },
-    [cart, addToast]
+    [cart, addToast],
   );
 
   const clearCartWithToast = useCallback(() => {
     cart.clearCart();
     addToast({
-      title: 'Cart cleared',
-      description: 'All items have been removed from your cart',
-      type: 'info',
+      title: "Cart cleared",
+      description: "All items have been removed from your cart",
+      type: "info",
       duration: 3000,
     });
   }, [cart, addToast]);

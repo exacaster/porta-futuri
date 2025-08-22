@@ -1,4 +1,4 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 // Database types
 export interface Database {
@@ -142,7 +142,7 @@ export interface Database {
         Row: {
           id: string;
           session_id: string;
-          file_type: 'products' | 'customer' | 'context';
+          file_type: "products" | "customer" | "context";
           file_hash: string;
           row_count: number | null;
           file_size_bytes: number | null;
@@ -153,7 +153,7 @@ export interface Database {
         Insert: {
           id?: string;
           session_id: string;
-          file_type: 'products' | 'customer' | 'context';
+          file_type: "products" | "customer" | "context";
           file_hash: string;
           row_count?: number | null;
           file_size_bytes?: number | null;
@@ -176,10 +176,11 @@ let supabaseClient: SupabaseClient<Database> | null = null;
 export const getSupabaseClient = (): SupabaseClient<Database> => {
   if (!supabaseClient) {
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+    const supabaseKey =
+      process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing Supabase configuration');
+      throw new Error("Missing Supabase configuration");
     }
 
     supabaseClient = createClient<Database>(supabaseUrl, supabaseKey, {
@@ -189,7 +190,7 @@ export const getSupabaseClient = (): SupabaseClient<Database> => {
       },
       global: {
         headers: {
-          'x-application-name': 'porta-futuri-api',
+          "x-application-name": "porta-futuri-api",
         },
       },
     });
@@ -206,12 +207,14 @@ export class DatabaseService {
     this.client = getSupabaseClient();
   }
 
-  async validateApiKey(key: string): Promise<{ isValid: boolean; apiKeyId?: string; rateLimit?: number }> {
+  async validateApiKey(
+    key: string,
+  ): Promise<{ isValid: boolean; apiKeyId?: string; rateLimit?: number }> {
     const { data, error } = await this.client
-      .from('api_keys')
-      .select('id, rate_limit, domain, usage_count')
-      .eq('key', key)
-      .eq('is_active', true)
+      .from("api_keys")
+      .select("id, rate_limit, domain, usage_count")
+      .eq("key", key)
+      .eq("is_active", true)
       .single();
 
     if (error || !data) {
@@ -220,12 +223,12 @@ export class DatabaseService {
 
     // Update last used timestamp
     await this.client
-      .from('api_keys')
-      .update({ 
+      .from("api_keys")
+      .update({
         last_used_at: new Date().toISOString(),
-        usage_count: data.usage_count + 1
+        usage_count: data.usage_count + 1,
       })
-      .eq('id', data.id);
+      .eq("id", data.id);
 
     return {
       isValid: true,
@@ -239,21 +242,19 @@ export class DatabaseService {
     currentMinute.setSeconds(0, 0);
 
     const { data } = await this.client
-      .from('rate_limits')
-      .select('request_count')
-      .eq('api_key_id', apiKeyId)
-      .eq('minute_bucket', currentMinute.toISOString())
+      .from("rate_limits")
+      .select("request_count")
+      .eq("api_key_id", apiKeyId)
+      .eq("minute_bucket", currentMinute.toISOString())
       .single();
 
     if (!data) {
       // Create new rate limit record
-      await this.client
-        .from('rate_limits')
-        .insert({
-          api_key_id: apiKeyId,
-          minute_bucket: currentMinute.toISOString(),
-          request_count: 1,
-        });
+      await this.client.from("rate_limits").insert({
+        api_key_id: apiKeyId,
+        minute_bucket: currentMinute.toISOString(),
+        request_count: 1,
+      });
       return true;
     }
 
@@ -263,10 +264,10 @@ export class DatabaseService {
 
     // Increment counter
     await this.client
-      .from('rate_limits')
+      .from("rate_limits")
       .update({ request_count: data.request_count + 1 })
-      .eq('api_key_id', apiKeyId)
-      .eq('minute_bucket', currentMinute.toISOString());
+      .eq("api_key_id", apiKeyId)
+      .eq("minute_bucket", currentMinute.toISOString());
 
     return true;
   }
@@ -276,13 +277,13 @@ export class DatabaseService {
     expiresAt.setMinutes(expiresAt.getMinutes() + 30);
 
     const { data, error } = await this.client
-      .from('sessions')
+      .from("sessions")
       .insert({
         api_key_id: apiKeyId,
         session_id: sessionId,
         expires_at: expiresAt.toISOString(),
       })
-      .select('id')
+      .select("id")
       .single();
 
     if (error) {
@@ -294,10 +295,10 @@ export class DatabaseService {
 
   async getSession(sessionId: string): Promise<any> {
     const { data, error } = await this.client
-      .from('sessions')
-      .select('*')
-      .eq('session_id', sessionId)
-      .eq('is_active', true)
+      .from("sessions")
+      .select("*")
+      .eq("session_id", sessionId)
+      .eq("is_active", true)
       .single();
 
     if (error || !data) {
@@ -307,9 +308,9 @@ export class DatabaseService {
     // Check if session expired
     if (new Date(data.expires_at) < new Date()) {
       await this.client
-        .from('sessions')
+        .from("sessions")
         .update({ is_active: false })
-        .eq('id', data.id);
+        .eq("id", data.id);
       return null;
     }
 
@@ -318,10 +319,10 @@ export class DatabaseService {
 
   async updateSession(sessionId: string, updates: any): Promise<void> {
     const { error } = await this.client
-      .from('sessions')
+      .from("sessions")
       .update(updates)
-      .eq('session_id', sessionId)
-      .eq('is_active', true);
+      .eq("session_id", sessionId)
+      .eq("is_active", true);
 
     if (error) {
       throw new Error(`Failed to update session: ${error.message}`);
@@ -334,69 +335,71 @@ export class DatabaseService {
     recommendations: any,
     responseTime: number,
     cacheHit: boolean,
-    fallbackUsed: boolean
+    fallbackUsed: boolean,
   ): Promise<void> {
     const session = await this.getSession(sessionId);
-    if (!session) {return;}
+    if (!session) {
+      return;
+    }
 
-    await this.client
-      .from('recommendation_logs')
-      .insert({
-        session_id: session.id,
-        query,
-        recommendations,
-        response_time_ms: responseTime,
-        cache_hit: cacheHit,
-        fallback_used: fallbackUsed,
-      });
+    await this.client.from("recommendation_logs").insert({
+      session_id: session.id,
+      query,
+      recommendations,
+      response_time_ms: responseTime,
+      cache_hit: cacheHit,
+      fallback_used: fallbackUsed,
+    });
   }
 
   async getWidgetConfig(apiKeyId: string): Promise<any> {
     const { data } = await this.client
-      .from('widget_configs')
-      .select('*')
-      .eq('api_key_id', apiKeyId)
+      .from("widget_configs")
+      .select("*")
+      .eq("api_key_id", apiKeyId)
       .single();
 
-    return data || {
-      theme: {},
-      position: 'bottom-right',
-      features: { chat: true, profile: true },
-      custom_css: null,
-    };
+    return (
+      data || {
+        theme: {},
+        position: "bottom-right",
+        features: { chat: true, profile: true },
+        custom_css: null,
+      }
+    );
   }
 
   async logCsvUpload(
     sessionId: string,
-    fileType: 'products' | 'customer' | 'context',
+    fileType: "products" | "customer" | "context",
     fileHash: string,
     rowCount: number,
     fileSizeBytes: number,
     processingTimeMs: number,
-    errorMessage?: string
+    errorMessage?: string,
   ): Promise<void> {
     const session = await this.getSession(sessionId);
-    if (!session) {return;}
+    if (!session) {
+      return;
+    }
 
-    await this.client
-      .from('csv_uploads')
-      .insert({
-        session_id: session.id,
-        file_type: fileType,
-        file_hash: fileHash,
-        row_count: rowCount,
-        file_size_bytes: fileSizeBytes,
-        processing_time_ms: processingTimeMs,
-        error_message: errorMessage,
-      });
+    await this.client.from("csv_uploads").insert({
+      session_id: session.id,
+      file_type: fileType,
+      file_hash: fileHash,
+      row_count: rowCount,
+      file_size_bytes: fileSizeBytes,
+      processing_time_ms: processingTimeMs,
+      error_message: errorMessage,
+    });
   }
 
   async cleanupExpiredSessions(): Promise<void> {
     await this.client
-      .from('sessions')
+      .from("sessions")
       .update({ is_active: false })
-      .lt('expires_at', new Date().toISOString())
-      .eq('is_active', true);
+      .lt("expires_at", new Date().toISOString())
+      .eq("is_active", true);
   }
 }
 

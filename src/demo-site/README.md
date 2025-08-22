@@ -31,17 +31,21 @@ A fully functional demo telecom e-commerce website that showcases the Porta Futu
 ### Installation
 
 1. **Install dependencies**:
+
    ```bash
    npm install
    ```
 
 2. **Set up environment variables**:
+
    ```bash
    cp .env.demo.example .env.demo
    ```
+
    Edit `.env.demo` with your Supabase credentials.
 
 3. **Start Supabase (if not running)**:
+
    ```bash
    npm run supabase:start
    ```
@@ -54,6 +58,7 @@ A fully functional demo telecom e-commerce website that showcases the Porta Futu
 ## Development
 
 ### Start the demo site:
+
 ```bash
 npm run dev:demo
 ```
@@ -61,11 +66,13 @@ npm run dev:demo
 The site will be available at http://localhost:3000
 
 ### Start all services (admin, widget, demo):
+
 ```bash
 npm run dev:all
 ```
 
 This starts:
+
 - Admin panel: http://localhost:5174
 - Widget demo: http://localhost:5173
 - Demo site: http://localhost:3000
@@ -73,11 +80,13 @@ This starts:
 ## Building for Production
 
 ### Build the demo site:
+
 ```bash
 npm run build:demo
 ```
 
 ### Build all components:
+
 ```bash
 npm run build:all
 ```
@@ -110,23 +119,27 @@ src/demo-site/
 ## Key Features Implementation
 
 ### Product Management
+
 - Products are managed through the Admin panel (`/admin`)
 - Demo site fetches products from Supabase in real-time
 - No seed data required - uses whatever is in the database
 
 ### Shopping Cart
+
 - Persistent cart using localStorage
 - Add/remove/update quantities
 - Automatic price calculations with VAT
 - Free shipping on orders over €50
 
 ### Widget Integration
+
 - Porta Futuri widget loads automatically
 - Positioned at bottom-right corner
 - Uses iTelecom theme colors
 - Provides AI-powered product recommendations
 
 ### Responsive Design
+
 - Mobile-first approach
 - Breakpoints: sm (640px), md (768px), lg (1024px), xl (1280px)
 - Touch-friendly interface
@@ -135,48 +148,57 @@ src/demo-site/
 ## Customization
 
 ### Theme Colors
+
 Edit theme colors in `src/demo-site/styles/globals.css`:
+
 ```css
 :root {
-  --primary: 267 97% 33%;    /* #6d02a3 */
-  --accent: 286 88% 52%;      /* #b12df4 */
+  --primary: 267 97% 33%; /* #6d02a3 */
+  --accent: 286 88% 52%; /* #b12df4 */
 }
 ```
 
 ### Branding
+
 Update branding in:
+
 - `src/demo-site/components/layout/Header.tsx` - Logo and navigation
 - `src/demo-site/components/layout/Footer.tsx` - Footer content
 - `src/demo-site/pages/HomePage.tsx` - Hero section
 
 ### Widget Configuration
+
 Configure widget in `src/demo-site/components/PortaFuturiWidget.tsx`:
+
 ```typescript
 window.PortaFuturi = {
-  apiKey: 'your-api-key',
-  customerId: 'customer-id',
+  apiKey: "your-api-key",
+  customerId: "customer-id",
   config: {
-    position: 'bottom-right',
+    position: "bottom-right",
     theme: {
-      primaryColor: '#6d02a3'
-    }
-  }
+      primaryColor: "#6d02a3",
+    },
+  },
 };
 ```
 
 ## Testing
 
 ### Type checking:
+
 ```bash
 npm run typecheck
 ```
 
 ### Linting:
+
 ```bash
 npm run lint
 ```
 
 ### Format code:
+
 ```bash
 npm run format
 ```
@@ -184,6 +206,7 @@ npm run format
 ## Deployment
 
 1. Build the production bundle:
+
    ```bash
    npm run build:demo
    ```
@@ -197,16 +220,19 @@ npm run format
 ## Troubleshooting
 
 ### Widget not loading
+
 - Ensure widget dev server is running: `npm run dev:widget-demo`
 - Check browser console for errors
 - Verify API key in environment variables
 
 ### Products not showing
+
 - Check Supabase is running: `npm run supabase:start`
 - Verify products exist in Admin panel
 - Check network tab for API errors
 
 ### Cart not persisting
+
 - Check localStorage is enabled in browser
 - Clear browser cache and try again
 

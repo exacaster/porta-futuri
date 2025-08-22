@@ -354,9 +354,8 @@ describe('CDP Integration E2E Flow', () => {
       
       // 4. Verify data structure
       expect(customerData).toBeDefined();
-      expect(customerData?.customer_id).toBe(customerId);
       expect(customerData?.cdp_available).toBe(true);
-      expect(customerData?.subscriptions).toBeDefined();
+      expect(customerData?.fields).toBeDefined();
       
       return customerData;
     };

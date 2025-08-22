@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createClient } from '@supabase/supabase-js';
-import { Layout } from './components/Layout';
-import { Login } from './components/Login';
-import { ProductUpload } from './components/ProductUpload';
-import { ProductTable } from './components/ProductTable';
-import { UserManagement } from './components/UserManagement';
-import { WidgetConfiguration } from './components/WidgetConfiguration';
-import { IntegrationsTab } from './components/IntegrationsTab';
-import { useAuth } from './hooks/useAuth';
-import './styles/admin.css';
+import { useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createClient } from "@supabase/supabase-js";
+import { Layout } from "./components/Layout";
+import { Login } from "./components/Login";
+import { ProductUpload } from "./components/ProductUpload";
+import { ProductTable } from "./components/ProductTable";
+import { UserManagement } from "./components/UserManagement";
+import { WidgetConfiguration } from "./components/WidgetConfiguration";
+import { IntegrationsTab } from "./components/IntegrationsTab";
+import { useAuth } from "./hooks/useAuth";
+import "./styles/admin.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,44 +30,50 @@ const supabase = createClient(
       autoRefreshToken: true,
       detectSessionInUrl: true,
       storage: window.localStorage,
-      storageKey: 'porta-futuri-admin-auth',
-      flowType: 'pkce'
-    }
-  }
+      storageKey: "porta-futuri-admin-auth",
+      flowType: "pkce",
+    },
+  },
 );
 
 export function AdminApp() {
-  
-  const { 
-    user, 
+  const {
+    user,
     adminUser,
-    loading, 
+    loading,
     error,
     signInWithEmail,
     signInWithOAuth,
     signOut,
     resetPassword,
     hasPermission,
-    clearError
+    clearError,
   } = useAuth(supabase);
-  
-  const [activeTab, setActiveTab] = useState<'upload' | 'products' | 'users' | 'widget' | 'integrations'>('upload');
+
+  const [activeTab, setActiveTab] = useState<
+    "upload" | "products" | "users" | "widget" | "integrations"
+  >("upload");
 
   // Log audit for admin actions
-  const logAction = async (action: string, resourceType: string, resourceId?: string, changes?: any) => {
-    if (!adminUser) {return;}
-    
-    await supabase
-      .from('audit_logs')
-      .insert({
-        user_id: adminUser.id,
-        action,
-        resource_type: resourceType,
-        resource_id: resourceId,
-        changes,
-        ip_address: window.location.hostname, // In production, get real IP from headers
-        user_agent: navigator.userAgent
-      });
+  const logAction = async (
+    action: string,
+    resourceType: string,
+    resourceId?: string,
+    changes?: any,
+  ) => {
+    if (!adminUser) {
+      return;
+    }
+
+    await supabase.from("audit_logs").insert({
+      user_id: adminUser.id,
+      action,
+      resource_type: resourceType,
+      resource_id: resourceId,
+      changes,
+      ip_address: window.location.hostname, // In production, get real IP from headers
+      user_agent: navigator.userAgent,
+    });
   };
 
   // Show loading only during initial auth check
@@ -93,35 +99,35 @@ export function AdminApp() {
       />
     );
   }
-  
+
   const effectiveAdminUser = adminUser || {
     id: user.id,
     email: user.email!,
-    role: 'super_admin' as const,
+    role: "super_admin" as const,
     permissions: {
-      products: ['read', 'write', 'delete'],
-      users: ['read', 'write', 'delete'],
-      settings: ['read', 'write'],
-      api_keys: ['read', 'write', 'delete'],
-      audit_logs: ['read']
+      products: ["read", "write", "delete"],
+      users: ["read", "write", "delete"],
+      settings: ["read", "write"],
+      api_keys: ["read", "write", "delete"],
+      audit_logs: ["read"],
     },
-    is_active: true
+    is_active: true,
   };
 
   // Check if user has permission to view the current tab
-  const canViewProducts = hasPermission('products', 'read');
-  const canUploadProducts = hasPermission('products', 'write');
-  const canManageUsers = hasPermission('users', 'read');
-  const canConfigureWidget = hasPermission('api_keys', 'read');
-  const canManageIntegrations = hasPermission('settings', 'write');
+  const canViewProducts = hasPermission("products", "read");
+  const canUploadProducts = hasPermission("products", "write");
+  const canManageUsers = hasPermission("users", "read");
+  const canConfigureWidget = hasPermission("api_keys", "read");
+  const canManageIntegrations = hasPermission("settings", "write");
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Layout 
-        user={user} 
+      <Layout
+        user={user}
         adminUser={effectiveAdminUser}
         onSignOut={() => {
-          logAction('auth.logout', 'session');
+          logAction("auth.logout", "session");
           signOut();
         }}
       >
@@ -132,45 +138,45 @@ export function AdminApp() {
               Welcome, {effectiveAdminUser.email} ({effectiveAdminUser.role})
             </p>
           </div>
-          
+
           <div className="mb-6 border-b">
             <nav className="flex space-x-8">
               {canUploadProducts && (
                 <button
-                  className={`pb-2 px-1 ${activeTab === 'upload' ? 'border-b-2 border-primary font-medium' : 'text-gray-600'}`}
-                  onClick={() => setActiveTab('upload')}
+                  className={`pb-2 px-1 ${activeTab === "upload" ? "border-b-2 border-primary font-medium" : "text-gray-600"}`}
+                  onClick={() => setActiveTab("upload")}
                 >
                   Upload Products
                 </button>
               )}
               {canViewProducts && (
                 <button
-                  className={`pb-2 px-1 ${activeTab === 'products' ? 'border-b-2 border-primary font-medium' : 'text-gray-600'}`}
-                  onClick={() => setActiveTab('products')}
+                  className={`pb-2 px-1 ${activeTab === "products" ? "border-b-2 border-primary font-medium" : "text-gray-600"}`}
+                  onClick={() => setActiveTab("products")}
                 >
                   View Products
                 </button>
               )}
               {canManageUsers && (
                 <button
-                  className={`pb-2 px-1 ${activeTab === 'users' ? 'border-b-2 border-primary font-medium' : 'text-gray-600'}`}
-                  onClick={() => setActiveTab('users')}
+                  className={`pb-2 px-1 ${activeTab === "users" ? "border-b-2 border-primary font-medium" : "text-gray-600"}`}
+                  onClick={() => setActiveTab("users")}
                 >
                   User Management
                 </button>
               )}
               {canConfigureWidget && (
                 <button
-                  className={`pb-2 px-1 ${activeTab === 'widget' ? 'border-b-2 border-primary font-medium' : 'text-gray-600'}`}
-                  onClick={() => setActiveTab('widget')}
+                  className={`pb-2 px-1 ${activeTab === "widget" ? "border-b-2 border-primary font-medium" : "text-gray-600"}`}
+                  onClick={() => setActiveTab("widget")}
                 >
                   Porta Futuri Widget
                 </button>
               )}
               {canManageIntegrations && (
                 <button
-                  className={`pb-2 px-1 ${activeTab === 'integrations' ? 'border-b-2 border-primary font-medium' : 'text-gray-600'}`}
-                  onClick={() => setActiveTab('integrations')}
+                  className={`pb-2 px-1 ${activeTab === "integrations" ? "border-b-2 border-primary font-medium" : "text-gray-600"}`}
+                  onClick={() => setActiveTab("integrations")}
                 >
                   Integrations
                 </button>
@@ -179,49 +185,55 @@ export function AdminApp() {
           </div>
 
           {/* Permission-based content rendering */}
-          {activeTab === 'upload' && canUploadProducts ? (
-            <ProductUpload 
-              supabase={supabase} 
-              onUploadComplete={(batchId) => {
-                logAction('products.upload', 'product_batch', batchId);
-              }}
-            />
-          ) : activeTab === 'products' && canViewProducts ? (
-            <ProductTable 
+          {activeTab === "upload" && canUploadProducts ? (
+            <ProductUpload
               supabase={supabase}
-              canEdit={hasPermission('products', 'write')}
-              canDelete={hasPermission('products', 'delete')}
-              onProductAction={(action, productId) => {
-                logAction(`products.${action}`, 'product', productId);
+              onUploadComplete={(batchId) => {
+                logAction("products.upload", "product_batch", batchId);
               }}
             />
-          ) : activeTab === 'users' && canManageUsers ? (
-            <UserManagement 
+          ) : activeTab === "products" && canViewProducts ? (
+            <ProductTable
+              supabase={supabase}
+              canEdit={hasPermission("products", "write")}
+              canDelete={hasPermission("products", "delete")}
+              onProductAction={(action, productId) => {
+                logAction(`products.${action}`, "product", productId);
+              }}
+            />
+          ) : activeTab === "users" && canManageUsers ? (
+            <UserManagement
               supabase={supabase}
               currentUser={effectiveAdminUser}
-              canEdit={hasPermission('users', 'write')}
-              canDelete={hasPermission('users', 'delete')}
+              canEdit={hasPermission("users", "write")}
+              canDelete={hasPermission("users", "delete")}
               onUserAction={(action, userId, changes) => {
-                logAction(`users.${action}`, 'admin_user', userId, changes);
+                logAction(`users.${action}`, "admin_user", userId, changes);
               }}
             />
-          ) : activeTab === 'widget' && canConfigureWidget ? (
-            <WidgetConfiguration 
+          ) : activeTab === "widget" && canConfigureWidget ? (
+            <WidgetConfiguration
               supabase={supabase}
               onApiKeyAction={(action, keyId) => {
-                logAction(`api_keys.${action}`, 'api_key', keyId);
+                logAction(`api_keys.${action}`, "api_key", keyId);
               }}
             />
-          ) : activeTab === 'integrations' && canManageIntegrations ? (
-            <IntegrationsTab 
+          ) : activeTab === "integrations" && canManageIntegrations ? (
+            <IntegrationsTab
               supabase={supabase}
               onIntegrationAction={(action, integrationId) => {
-                logAction(`integrations.${action}`, 'cdp_integration', integrationId);
+                logAction(
+                  `integrations.${action}`,
+                  "cdp_integration",
+                  integrationId,
+                );
               }}
             />
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-500">You don't have permission to view this section.</p>
+              <p className="text-gray-500">
+                You don't have permission to view this section.
+              </p>
             </div>
           )}
         </div>

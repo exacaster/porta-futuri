@@ -1,6 +1,6 @@
-import React from 'react';
-import { ProductCard } from './ProductCard';
-import { ProductWithId } from '@services/productService';
+import React from "react";
+import { ProductCard } from "./ProductCard";
+import { ProductWithId } from "@services/productService";
 
 interface ProductGridProps {
   products: ProductWithId[];
@@ -8,7 +8,11 @@ interface ProductGridProps {
   emptyMessage?: string;
 }
 
-export function ProductGrid({ products, loading = false, emptyMessage = 'No products found' }: ProductGridProps) {
+export function ProductGrid({
+  products,
+  loading = false,
+  emptyMessage = "No products found",
+}: ProductGridProps) {
   // Loading skeleton
   if (loading) {
     return (
@@ -37,8 +41,12 @@ export function ProductGrid({ products, loading = false, emptyMessage = 'No prod
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="text-6xl mb-4">📦</div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">{emptyMessage}</h3>
-        <p className="text-gray-600">Try adjusting your filters or search criteria</p>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          {emptyMessage}
+        </h3>
+        <p className="text-gray-600">
+          Try adjusting your filters or search criteria
+        </p>
       </div>
     );
   }
@@ -54,7 +62,11 @@ export function ProductGrid({ products, loading = false, emptyMessage = 'No prod
 }
 
 // Product list variant for different layouts
-export function ProductList({ products, loading = false, emptyMessage = 'No products found' }: ProductGridProps) {
+export function ProductList({
+  products,
+  loading = false,
+  emptyMessage = "No products found",
+}: ProductGridProps) {
   // Loading skeleton
   if (loading) {
     return (
@@ -83,8 +95,12 @@ export function ProductList({ products, loading = false, emptyMessage = 'No prod
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="text-6xl mb-4">📦</div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">{emptyMessage}</h3>
-        <p className="text-gray-600">Try adjusting your filters or search criteria</p>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          {emptyMessage}
+        </h3>
+        <p className="text-gray-600">
+          Try adjusting your filters or search criteria
+        </p>
       </div>
     );
   }
@@ -102,9 +118,9 @@ export function ProductList({ products, loading = false, emptyMessage = 'No prod
 // Individual list item component
 function ProductListItem({ product }: { product: ProductWithId }) {
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "EUR",
     }).format(price);
   };
 
@@ -124,7 +140,7 @@ function ProductListItem({ product }: { product: ProductWithId }) {
           </div>
         )}
       </div>
-      
+
       <div className="flex-1 p-6">
         <div className="flex flex-col h-full">
           <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
@@ -154,13 +170,11 @@ function ProductListItem({ product }: { product: ProductWithId }) {
               <p className="text-2xl font-bold text-[#6d02a3]">
                 {formatPrice(product.price)}
               </p>
-              {product.stock_status === 'in_stock' && (
+              {product.stock_status === "in_stock" && (
                 <p className="text-sm text-green-600">In Stock</p>
               )}
             </div>
-            <button className="btn-primary">
-              Add to Cart
-            </button>
+            <button className="btn-primary">Add to Cart</button>
           </div>
         </div>
       </div>

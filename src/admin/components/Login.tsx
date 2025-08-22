@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
-import { Mail, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useState } from "react";
+import { Mail, AlertCircle, Loader2 } from "lucide-react";
 
 interface LoginProps {
   onLogin: (email: string, password: string) => Promise<{ error: boolean }>;
-  onOAuthLogin: (provider: 'google' | 'github') => void;
+  onOAuthLogin: (provider: "google" | "github") => void;
   onForgotPassword: (email: string) => Promise<{ error: boolean }>;
   error: { message: string; code?: string } | null;
   clearError: () => void;
 }
 
-export const Login: React.FC<LoginProps> = ({ 
-  onLogin, 
+export const Login: React.FC<LoginProps> = ({
+  onLogin,
   // onOAuthLogin,  // Reserved for future OAuth implementation
   onForgotPassword,
   error,
-  clearError
+  clearError,
 }) => {
-  const [email, setEmail] = useState('egidijus@exacaster.com'); // Pre-fill for convenience
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("egidijus@exacaster.com"); // Pre-fill for convenience
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -27,13 +27,13 @@ export const Login: React.FC<LoginProps> = ({
     e.preventDefault();
     clearError();
     setIsLoading(true);
-    
+
     const result = await onLogin(email, password);
-    
+
     setIsLoading(false);
     if (!result.error) {
       // Clear form on successful login
-      setPassword('');
+      setPassword("");
     }
   };
 
@@ -41,9 +41,9 @@ export const Login: React.FC<LoginProps> = ({
     e.preventDefault();
     clearError();
     setIsLoading(true);
-    
+
     const result = await onForgotPassword(email);
-    
+
     setIsLoading(false);
     if (!result.error) {
       setResetEmailSent(true);
@@ -63,7 +63,8 @@ export const Login: React.FC<LoginProps> = ({
               Reset your password
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              Enter your email address and we'll send you a link to reset your password.
+              Enter your email address and we'll send you a link to reset your
+              password.
             </p>
           </div>
 
@@ -83,7 +84,10 @@ export const Login: React.FC<LoginProps> = ({
           ) : (
             <form className="mt-8 space-y-6" onSubmit={handleForgotPassword}>
               <div>
-                <label htmlFor="reset-email" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="reset-email"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Email address
                 </label>
                 <div className="mt-1 relative">
@@ -109,7 +113,9 @@ export const Login: React.FC<LoginProps> = ({
                   <div className="flex">
                     <AlertCircle className="h-5 w-5 text-red-400" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-red-800">{error.message}</p>
+                      <p className="text-sm font-medium text-red-800">
+                        {error.message}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -138,7 +144,7 @@ export const Login: React.FC<LoginProps> = ({
                       Sending...
                     </>
                   ) : (
-                    'Send reset link'
+                    "Send reset link"
                   )}
                 </button>
               </div>
@@ -156,11 +162,37 @@ export const Login: React.FC<LoginProps> = ({
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-blue-800 p-12 flex-col justify-center items-center text-white">
           <div className="text-center">
             <div className="mb-8">
-              <svg className="w-24 h-24 mx-auto mb-4" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="45" stroke="white" strokeWidth="2" opacity="0.3"/>
-                <circle cx="50" cy="50" r="35" stroke="white" strokeWidth="2" opacity="0.5"/>
-                <circle cx="50" cy="50" r="25" stroke="white" strokeWidth="2" opacity="0.7"/>
-                <circle cx="50" cy="50" r="15" fill="white"/>
+              <svg
+                className="w-24 h-24 mx-auto mb-4"
+                viewBox="0 0 100 100"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="45"
+                  stroke="white"
+                  strokeWidth="2"
+                  opacity="0.3"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="35"
+                  stroke="white"
+                  strokeWidth="2"
+                  opacity="0.5"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="25"
+                  stroke="white"
+                  strokeWidth="2"
+                  opacity="0.7"
+                />
+                <circle cx="50" cy="50" r="15" fill="white" />
               </svg>
               <h1 className="text-4xl font-bold mb-2">Porta Futuri</h1>
               <p className="text-xl opacity-90">Admin Portal</p>
@@ -180,7 +212,10 @@ export const Login: React.FC<LoginProps> = ({
 
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="email-address"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Email
                 </label>
                 <input
@@ -195,16 +230,19 @@ export const Login: React.FC<LoginProps> = ({
                   placeholder="Enter your email"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Password
                 </label>
                 <div className="relative">
                   <input
                     id="password"
                     name="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     required
                     value={password}
@@ -231,7 +269,9 @@ export const Login: React.FC<LoginProps> = ({
                   <div className="flex">
                     <AlertCircle className="h-5 w-5 text-red-400" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-red-800">{error.message}</p>
+                      <p className="text-sm font-medium text-red-800">
+                        {error.message}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -249,7 +289,7 @@ export const Login: React.FC<LoginProps> = ({
                       Signing in...
                     </>
                   ) : (
-                    'Login'
+                    "Login"
                   )}
                 </button>
               </div>
@@ -266,11 +306,16 @@ export const Login: React.FC<LoginProps> = ({
                   Forgot your password?
                 </button>
                 <span className="text-gray-500">
-                  Don't have an account? <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Register</a>
+                  Don't have an account?{" "}
+                  <a
+                    href="#"
+                    className="text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Register
+                  </a>
                 </span>
               </div>
             </form>
-
           </div>
         </div>
       </div>

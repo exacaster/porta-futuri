@@ -1,10 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, Phone, Wifi, Smartphone, Tv } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { useCart } from '@contexts/CartContext';
-import { productService } from '@services/productService';
-import { LanguageSwitcher } from '@components/common/LanguageSwitcher';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Search,
+  ShoppingCart,
+  Menu,
+  X,
+  Phone,
+  Wifi,
+  Smartphone,
+  Tv,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useCart } from "@contexts/CartContext";
+import { productService } from "@services/productService";
+import { LanguageSwitcher } from "@components/common/LanguageSwitcher";
 
 export function Header() {
   const { t } = useTranslation();
@@ -12,7 +21,7 @@ export function Header() {
   const { totalItems } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
@@ -24,16 +33,25 @@ export function Header() {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery('');
+      setSearchQuery("");
       setIsSearchOpen(false);
     }
   };
 
   const getCategoryIcon = (category: string) => {
     const lowerCategory = category.toLowerCase();
-    if (lowerCategory.includes('mobile') || lowerCategory.includes('phone')) {return <Smartphone className="w-4 h-4" />;}
-    if (lowerCategory.includes('internet') || lowerCategory.includes('broadband')) {return <Wifi className="w-4 h-4" />;}
-    if (lowerCategory.includes('tv') || lowerCategory.includes('television')) {return <Tv className="w-4 h-4" />;}
+    if (lowerCategory.includes("mobile") || lowerCategory.includes("phone")) {
+      return <Smartphone className="w-4 h-4" />;
+    }
+    if (
+      lowerCategory.includes("internet") ||
+      lowerCategory.includes("broadband")
+    ) {
+      return <Wifi className="w-4 h-4" />;
+    }
+    if (lowerCategory.includes("tv") || lowerCategory.includes("television")) {
+      return <Tv className="w-4 h-4" />;
+    }
     return <Phone className="w-4 h-4" />;
   };
 
@@ -43,11 +61,13 @@ export function Header() {
       <div className="bg-gradient-primary text-white py-2">
         <div className="container flex justify-between items-center text-sm">
           <div className="flex items-center gap-4">
-            <span>📞 {t('features.support247')}: 1-800-TELECOM</span>
+            <span>📞 {t("features.support247")}: 1-800-TELECOM</span>
             <span className="hidden sm:inline">✉️ support@itelecom.com</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="hidden sm:inline">🚀 {t('features.freeShipping')} - {t('features.ordersOver')}</span>
+            <span className="hidden sm:inline">
+              🚀 {t("features.freeShipping")} - {t("features.ordersOver")}
+            </span>
           </div>
         </div>
       </div>
@@ -62,35 +82,47 @@ export function Header() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gradient">iTelecom</h1>
-              <p className="text-xs text-gray-500">{t('hero.smartConnectivity')}</p>
+              <p className="text-xs text-gray-500">
+                {t("hero.smartConnectivity")}
+              </p>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
             >
-              {t('nav.home')}
+              {t("nav.home")}
             </Link>
-            
+
             {/* Categories Dropdown */}
             <div className="relative group">
               <button className="flex items-center gap-1 text-gray-700 hover:text-[#6d02a3] transition-colors font-medium">
-                {t('nav.products')}
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                {t("nav.products")}
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
               <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[70vh] overflow-y-auto">
                 <div className="py-2">
-                  <Link 
-                    to="/category/all" 
+                  <Link
+                    to="/category/all"
                     className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#6d02a3] transition-colors"
                   >
                     <Phone className="w-4 h-4" />
-                    {t('nav.allProducts')}
+                    {t("nav.allProducts")}
                   </Link>
                   {categories.map((category) => (
                     <Link
@@ -106,23 +138,23 @@ export function Header() {
               </div>
             </div>
 
-            <Link 
-              to="/deals" 
+            <Link
+              to="/deals"
               className="text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
             >
-              {t('nav.deals')}
+              {t("nav.deals")}
             </Link>
-            <Link 
-              to="/business" 
+            <Link
+              to="/business"
               className="text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
             >
-              {t('nav.business')}
+              {t("nav.business")}
             </Link>
-            <Link 
-              to="/support" 
+            <Link
+              to="/support"
               className="text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
             >
-              {t('nav.support')}
+              {t("nav.support")}
             </Link>
           </nav>
 
@@ -135,7 +167,7 @@ export function Header() {
               <form onSubmit={handleSearch} className="relative">
                 <input
                   type="text"
-                  placeholder={t('nav.search')}
+                  placeholder={t("nav.search")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#6d02a3] focus:ring-1 focus:ring-[#6d02a3]"
@@ -205,11 +237,13 @@ export function Header() {
               className="block text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
-              {t('nav.home')}
+              {t("nav.home")}
             </Link>
-            
+
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-gray-500 uppercase">{t('nav.products')}</p>
+              <p className="text-sm font-semibold text-gray-500 uppercase">
+                {t("nav.products")}
+              </p>
               {categories.map((category) => (
                 <Link
                   key={category}
@@ -227,7 +261,7 @@ export function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <Phone className="w-4 h-4" />
-                {t('nav.allProducts')}
+                {t("nav.allProducts")}
               </Link>
             </div>
 
@@ -236,21 +270,21 @@ export function Header() {
               className="block text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
-              {t('nav.deals')}
+              {t("nav.deals")}
             </Link>
             <Link
               to="/business"
               className="block text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
-              {t('nav.business')}
+              {t("nav.business")}
             </Link>
             <Link
               to="/support"
               className="block text-gray-700 hover:text-[#6d02a3] transition-colors font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
-              {t('nav.support')}
+              {t("nav.support")}
             </Link>
           </nav>
         </div>

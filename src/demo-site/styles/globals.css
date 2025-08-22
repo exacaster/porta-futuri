@@ -27,7 +27,7 @@
   }
 
   body {
-    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     line-height: 1.6;
@@ -35,17 +35,34 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-weight: 600;
     line-height: 1.2;
   }
 
-  h1 { font-size: 2.25rem; }
-  h2 { font-size: 1.875rem; }
-  h3 { font-size: 1.5rem; }
-  h4 { font-size: 1.25rem; }
-  h5 { font-size: 1.125rem; }
-  h6 { font-size: 1rem; }
+  h1 {
+    font-size: 2.25rem;
+  }
+  h2 {
+    font-size: 1.875rem;
+  }
+  h3 {
+    font-size: 1.5rem;
+  }
+  h4 {
+    font-size: 1.25rem;
+  }
+  h5 {
+    font-size: 1.125rem;
+  }
+  h6 {
+    font-size: 1rem;
+  }
 
   a {
     color: hsl(var(--primary));
@@ -62,7 +79,9 @@
     font-family: inherit;
   }
 
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     font-family: inherit;
   }
 
@@ -81,14 +100,14 @@
     padding-right: 1rem;
     max-width: 80rem;
   }
-  
+
   @media (min-width: 640px) {
     .container {
       padding-left: 1.5rem;
       padding-right: 1.5rem;
     }
   }
-  
+
   @media (min-width: 1024px) {
     .container {
       padding-left: 2rem;
@@ -104,7 +123,7 @@
     border-radius: 0.5rem;
     transition: background-color 0.2s;
   }
-  
+
   .btn-primary:hover {
     background-color: #4e0174;
   }
@@ -118,7 +137,7 @@
     border-radius: 0.5rem;
     transition: background-color 0.2s;
   }
-  
+
   .btn-secondary:hover {
     background-color: #f9fafb;
   }
@@ -131,7 +150,7 @@
     overflow: hidden;
     transition: box-shadow 0.2s;
   }
-  
+
   .card:hover {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
@@ -177,7 +196,7 @@
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
   }
-  
+
   .input:focus {
     outline: none;
     ring: 2px solid #6d02a3;
@@ -186,11 +205,12 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
-    opacity: .5;
+    opacity: 0.5;
   }
 }
 

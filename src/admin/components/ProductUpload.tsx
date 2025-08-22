@@ -1,15 +1,18 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 // import { useDropzone } from 'react-dropzone';
-import { Upload, CheckCircle, AlertCircle } from 'lucide-react';
-import { csvProcessor } from '../../widget/services/csvParser';
-import { UploadProgress } from './UploadProgress';
+import { Upload, CheckCircle, AlertCircle } from "lucide-react";
+import { csvProcessor } from "../../widget/services/csvParser";
+import { UploadProgress } from "./UploadProgress";
 
 interface ProductUploadProps {
   supabase: any;
   onUploadComplete?: (batchId: string) => void;
 }
 
-export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUploadComplete }) => {
+export const ProductUpload: React.FC<ProductUploadProps> = ({
+  supabase,
+  onUploadComplete,
+}) => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -25,18 +28,20 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const csvFile = event.target.files?.[0];
-    if (csvFile && csvFile.type === 'text/csv') {
+    if (csvFile && csvFile.type === "text/csv") {
       setFile(csvFile);
       setErrors([]);
       setSuccess(false);
       setStats(null);
     } else if (csvFile) {
-      setErrors(['Please upload a valid CSV file']);
+      setErrors(["Please upload a valid CSV file"]);
     }
   };
 
   const handleUpload = async () => {
-    if (!file) {return;}
+    if (!file) {
+      return;
+    }
 
     setUploading(true);
     setProgress(0);
@@ -46,7 +51,11 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
       // Step 1: Validate CSV structure
       setProgress(10);
       const validation = await csvProcessor.validateCSVStructure(file, [
-        'product_id', 'name', 'category', 'price', 'description'
+        "product_id",
+        "name",
+        "category",
+        "price",
+        "description",
       ]);
 
       if (!validation.valid) {
@@ -61,11 +70,13 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
 
       if (result.errors.length > 0) {
         // Show first 10 errors
-        const errorMessages = result.errors.slice(0, 10).map(
-          err => `Row ${err.row}: ${err.message}`
-        );
+        const errorMessages = result.errors
+          .slice(0, 10)
+          .map((err) => `Row ${err.row}: ${err.message}`);
         if (result.errors.length > 10) {
-          errorMessages.push(`... and ${result.errors.length - 10} more errors`);
+          errorMessages.push(
+            `... and ${result.errors.length - 10} more errors`,
+          );
         }
         setErrors(errorMessages);
       }
@@ -76,14 +87,14 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
 
       // Step 4: Create upload batch
       const { data: batch, error: batchError } = await supabase
-        .from('product_upload_batches')
+        .from("product_upload_batches")
         .insert({
           filename: file.name,
           file_hash: fileHash,
           total_products: result.data.length,
           successful_products: 0,
           failed_products: 0,
-          status: 'processing'
+          status: "processing",
         })
         .select()
         .single();
@@ -100,42 +111,44 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
 
       for (let i = 0; i < products.length; i += chunkSize) {
         const chunk = products.slice(i, i + chunkSize);
-        const progressValue = 50 + ((i / products.length) * 40);
+        const progressValue = 50 + (i / products.length) * 40;
         setProgress(Math.round(progressValue));
 
         // Get current user
         const { data: userData } = await supabase.auth.getUser();
-        
+
         // Transform products for database
-        const dbProducts = chunk.map(product => {
+        const dbProducts = chunk.map((product) => {
           // Map attributes to metadata field and ensure comments are properly formatted
           const { attributes, comments, ...rest } = product;
-          
+
           return {
             ...rest,
             metadata: attributes || {}, // Store attributes in metadata JSONB field
-            comments: comments || [],   // Store comments in comments JSONB field
+            comments: comments || [], // Store comments in comments JSONB field
             upload_batch_id: batch.id,
-            uploaded_by: userData.user?.id
+            uploaded_by: userData.user?.id,
           };
         });
 
         const { error: insertError } = await supabase
-          .from('products')
-          .upsert(dbProducts, { 
-            onConflict: 'product_id',
-            ignoreDuplicates: false  // Ensure updates happen for existing products
+          .from("products")
+          .upsert(dbProducts, {
+            onConflict: "product_id",
+            ignoreDuplicates: false, // Ensure updates happen for existing products
           });
 
         if (insertError) {
           failCount += chunk.length;
           // Add error to display
-          if (!result.errors) {result.errors = [];}
+          if (!result.errors) {
+            result.errors = [];
+          }
           result.errors.push({
             row: i + 1,
             message: `Database error: ${insertError.message}`,
-            type: 'InvalidValue' as const,
-            code: 'DB_INSERT_ERROR'
+            type: "InvalidValue" as const,
+            code: "DB_INSERT_ERROR",
           });
         } else {
           successCount += chunk.length;
@@ -145,22 +158,22 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
       // Step 6: Update batch status
       setProgress(95);
       await supabase
-        .from('product_upload_batches')
+        .from("product_upload_batches")
         .update({
           successful_products: successCount,
           failed_products: failCount,
-          status: 'completed',
+          status: "completed",
           completed_at: new Date().toISOString(),
-          errors: result.errors
+          errors: result.errors,
         })
-        .eq('id', batch.id);
+        .eq("id", batch.id);
 
       setProgress(100);
       setSuccess(true);
       setStats({
         total: products.length,
         successful: successCount,
-        failed: failCount
+        failed: failCount,
       });
 
       if (onUploadComplete) {
@@ -172,7 +185,6 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
         setFile(null);
         setProgress(0);
       }, 3000);
-
     } catch (error: any) {
       setErrors([`Upload failed: ${error.message}`]);
     } finally {
@@ -188,17 +200,17 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
           border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
           transition-colors duration-200
           border-gray-300 hover:border-gray-400
-          ${file ? 'bg-green-50 border-green-300' : ''}
+          ${file ? "bg-green-50 border-green-300" : ""}
         `}
       >
-        <input 
+        <input
           ref={fileInputRef}
           type="file"
           accept=".csv"
           onChange={handleFileSelect}
           className="hidden"
         />
-        
+
         {file ? (
           <div className="space-y-2">
             <CheckCircle className="w-12 h-12 text-green-500 mx-auto" />
@@ -222,7 +234,9 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
           <div className="space-y-2">
             <Upload className="w-12 h-12 text-gray-400 mx-auto" />
             <p className="text-lg">Click to upload a CSV file</p>
-            <p className="text-sm text-gray-500">or drag & drop your file here</p>
+            <p className="text-sm text-gray-500">
+              or drag & drop your file here
+            </p>
             <p className="text-xs text-gray-400">Maximum file size: 50MB</p>
           </div>
         )}
@@ -251,7 +265,8 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
             <div className="flex-1">
               <p className="font-medium text-green-800">Upload Successful!</p>
               <p className="mt-1 text-sm text-green-700">
-                Processed {stats.total} products: {stats.successful} successful, {stats.failed} failed
+                Processed {stats.total} products: {stats.successful} successful,{" "}
+                {stats.failed} failed
               </p>
             </div>
           </div>
@@ -267,9 +282,7 @@ export const ProductUpload: React.FC<ProductUploadProps> = ({ supabase, onUpload
         </button>
       )}
 
-      {uploading && (
-        <UploadProgress progress={progress} />
-      )}
+      {uploading && <UploadProgress progress={progress} />}
     </div>
   );
 };

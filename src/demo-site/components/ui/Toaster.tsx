@@ -1,17 +1,17 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { X } from 'lucide-react';
+import React, { createContext, useContext, useState, useCallback } from "react";
+import { X } from "lucide-react";
 
 interface Toast {
   id: string;
   title: string;
   description?: string;
-  type?: 'success' | 'error' | 'warning' | 'info';
+  type?: "success" | "error" | "warning" | "info";
   duration?: number;
 }
 
 interface ToasterContextType {
   toasts: Toast[];
-  addToast: (toast: Omit<Toast, 'id'>) => void;
+  addToast: (toast: Omit<Toast, "id">) => void;
   removeToast: (id: string) => void;
 }
 
@@ -20,7 +20,7 @@ const ToasterContext = createContext<ToasterContextType | undefined>(undefined);
 export const useToast = () => {
   const context = useContext(ToasterContext);
   if (!context) {
-    throw new Error('useToast must be used within ToasterProvider');
+    throw new Error("useToast must be used within ToasterProvider");
   }
   return context;
 };
@@ -28,10 +28,10 @@ export const useToast = () => {
 export function ToasterProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = useCallback((toast: Omit<Toast, 'id'>) => {
+  const addToast = useCallback((toast: Omit<Toast, "id">) => {
     const id = Math.random().toString(36).substring(7);
     const newToast = { ...toast, id };
-    
+
     setToasts((prev) => [...prev, newToast]);
 
     // Auto remove after duration
@@ -54,36 +54,36 @@ export function ToasterProvider({ children }: { children: React.ReactNode }) {
 
 export function Toaster() {
   const context = useContext(ToasterContext);
-  
+
   if (!context) {
     return null;
   }
 
   const { toasts, removeToast } = context;
 
-  const getToastStyles = (type?: Toast['type']) => {
+  const getToastStyles = (type?: Toast["type"]) => {
     switch (type) {
-      case 'success':
-        return 'bg-green-50 border-green-200 text-green-800';
-      case 'error':
-        return 'bg-red-50 border-red-200 text-red-800';
-      case 'warning':
-        return 'bg-yellow-50 border-yellow-200 text-yellow-800';
+      case "success":
+        return "bg-green-50 border-green-200 text-green-800";
+      case "error":
+        return "bg-red-50 border-red-200 text-red-800";
+      case "warning":
+        return "bg-yellow-50 border-yellow-200 text-yellow-800";
       default:
-        return 'bg-white border-gray-200 text-gray-800';
+        return "bg-white border-gray-200 text-gray-800";
     }
   };
 
-  const getToastIcon = (type?: Toast['type']) => {
+  const getToastIcon = (type?: Toast["type"]) => {
     switch (type) {
-      case 'success':
-        return '✓';
-      case 'error':
-        return '✕';
-      case 'warning':
-        return '!';
+      case "success":
+        return "✓";
+      case "error":
+        return "✕";
+      case "warning":
+        return "!";
       default:
-        return 'ℹ';
+        return "ℹ";
     }
   };
 
@@ -94,7 +94,9 @@ export function Toaster() {
           key={toast.id}
           className={`${getToastStyles(toast.type)} border rounded-lg p-4 shadow-lg animate-slide-up flex items-start gap-3`}
         >
-          <span className="text-lg font-semibold">{getToastIcon(toast.type)}</span>
+          <span className="text-lg font-semibold">
+            {getToastIcon(toast.type)}
+          </span>
           <div className="flex-1">
             <h4 className="font-semibold">{toast.title}</h4>
             {toast.description && (

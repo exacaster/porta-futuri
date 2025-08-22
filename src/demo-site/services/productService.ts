@@ -1,10 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
-import type { Product } from '@shared/types/product.types';
-import { sanitizeProduct } from '@shared/types/product.types';
+import { createClient } from "@supabase/supabase-js";
+import type { Product } from "@shared/types/product.types";
+import { sanitizeProduct } from "@shared/types/product.types";
 
 // Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'http://localhost:54321';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL || "http://localhost:54321";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -22,7 +23,7 @@ export interface ProductFilters {
   maxPrice?: number;
   inStockOnly?: boolean;
   searchTerm?: string;
-  sortBy?: 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' | 'newest';
+  sortBy?: "price_asc" | "price_desc" | "name_asc" | "name_desc" | "newest";
 }
 
 export const productService = {
@@ -31,74 +32,79 @@ export const productService = {
    */
   async getProducts(filters: ProductFilters = {}): Promise<ProductWithId[]> {
     try {
-      let query = supabase.from('products').select('*');
+      let query = supabase.from("products").select("*");
 
       // Apply filters
       if (filters.category) {
-        query = query.eq('category', filters.category);
+        query = query.eq("category", filters.category);
       }
 
       if (filters.subcategory) {
-        query = query.eq('subcategory', filters.subcategory);
+        query = query.eq("subcategory", filters.subcategory);
       }
 
       if (filters.brand) {
-        query = query.eq('brand', filters.brand);
+        query = query.eq("brand", filters.brand);
       }
 
       if (filters.minPrice !== undefined) {
-        query = query.gte('price', filters.minPrice);
+        query = query.gte("price", filters.minPrice);
       }
 
       if (filters.maxPrice !== undefined) {
-        query = query.lte('price', filters.maxPrice);
+        query = query.lte("price", filters.maxPrice);
       }
 
       if (filters.inStockOnly) {
-        query = query.neq('stock_status', 'out_of_stock');
+        query = query.neq("stock_status", "out_of_stock");
       }
 
       if (filters.searchTerm) {
         // Search in name, description, and brand
         query = query.or(
-          `name.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%,brand.ilike.%${filters.searchTerm}%`
+          `name.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%,brand.ilike.%${filters.searchTerm}%`,
         );
       }
 
       // Apply sorting
       switch (filters.sortBy) {
-        case 'price_asc':
-          query = query.order('price', { ascending: true });
+        case "price_asc":
+          query = query.order("price", { ascending: true });
           break;
-        case 'price_desc':
-          query = query.order('price', { ascending: false });
+        case "price_desc":
+          query = query.order("price", { ascending: false });
           break;
-        case 'name_asc':
-          query = query.order('name', { ascending: true });
+        case "name_asc":
+          query = query.order("name", { ascending: true });
           break;
-        case 'name_desc':
-          query = query.order('name', { ascending: false });
+        case "name_desc":
+          query = query.order("name", { ascending: false });
           break;
-        case 'newest':
+        case "newest":
         default:
-          query = query.order('updated_at', { ascending: false });
+          query = query.order("updated_at", { ascending: false });
           break;
       }
 
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
         throw error;
       }
 
       // Apply sanitization to all products
-      return (data || []).map(product => {
+      return (data || []).map((product) => {
         const sanitized = sanitizeProduct(product);
-        return { ...sanitized, id: product.id, created_at: product.created_at, updated_at: product.updated_at };
+        return {
+          ...sanitized,
+          id: product.id,
+          created_at: product.created_at,
+          updated_at: product.updated_at,
+        };
       });
     } catch (error) {
-      console.error('Failed to fetch products:', error);
+      console.error("Failed to fetch products:", error);
       return [];
     }
   },
@@ -109,21 +115,26 @@ export const productService = {
   async getProductById(id: string): Promise<ProductWithId | null> {
     try {
       const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', id)
+        .from("products")
+        .select("*")
+        .eq("id", id)
         .single();
 
       if (error) {
-        console.error('Error fetching product:', error);
+        console.error("Error fetching product:", error);
         return null;
       }
 
       // Apply sanitization to parse metadata and comments
       const sanitized = sanitizeProduct(data);
-      return { ...sanitized, id: data.id, created_at: data.created_at, updated_at: data.updated_at };
+      return {
+        ...sanitized,
+        id: data.id,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+      };
     } catch (error) {
-      console.error('Failed to fetch product:', error);
+      console.error("Failed to fetch product:", error);
       return null;
     }
   },
@@ -141,24 +152,29 @@ export const productService = {
   async getFeaturedProducts(): Promise<ProductWithId[]> {
     try {
       const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .neq('stock_status', 'out_of_stock')
-        .order('updated_at', { ascending: false })
+        .from("products")
+        .select("*")
+        .neq("stock_status", "out_of_stock")
+        .order("updated_at", { ascending: false })
         .limit(8);
 
       if (error) {
-        console.error('Error fetching featured products:', error);
+        console.error("Error fetching featured products:", error);
         return [];
       }
 
       // Apply sanitization to all products
-      return (data || []).map(product => {
+      return (data || []).map((product) => {
         const sanitized = sanitizeProduct(product);
-        return { ...sanitized, id: product.id, created_at: product.created_at, updated_at: product.updated_at };
+        return {
+          ...sanitized,
+          id: product.id,
+          created_at: product.created_at,
+          updated_at: product.updated_at,
+        };
       });
     } catch (error) {
-      console.error('Failed to fetch featured products:', error);
+      console.error("Failed to fetch featured products:", error);
       return [];
     }
   },
@@ -169,23 +185,26 @@ export const productService = {
   async getCategories(): Promise<string[]> {
     try {
       const { data, error } = await supabase
-        .from('products')
-        .select('category')
-        .order('category');
+        .from("products")
+        .select("category")
+        .order("category");
 
       if (error) {
-        console.error('Error fetching categories:', error);
+        console.error("Error fetching categories:", error);
         return [];
       }
 
       // Extract unique categories
       const categories = data
         ?.map((item) => item.category)
-        .filter((category, index, self) => category && self.indexOf(category) === index);
+        .filter(
+          (category, index, self) =>
+            category && self.indexOf(category) === index,
+        );
 
       return categories || [];
     } catch (error) {
-      console.error('Failed to fetch categories:', error);
+      console.error("Failed to fetch categories:", error);
       return [];
     }
   },
@@ -196,12 +215,12 @@ export const productService = {
   async getBrands(): Promise<string[]> {
     try {
       const { data, error } = await supabase
-        .from('products')
-        .select('brand')
-        .order('brand');
+        .from("products")
+        .select("brand")
+        .order("brand");
 
       if (error) {
-        console.error('Error fetching brands:', error);
+        console.error("Error fetching brands:", error);
         return [];
       }
 
@@ -212,7 +231,7 @@ export const productService = {
 
       return brands || [];
     } catch (error) {
-      console.error('Failed to fetch brands:', error);
+      console.error("Failed to fetch brands:", error);
       return [];
     }
   },
@@ -220,28 +239,37 @@ export const productService = {
   /**
    * Get related products (same category, different product)
    */
-  async getRelatedProducts(productId: string, category: string, limit = 4): Promise<ProductWithId[]> {
+  async getRelatedProducts(
+    productId: string,
+    category: string,
+    limit = 4,
+  ): Promise<ProductWithId[]> {
     try {
       const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('category', category)
-        .neq('id', productId)
-        .neq('stock_status', 'out_of_stock')
+        .from("products")
+        .select("*")
+        .eq("category", category)
+        .neq("id", productId)
+        .neq("stock_status", "out_of_stock")
         .limit(limit);
 
       if (error) {
-        console.error('Error fetching related products:', error);
+        console.error("Error fetching related products:", error);
         return [];
       }
 
       // Apply sanitization to all products
-      return (data || []).map(product => {
+      return (data || []).map((product) => {
         const sanitized = sanitizeProduct(product);
-        return { ...sanitized, id: product.id, created_at: product.created_at, updated_at: product.updated_at };
+        return {
+          ...sanitized,
+          id: product.id,
+          created_at: product.created_at,
+          updated_at: product.updated_at,
+        };
       });
     } catch (error) {
-      console.error('Failed to fetch related products:', error);
+      console.error("Failed to fetch related products:", error);
       return [];
     }
   },
@@ -259,23 +287,23 @@ export const productService = {
   async getPriceRange(): Promise<{ min: number; max: number }> {
     try {
       const { data, error } = await supabase
-        .from('products')
-        .select('price')
-        .order('price');
+        .from("products")
+        .select("price")
+        .order("price");
 
       if (error) {
-        console.error('Error fetching price range:', error);
+        console.error("Error fetching price range:", error);
         return { min: 0, max: 1000 };
       }
 
       const prices = data?.map((item) => item.price) || [];
-      
+
       return {
         min: Math.min(...prices, 0),
         max: Math.max(...prices, 1000),
       };
     } catch (error) {
-      console.error('Failed to fetch price range:', error);
+      console.error("Failed to fetch price range:", error);
       return { min: 0, max: 1000 };
     }
   },

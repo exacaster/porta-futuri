@@ -1,7 +1,7 @@
 /* Porta Futuri Widget Styles */
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 /* CSS Variables for theming - OpenAI-inspired modern design */
 :root {
@@ -13,7 +13,7 @@
   --pf-modern-muted: #6e6e80;
   --pf-modern-primary: #10a37f;
   --pf-modern-primary-dark: #0ea570;
-  
+
   /* Legacy variables (for compatibility) */
   --pf-primary: 220 90% 56%;
   --pf-primary-foreground: 0 0% 100%;
@@ -26,20 +26,22 @@
   --pf-accent: 220 14% 96%;
   --pf-accent-foreground: 220 9% 46%;
   --pf-border: 220 14% 90%;
-  
+
   /* Modern radius values */
   --pf-radius: 0.5rem;
   --pf-modern-radius-sm: 6px;
   --pf-modern-radius-md: 12px;
   --pf-modern-radius-lg: 16px;
-  
+
   /* Modern shadows */
-  --pf-modern-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --pf-modern-shadow-md: 0 4px 6px rgba(0,0,0,0.07);
-  --pf-modern-shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
-  
+  --pf-modern-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --pf-modern-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --pf-modern-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
   /* Typography */
-  --pf-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --pf-font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, sans-serif;
 }
 
 /* Widget Container */
@@ -115,8 +117,12 @@
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  box-shadow: 0 8px 16px -2px rgba(109, 2, 163, 0.4), 0 4px 8px -2px rgba(0, 0, 0, 0.2) !important;
-  transition: transform 0.2s, box-shadow 0.2s !important;
+  box-shadow:
+    0 8px 16px -2px rgba(109, 2, 163, 0.4),
+    0 4px 8px -2px rgba(0, 0, 0, 0.2) !important;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s !important;
   font-size: 24px !important;
   position: relative !important;
   z-index: 1000 !important;
@@ -125,7 +131,9 @@
 
 .pf-widget-trigger:hover {
   transform: scale(1.1) !important;
-  box-shadow: 0 12px 20px -3px rgba(109, 2, 163, 0.5), 0 6px 10px -2px rgba(0, 0, 0, 0.25) !important;
+  box-shadow:
+    0 12px 20px -3px rgba(109, 2, 163, 0.5),
+    0 6px 10px -2px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* Widget Panel */
@@ -138,7 +146,9 @@
   background: hsl(var(--pf-background));
   border: 1px solid hsl(var(--pf-border));
   border-radius: var(--pf-radius);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -329,7 +339,9 @@
 }
 
 @keyframes pf-bounce {
-  0%, 60%, 100% {
+  0%,
+  60%,
+  100% {
     transform: translateY(0);
     opacity: 1;
   }
@@ -373,7 +385,9 @@
   padding: 32px;
   max-width: 440px;
   width: calc(100% - 40px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   z-index: 10001;
   animation: pf-slide-up 0.3s ease-out;
 }

@@ -24,7 +24,7 @@ export class RateLimiter {
       // Create new window
       this.limits.set(key, {
         count: 1,
-        resetTime: now + this.windowMs
+        resetTime: now + this.windowMs,
       });
       return true;
     }
@@ -53,7 +53,9 @@ export class RateLimiter {
    */
   getResetTime(key: string): number | null {
     const entry = this.limits.get(key);
-    if (!entry) {return null;}
+    if (!entry) {
+      return null;
+    }
     return entry.resetTime;
   }
 
@@ -96,9 +98,11 @@ export class RateLimiter {
     const resetTime = this.getResetTime(key);
 
     return {
-      'X-RateLimit-Limit': String(this.maxRequests),
-      'X-RateLimit-Remaining': String(remaining),
-      'X-RateLimit-Reset': resetTime ? String(Math.floor(resetTime / 1000)) : String(Date.now() / 1000)
+      "X-RateLimit-Limit": String(this.maxRequests),
+      "X-RateLimit-Remaining": String(remaining),
+      "X-RateLimit-Reset": resetTime
+        ? String(Math.floor(resetTime / 1000))
+        : String(Date.now() / 1000),
     };
   }
 }
@@ -124,20 +128,17 @@ export class RequestQueue {
   /**
    * Add request to queue
    */
-  async add<T>(
-    fn: () => Promise<T>,
-    priority: number = 0
-  ): Promise<T> {
+  async add<T>(fn: () => Promise<T>, priority: number = 0): Promise<T> {
     return new Promise((resolve, reject) => {
       const id = Math.random().toString(36).substr(2, 9);
-      
+
       this.queue.push({
         id,
         fn,
         resolve,
         reject,
         priority,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       // Sort by priority (higher first) then by timestamp (older first)
@@ -176,7 +177,7 @@ export class RequestQueue {
     } finally {
       this.activeRequests--;
       this.processing = false;
-      
+
       // Process next item
       if (this.queue.length > 0) {
         this.process();
@@ -195,8 +196,8 @@ export class RequestQueue {
    * Clear queue
    */
   clear(): void {
-    this.queue.forEach(item => {
-      item.reject(new Error('Queue cleared'));
+    this.queue.forEach((item) => {
+      item.reject(new Error("Queue cleared"));
     });
     this.queue = [];
   }
@@ -212,7 +213,7 @@ export class RequestQueue {
     return {
       queueSize: this.queue.length,
       activeRequests: this.activeRequests,
-      maxConcurrent: this.maxConcurrent
+      maxConcurrent: this.maxConcurrent,
     };
   }
 }
@@ -225,12 +226,14 @@ export class ExponentialBackoff {
   private readonly maxDelay: number;
   private readonly factor: number;
 
-  constructor(options: {
-    maxAttempts?: number;
-    baseDelay?: number;
-    maxDelay?: number;
-    factor?: number;
-  } = {}) {
+  constructor(
+    options: {
+      maxAttempts?: number;
+      baseDelay?: number;
+      maxDelay?: number;
+      factor?: number;
+    } = {},
+  ) {
     this.maxAttempts = options.maxAttempts || 5;
     this.baseDelay = options.baseDelay || 1000;
     this.maxDelay = options.maxDelay || 30000;
@@ -247,12 +250,12 @@ export class ExponentialBackoff {
 
     const delay = Math.min(
       this.baseDelay * Math.pow(this.factor, this.attempt),
-      this.maxDelay
+      this.maxDelay,
     );
 
     // Add jitter (±10%)
     const jitter = delay * 0.1 * (Math.random() * 2 - 1);
-    
+
     this.attempt++;
     return Math.floor(delay + jitter);
   }
@@ -276,7 +279,7 @@ export class ExponentialBackoff {
    */
   async execute<T>(
     fn: () => Promise<T>,
-    shouldRetry?: (error: any) => boolean
+    shouldRetry?: (error: any) => boolean,
   ): Promise<T> {
     this.reset();
 
@@ -285,12 +288,12 @@ export class ExponentialBackoff {
         return await fn();
       } catch (error) {
         const delay = this.getNextDelay();
-        
+
         if (!delay || (shouldRetry && !shouldRetry(error))) {
           throw error;
         }
 
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
