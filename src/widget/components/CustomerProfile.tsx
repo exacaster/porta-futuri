@@ -9,13 +9,14 @@ import { DynamicFieldRenderer } from "./DynamicFieldRenderer";
 interface CustomerProfileProps {
   profile: CustomerProfileType | null;
   contextEvents: ContextEvent[];
-  onClose: () => void;
+  onClose?: () => void; // Made optional since we removed the close button
+  onReset?: () => void;
 }
 
 export const CustomerProfile: React.FC<CustomerProfileProps> = ({
   profile,
   contextEvents,
-  onClose,
+  onReset,
 }) => {
   const { t } = useLanguage();
   const recentEvents = contextEvents.slice(0, 10);
@@ -52,31 +53,30 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({
         >
           {t("profile.title")}
         </h3>
-        <button
-          onClick={onClose}
-          style={{
-            width: "32px",
-            height: "32px",
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "8px",
-            transition: "background 0.2s",
-            color: "#6e6e80",
-            fontSize: "18px",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#f0f0f0";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-          }}
-        >
-          ✕
-        </button>
+        {onReset && profile && (
+          <button
+            onClick={onReset}
+            style={{
+              padding: "6px 12px",
+              background: "#ff4444",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "13px",
+              fontWeight: "500",
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#ff3333";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#ff4444";
+            }}
+          >
+            {t("profile.clearProfile") || "Clear Profile"}
+          </button>
+        )}
       </div>
 
       <div style={{ padding: "20px" }}>

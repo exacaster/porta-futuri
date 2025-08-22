@@ -456,3 +456,112 @@
   height: 100%;
   min-height: 0;
 }
+
+/* Enhanced Header Styles */
+.pf-widget-header-enhanced {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+  min-height: 70px;
+  border-bottom: 1px solid var(--pf-modern-border);
+  background: var(--pf-modern-surface);
+  gap: 1rem;
+}
+
+.pf-widget-title-enhanced {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+  color: var(--pf-modern-text);
+}
+
+/* Navigation Tabs */
+.pf-widget-navigation {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+  margin-right: 0.5rem;
+}
+
+.pf-nav-tab {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--pf-modern-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--pf-modern-muted);
+}
+
+.pf-nav-tab:hover {
+  background: var(--pf-modern-surface);
+  transform: translateY(-1px);
+}
+
+.pf-nav-tab.active {
+  background: var(--pf-modern-primary);
+  border-color: var(--pf-modern-primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 163, 127, 0.3);
+}
+
+/* Close Button */
+.pf-btn-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--pf-modern-muted);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.pf-btn-close:hover {
+  background: var(--pf-modern-border);
+}
+
+/* Resizable Widget Panel */
+.pf-widget-panel-resizable {
+  resize: both;
+  overflow: auto;
+  min-width: 320px;
+  max-width: 600px;
+  min-height: 400px;
+  max-height: 90vh;
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  background: hsl(var(--pf-background));
+  border: 1px solid hsl(var(--pf-border));
+  border-radius: var(--pf-radius);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  animation: pf-slide-in 0.3s ease-out;
+}
+
+/* Resize Handle Indicator */
+.pf-widget-panel-resizable::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, var(--pf-modern-border) 50%);
+  pointer-events: none;
+}

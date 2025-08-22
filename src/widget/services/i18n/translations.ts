@@ -5,6 +5,11 @@ export interface WidgetTranslations {
 
 interface TranslationStrings {
   greeting: string[];
+  navigation: {
+    chat: string;
+    profile: string;
+    context: string;
+  };
   profile: {
     title: string;
     noProfile: string;
@@ -27,6 +32,8 @@ interface TranslationStrings {
     search: string;
     viewProfile: string;
     hideProfile: string;
+    clearProfile: string;
+    enterNewId: string;
   };
   chat: {
     title: string;
@@ -85,6 +92,11 @@ export const translations: WidgetTranslations = {
       "Sveiki atvykę! Kaip galiu padėti su jūsų pirkimu?",
       "Sveiki! Turite klausimų apie mūsų produktus?",
     ],
+    navigation: {
+      chat: "Pokalbis",
+      profile: "Profilis",
+      context: "Kontekstas",
+    },
     profile: {
       title: "Kliento profilis",
       noProfile: "Kliento profilis neprieinamas",
@@ -108,6 +120,8 @@ export const translations: WidgetTranslations = {
       search: "Paieška",
       viewProfile: "Peržiūrėti profilį",
       hideProfile: "Slėpti profilį",
+      clearProfile: "Išvalyti profilį",
+      enterNewId: "Įvesti naują ID",
     },
     chat: {
       title: "AI Apsipirkimo Asistentas",
@@ -167,6 +181,11 @@ export const translations: WidgetTranslations = {
       "Welcome! How can I assist with your shopping?",
       "Hello! Have questions about our products?",
     ],
+    navigation: {
+      chat: "Chat",
+      profile: "Profile",
+      context: "Real-Time Context",
+    },
     profile: {
       title: "Customer Profile",
       noProfile: "No customer profile available",
@@ -190,6 +209,8 @@ export const translations: WidgetTranslations = {
       search: "Search",
       viewProfile: "View Profile",
       hideProfile: "Hide Profile",
+      clearProfile: "Clear Profile",
+      enterNewId: "Enter New ID",
     },
     chat: {
       title: "AI Shopping Assistant",

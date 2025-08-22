@@ -8,14 +8,13 @@ interface BrowsingHistoryProps {
   events: ContextEvent[];
   detectedIntent: BrowsingIntent | null;
   onClearHistory: () => void;
-  onClose: () => void;
+  onClose?: () => void; // Made optional since we removed the close button
 }
 
 export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
   events,
   detectedIntent,
   onClearHistory,
-  onClose
 }) => {
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -124,31 +123,6 @@ export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
         >
           Browsing Activity & Intent
         </h3>
-        <button
-          onClick={onClose}
-          style={{
-            width: '32px',
-            height: '32px',
-            background: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '8px',
-            transition: 'background 0.2s',
-            color: '#6e6e80',
-            fontSize: '18px',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#f0f0f0';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-          }}
-        >
-          ✕
-        </button>
       </div>
       <Tabs.Root defaultValue="history" className="flex-1 flex flex-col" style={{ background: 'white', margin: '20px', borderRadius: '12px', overflow: 'hidden' }}>
         <Tabs.List className="flex border-b border-gray-200 px-3">

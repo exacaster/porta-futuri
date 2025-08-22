@@ -9,6 +9,7 @@ import { useWidgetConfig } from "./hooks/useWidgetConfig";
 import { useLanguage } from "./hooks/useLanguage";
 import { useBrowsingHistory } from "./hooks/useBrowsingHistory";
 import { csvProcessor } from "./services/csvParser";
+import { MessageCircle, User, Activity, X } from "lucide-react";
 import {
   Product,
   CustomerProfile as CustomerProfileType,
@@ -53,9 +54,12 @@ interface AppProps {
 }
 
 function AppContent({ config }: AppProps) {
+  // Main widget state
   const [isOpen, setIsOpen] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [showBrowsingHistory, setShowBrowsingHistory] = useState(false);
+  const [activeTab, setActiveTab] = useState<'chat' | 'profile' | 'context'>('chat');
+  const [widgetSize, setWidgetSize] = useState({ width: 380, height: 600 });
+  
+  // Data state
   const [products, setProducts] = useState<Product[]>([]);
   const [customerProfile, setCustomerProfile] =
     useState<CustomerProfileType | null>(null);
@@ -78,7 +82,43 @@ function AppContent({ config }: AppProps) {
   });
   
   // Initialize browsing history tracking
-  const { events, detectedIntent, clearHistory, trackEvent, trackProductView, trackSearch, trackCartAction } = useBrowsingHistory(sessionId);
+  const { events, detectedIntent, clearHistory } = useBrowsingHistory(sessionId);
+
+  // Restore widget state from sessionStorage
+  useEffect(() => {
+    const savedState = sessionStorage.getItem('porta_futuri_widget_state');
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        const age = Date.now() - state.timestamp;
+        
+        // Only restore if less than 30 minutes old
+        if (age < 30 * 60 * 1000) {
+          setActiveTab(state.activeTab || 'chat');
+          setWidgetSize(state.widgetSize || { width: 380, height: 600 });
+          setIsOpen(state.isOpen || false);
+          if (state.customerId) {
+            setCustomerId(state.customerId);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to restore widget state:', error);
+      }
+    }
+  }, []);
+
+  // Save widget state on changes
+  useEffect(() => {
+    const state = {
+      activeTab,
+      widgetSize,
+      isOpen,
+      customerId,
+      sessionId,
+      timestamp: Date.now()
+    };
+    sessionStorage.setItem('porta_futuri_widget_state', JSON.stringify(state));
+  }, [activeTab, widgetSize, isOpen, customerId, sessionId]);
 
   // Get customer ID from multiple sources
   const getCustomerId = (): string | null => {
@@ -185,14 +225,22 @@ function AppContent({ config }: AppProps) {
     fetchCDPData(id);
   };
 
-  // Handle profile button click
-  const handleProfileClick = () => {
-    if (!customerId) {
+  // Handle tab switching
+  const handleTabChange = (tab: 'chat' | 'profile' | 'context') => {
+    // If switching to profile and no customer ID, show modal
+    if (tab === 'profile' && !customerId) {
       setShowCustomerIdModal(true);
-    } else {
-      setShowProfile(!showProfile);
-      setShowBrowsingHistory(false);
+      return;
     }
+    setActiveTab(tab);
+  };
+
+  // Handle profile reset
+  const handleProfileReset = () => {
+    setCustomerId(null);
+    setCustomerProfile(null);
+    sessionStorage.removeItem('porta_futuri_customer_id');
+    setShowCustomerIdModal(true);
   };
 
   const loadData = async () => {
@@ -323,61 +371,24 @@ function AppContent({ config }: AppProps) {
       />
 
       {isOpen && (
-        <div className="pf-widget-panel">
-          <div className="pf-widget-header">
-            <h3 className="pf-widget-title">{t("chat.title")}</h3>
-            <div className="pf-widget-actions">
-              <button
-                onClick={() => {
-                  setShowBrowsingHistory(!showBrowsingHistory);
-                  setShowProfile(false);
-                }}
-                className="pf-btn-icon"
-                title="View Browsing History"
-                style={{
-                  position: "relative",
-                  background: showBrowsingHistory
-                    ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                    : "transparent",
-                  color: showBrowsingHistory ? "white" : "inherit",
-                  border: showBrowsingHistory
-                    ? "none"
-                    : "1px solid hsl(var(--pf-border))",
-                }}
+        <div className="pf-widget-panel pf-widget-panel-resizable" style={{ width: `${widgetSize.width}px`, height: `${widgetSize.height}px` }}>
+          <div className="pf-widget-header-enhanced">
+            <h3 className="pf-widget-title-enhanced">{t("chat.title")}</h3>
+            <div className="pf-widget-navigation">
+              <button 
+                onClick={() => setActiveTab('chat')}
+                className={`pf-nav-tab ${activeTab === 'chat' ? 'active' : ''}`}
+                title={t("navigation.chat") || "Chat"}
               >
-                📊
-                {detectedIntent && (
-                  <span
-                    className="pf-profile-indicator"
-                    style={{
-                      position: "absolute",
-                      top: "-2px",
-                      right: "-2px",
-                      width: "8px",
-                      height: "8px",
-                      background: "#10a37f",
-                      borderRadius: "50%",
-                      border: "2px solid white",
-                    }}
-                  />
-                )}
+                <MessageCircle size={18} />
               </button>
-              <button
-                onClick={handleProfileClick}
-                className="pf-btn-icon pf-profile-button"
-                title={t("profile.viewProfile")}
-                style={{
-                  position: "relative",
-                  background: customerId
-                    ? "linear-gradient(135deg, #10a37f 0%, #0ea570 100%)"
-                    : "transparent",
-                  color: customerId ? "white" : "inherit",
-                  border: customerId
-                    ? "none"
-                    : "1px solid hsl(var(--pf-border))",
-                }}
+              <button 
+                onClick={() => handleTabChange('profile')}
+                className={`pf-nav-tab ${activeTab === 'profile' ? 'active' : ''}`}
+                title={t("navigation.profile") || "Profile"}
+                style={{ position: "relative" }}
               >
-                👤
+                <User size={18} />
                 {customerId && (
                   <span
                     className="pf-profile-indicator"
@@ -394,14 +405,37 @@ function AppContent({ config }: AppProps) {
                   />
                 )}
               </button>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="pf-btn-icon"
-                title={t("common.close")}
+              <button 
+                onClick={() => setActiveTab('context')}
+                className={`pf-nav-tab ${activeTab === 'context' ? 'active' : ''}`}
+                title={t("navigation.context") || "Real-Time Context"}
+                style={{ position: "relative" }}
               >
-                ✕
+                <Activity size={18} />
+                {detectedIntent && (
+                  <span
+                    className="pf-profile-indicator"
+                    style={{
+                      position: "absolute",
+                      top: "-2px",
+                      right: "-2px",
+                      width: "8px",
+                      height: "8px",
+                      background: "#10a37f",
+                      borderRadius: "50%",
+                      border: "2px solid white",
+                    }}
+                  />
+                )}
               </button>
             </div>
+            <button 
+              onClick={() => setIsOpen(false)} 
+              className="pf-btn-close"
+              title={t("common.close")}
+            >
+              <X size={20} />
+            </button>
           </div>
 
           {dataLoading ? (
@@ -416,18 +450,19 @@ function AppContent({ config }: AppProps) {
                 {t("chat.retryButton")}
               </button>
             </div>
-          ) : showBrowsingHistory ? (
+          ) : activeTab === 'context' ? (
             <BrowsingHistory
               events={events}
               detectedIntent={detectedIntent}
               onClearHistory={clearHistory}
-              onClose={() => setShowBrowsingHistory(false)}
+              onClose={() => setActiveTab('chat')}
             />
-          ) : showProfile ? (
+          ) : activeTab === 'profile' ? (
             <CustomerProfile
               profile={customerProfile}
               contextEvents={contextEvents}
-              onClose={() => setShowProfile(false)}
+              onClose={() => setActiveTab('chat')}
+              onReset={handleProfileReset}
             />
           ) : (
             <ChatInterface
