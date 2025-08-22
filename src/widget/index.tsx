@@ -1,24 +1,27 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "./App";
+import { WidgetConfig, TrackingEvent } from "./types/widget.types";
 
 // Widget initialization interface
 interface PortaFuturiWidget {
-  init: (config: any) => void;
+  init: (config: WidgetConfig) => void;
   destroy: () => void;
-  update: (config: any) => void;
-  getMetrics: () => any;
-  trackEvent: (event: any) => void;
+  update: (config: Partial<WidgetConfig>) => void;
+  getMetrics: () => WidgetMetrics;
+  trackEvent: (event: TrackingEvent) => void;
   customerId?: string;
   apiKey?: string;
-  config?: any;
-  metrics: {
-    loadTime: number;
-    responseTime: number[];
-    ctr: number;
-    sessionDuration: number;
-    errorRate: number;
-  };
+  config?: WidgetConfig;
+  metrics: WidgetMetrics;
+}
+
+interface WidgetMetrics {
+  loadTime: number;
+  responseTime: number[];
+  ctr: number;
+  sessionDuration: number;
+  errorRate: number;
 }
 
 // Global widget object
@@ -34,24 +37,24 @@ let widgetContainer: HTMLElement | null = null;
 const startTime = Date.now();
 
 // Initialize widget
-function init(config: any) {
-  console.log("[Porta Futuri] Init called with config:", config);
-
+function init(config: WidgetConfig) {
   // Validate config
   if (!config.apiKey) {
-    console.error("[Porta Futuri] API key is required");
+    if (process.env.NODE_ENV !== 'production') {
+      console.error("[Porta Futuri] API key is required");
+    }
     return;
   }
-
-  console.log("[Porta Futuri] Starting widget initialization...");
 
   // Create or get container
   if (config.containerId) {
     widgetContainer = document.getElementById(config.containerId);
     if (!widgetContainer) {
-      console.error(
-        `[Porta Futuri] Container with ID "${config.containerId}" not found`,
-      );
+      if (process.env.NODE_ENV !== 'production') {
+        console.error(
+          `[Porta Futuri] Container with ID "${config.containerId}" not found`,
+        );
+      }
       return;
     }
   } else {
@@ -146,21 +149,22 @@ function destroy() {
 
     widgetContainer = null;
   } catch (error) {
-    console.error("[Porta Futuri] Error destroying widget:", error);
+    // Silently handle destruction errors
   }
 }
 
 // Update widget configuration
-function update(config: any) {
+function update(config: Partial<WidgetConfig>) {
   if (!widgetRoot || !widgetContainer) {
-    console.error("[Porta Futuri] Widget not initialized");
     return;
   }
 
-  // Re-render with new config
+  // Re-render with merged config
+  const currentConfig = window.PortaFuturi.config || { apiKey: '' };
+  const mergedConfig = { ...currentConfig, ...config } as WidgetConfig;
   widgetRoot.render(
     <React.StrictMode>
-      <App config={config} />
+      <App config={mergedConfig} />
     </React.StrictMode>,
   );
 }
@@ -171,7 +175,7 @@ function getMetrics() {
 }
 
 // Track custom events
-function trackEvent(event: any) {
+function trackEvent(event: TrackingEvent) {
   // Add to metrics
   if (event.event_type === "recommendation_clicked") {
     const totalClicks =
@@ -186,18 +190,20 @@ function trackEvent(event: any) {
   }
 
   // Send to analytics if configured
-  if (typeof window !== "undefined" && (window as any).gtag) {
-    (window as any).gtag("event", event.event_type, {
-      event_category: "Porta Futuri Widget",
-      event_label: event.label,
-      value: event.value,
-    });
+  if (typeof window !== "undefined" && 'gtag' in window) {
+    const gtag = (window as Window & { gtag?: Function }).gtag;
+    if (gtag) {
+      gtag("event", event.event_type, {
+        event_category: event.event_category || "Porta Futuri Widget",
+        event_label: event.event_label,
+        value: event.event_value,
+      });
+    }
   }
 }
 
 // Initialize global widget object - preserve any existing config
 const existingConfig = window.PortaFuturi || {};
-console.log("[Porta Futuri] Existing config:", existingConfig);
 
 window.PortaFuturi = {
   ...existingConfig, // Preserve any existing properties (like apiKey, customerId, config)
@@ -215,24 +221,15 @@ window.PortaFuturi = {
   },
 };
 
-console.log("[Porta Futuri] Widget object initialized:", window.PortaFuturi);
-
 // Auto-initialize if config is present
 if (typeof document !== "undefined") {
-  console.log("[Porta Futuri] Checking for auto-init config...");
   // Check if there's already a config on window.PortaFuturi (from demo site setup)
   if (window.PortaFuturi && window.PortaFuturi.apiKey) {
-    console.log(
-      "[Porta Futuri] Found apiKey, preparing auto-init with:",
-      window.PortaFuturi.apiKey,
-    );
-    const config = {
+    const config: WidgetConfig = {
       apiKey: window.PortaFuturi.apiKey,
-      customerId: window.PortaFuturi.customerId,
       ...window.PortaFuturi.config,
       position: window.PortaFuturi.config?.position || "bottom-right",
     };
-    console.log("[Porta Futuri] Auto-init config:", config);
 
     // Wait for DOM ready
     if (document.readyState === "loading") {
@@ -247,10 +244,10 @@ if (typeof document !== "undefined") {
     const script = document.currentScript as HTMLScriptElement;
     if (script && script.dataset.apiKey) {
       // Auto-init with data attributes
-      const config = {
+      const config: WidgetConfig = {
         apiKey: script.dataset.apiKey,
         apiUrl: script.dataset.apiUrl,
-        position: script.dataset.position,
+        position: script.dataset.position as any,
         containerId: script.dataset.containerId,
         theme: {
           primaryColor: script.dataset.themePrimary,

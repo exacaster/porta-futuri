@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FieldValue } from "@shared/types";
 import { useLanguage } from "../hooks/useLanguage";
 
@@ -7,13 +7,13 @@ interface DynamicFieldRendererProps {
   field: FieldValue;
 }
 
-export const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
+const DynamicFieldRendererComponent: React.FC<DynamicFieldRendererProps> = ({
   fieldKey,
   field,
 }) => {
   const { t } = useLanguage();
 
-  const renderValue = () => {
+  const renderValue = useMemo(() => {
     switch (field.type) {
       case "boolean":
         return field.value ? t("common.yes") : t("common.no");
@@ -38,7 +38,7 @@ export const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
       default:
         return String(field.value);
     }
-  };
+  }, [field, fieldKey, t]);
 
   const getValueColor = () => {
     if (field.type === "boolean") {
@@ -59,8 +59,10 @@ export const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
           fontWeight: "500",
         }}
       >
-        {renderValue()}
+        {renderValue}
       </span>
     </div>
   );
 };
+
+export const DynamicFieldRenderer = React.memo(DynamicFieldRendererComponent);
