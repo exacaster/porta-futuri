@@ -19,6 +19,12 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({
 }) => {
   const { t } = useLanguage();
   const recentEvents = contextEvents.slice(0, 10);
+  
+  // Debug logging
+  console.log('[DEBUG CustomerProfile] Profile received:', profile);
+  console.log('[DEBUG CustomerProfile] CDP Data:', profile?.cdp_data);
+  console.log('[DEBUG CustomerProfile] CDP Fields:', profile?.cdp_data?.fields);
+  console.log('[DEBUG CustomerProfile] Has fields?', profile?.cdp_data?.fields && Object.keys(profile.cdp_data.fields).length > 0);
 
   return (
     <div

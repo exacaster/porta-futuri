@@ -119,6 +119,7 @@ function AppContent({ config }: AppProps) {
 
   // Fetch CDP data if customer ID is available
   const fetchCDPData = async (customerId: string) => {
+    console.log('[DEBUG] Starting CDP fetch for customer:', customerId);
     try {
       // Get Supabase URL and anon key from config or environment
       const supabaseUrl =
@@ -141,20 +142,78 @@ function AppContent({ config }: AppProps) {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('[DEBUG] CDP Response:', data);
+        console.log('[DEBUG] CDP Available:', data.cdp_available);
+        console.log('[DEBUG] CDP Fields:', data.fields);
         if (data.cdp_available) {
+          // Check if we need to transform the data format
+          if (!data.fields) {
+            console.log('[DEBUG] Transforming CDP response to field format');
+            data.fields = {};
+            
+            // Transform ALL fields from the response dynamically
+            // Skip only metadata fields
+            const metadataFields = ['customer_id', 'cdp_available', 'last_updated', 'version', 'response_time_ms', 'fallback_reason', 'error'];
+            
+            for (const [key, value] of Object.entries(data)) {
+              // Skip metadata fields
+              if (metadataFields.includes(key)) continue;
+              
+              // Handle nested objects by flattening them
+              if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                // Flatten nested object
+                for (const [nestedKey, nestedValue] of Object.entries(value as Record<string, any>)) {
+                  const flatKey = `${key}_${nestedKey}`;
+                  data.fields[flatKey] = {
+                    value: nestedValue,
+                    type: typeof nestedValue === 'boolean' ? 'boolean' : 
+                           typeof nestedValue === 'number' ? 'number' : 
+                           Array.isArray(nestedValue) ? 'array' : 
+                           typeof nestedValue === 'object' ? 'object' : 'string',
+                    display_name: flatKey
+                      .replace(/_/g, ' ')
+                      .replace(/\b\w/g, l => l.toUpperCase())
+                      .trim()
+                  };
+                }
+              } else {
+                // Handle all other fields directly
+                data.fields[key] = {
+                  value: value,
+                  type: typeof value === 'boolean' ? 'boolean' : 
+                         typeof value === 'number' ? 'number' : 
+                         Array.isArray(value) ? 'array' : 
+                         typeof value === 'object' ? 'object' : 'string',
+                  display_name: key
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, l => l.toUpperCase())
+                    .trim()
+                };
+              }
+            }
+            
+            console.log('[DEBUG] Transformed fields:', data.fields);
+            console.log('[DEBUG] Field count:', Object.keys(data.fields).length);
+          }
+          
           // Enhance customer profile with CDP data
+          console.log('[DEBUG] Setting customer profile with CDP data');
           setCustomerProfile(
-            (prev) =>
-              ({
+            (prev) => {
+              const newProfile = {
                 ...prev,
                 customer_id: customerId,
                 cdp_data: data,
-              }) as CustomerProfileType,
+              } as CustomerProfileType;
+              console.log('[DEBUG] Previous profile:', prev);
+              console.log('[DEBUG] New profile with CDP:', newProfile);
+              return newProfile;
+            }
           );
         }
       }
     } catch (error) {
-      console.warn("Failed to fetch CDP data:", error);
+      console.error("[DEBUG] Failed to fetch CDP data:", error);
       // Fallback to CSV data
     }
   };

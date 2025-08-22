@@ -19,7 +19,6 @@ export function PortaFuturiWidget() {
     theme: {
       primaryColor: "#6d02a3",
     },
-    customerId: localStorage.getItem("itelecom_customer_id") || "DEMO_USER_001",
     data: {
       products: [],
     },
