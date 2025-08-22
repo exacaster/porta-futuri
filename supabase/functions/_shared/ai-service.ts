@@ -25,6 +25,20 @@ interface Product {
 
 interface CustomerProfile {
   customer_id?: string;
+  // CDP data with dynamic fields
+  cdp_data?: {
+    cdp_available: boolean;
+    last_updated?: string;
+    version?: number;
+    fallback_reason?: string;
+    fields?: Record<string, {
+      value: any;
+      type: string;
+      display_name?: string;
+    }>;
+    [key: string]: any;
+  };
+  // Legacy fields for backward compatibility
   age_group?: string;
   gender?: string;
   location?: string;
@@ -240,21 +254,57 @@ Remember: You're the fun, clever friend who happens to be amazing at finding the
     const lines: string[] = [];
     
     if (profile.customer_id) lines.push(`- Customer ID: ${profile.customer_id}`);
-    if (profile.age_group) lines.push(`- Age Group: ${profile.age_group}`);
-    if (profile.gender) lines.push(`- Gender: ${profile.gender}`);
-    if (profile.location) lines.push(`- Location: ${profile.location}`);
-    if (profile.preferences) lines.push(`- Preferences: ${profile.preferences}`);
-    if (profile.purchase_history) lines.push(`- Purchase History: ${profile.purchase_history}`);
-    if (profile.segment) lines.push(`- Customer Segment: ${profile.segment}`);
-    if (profile.engagement_score) lines.push(`- Engagement Score: ${profile.engagement_score}`);
     
-    // Add any dynamic CDP fields
+    // Handle CDP data if present - this is the primary data source
+    if (profile.cdp_data && typeof profile.cdp_data === 'object') {
+      // Check if CDP data has fields
+      if (profile.cdp_data.fields && typeof profile.cdp_data.fields === 'object') {
+        // Process each CDP field
+        Object.entries(profile.cdp_data.fields).forEach(([key, fieldData]) => {
+          // Handle field with metadata structure
+          if (fieldData && typeof fieldData === 'object' && 'value' in fieldData) {
+            const displayName = fieldData.display_name || this.humanizeFieldName(key);
+            const value = fieldData.value;
+            if (value !== null && value !== undefined) {
+              lines.push(`- ${displayName}: ${value}`);
+            }
+          } else {
+            // Handle plain value
+            if (fieldData !== null && fieldData !== undefined) {
+              lines.push(`- ${this.humanizeFieldName(key)}: ${fieldData}`);
+            }
+          }
+        });
+      } else if (profile.cdp_data) {
+        // Handle legacy CDP data format (direct fields)
+        Object.entries(profile.cdp_data).forEach(([key, value]) => {
+          if (!['cdp_available', 'last_updated', 'version', 'fallback_reason', 'fields'].includes(key)) {
+            if (value !== null && value !== undefined) {
+              lines.push(`- ${this.humanizeFieldName(key)}: ${value}`);
+            }
+          }
+        });
+      }
+    }
+    
+    // Add legacy fields if no CDP data is available
+    if (!profile.cdp_data || !profile.cdp_data.fields) {
+      if (profile.age_group) lines.push(`- Age Group: ${profile.age_group}`);
+      if (profile.gender) lines.push(`- Gender: ${profile.gender}`);
+      if (profile.location) lines.push(`- Location: ${profile.location}`);
+      if (profile.preferences) lines.push(`- Preferences: ${profile.preferences}`);
+      if (profile.purchase_history) lines.push(`- Purchase History: ${profile.purchase_history}`);
+      if (profile.segment) lines.push(`- Customer Segment: ${profile.segment}`);
+      if (profile.engagement_score) lines.push(`- Engagement Score: ${profile.engagement_score}`);
+    }
+    
+    // Add any other dynamic fields (excluding already processed ones)
     Object.keys(profile).forEach(key => {
-      if (!['customer_id', 'age_group', 'gender', 'location', 'preferences', 
+      if (!['customer_id', 'cdp_data', 'age_group', 'gender', 'location', 'preferences', 
             'purchase_history', 'segment', 'engagement_score', 'lifetime_value', 
-            'last_purchase_date'].includes(key)) {
+            'last_purchase_date', 'created_at', 'last_active'].includes(key)) {
         const value = profile[key];
-        if (value !== null && value !== undefined) {
+        if (value !== null && value !== undefined && typeof value !== 'object') {
           lines.push(`- ${this.humanizeFieldName(key)}: ${value}`);
         }
       }
