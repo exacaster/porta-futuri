@@ -1,7 +1,7 @@
 import React from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
 import { ContextEvent } from '@shared/types/context.types';
-import { Clock, TrendingUp, X, AlertCircle, ShoppingCart, Search, Package } from 'lucide-react';
+import { Clock, TrendingUp, AlertCircle, ShoppingCart, Search, Package } from 'lucide-react';
 import { BrowsingIntent } from '../services/eventTracking';
 
 interface BrowsingHistoryProps {
@@ -99,8 +99,58 @@ export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
   };
   
   return (
-    <div className="pf-browsing-history">
-      <Tabs.Root defaultValue="history" className="h-full flex flex-col">
+    <div className="pf-browsing-history" style={{ height: 'calc(100% - 60px)', background: '#f7f7f8' }}>
+      {/* Header */}
+      <div
+        style={{
+          padding: '20px 24px',
+          background: 'white',
+          borderBottom: '1px solid #e5e5e7',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+        }}
+      >
+        <h3
+          style={{
+            margin: 0,
+            fontSize: '20px',
+            fontWeight: '600',
+            color: '#0d0d0d',
+          }}
+        >
+          Browsing Activity & Intent
+        </h3>
+        <button
+          onClick={onClose}
+          style={{
+            width: '32px',
+            height: '32px',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '8px',
+            transition: 'background 0.2s',
+            color: '#6e6e80',
+            fontSize: '18px',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#f0f0f0';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+          }}
+        >
+          ✕
+        </button>
+      </div>
+      <Tabs.Root defaultValue="history" className="flex-1 flex flex-col" style={{ background: 'white', margin: '20px', borderRadius: '12px', overflow: 'hidden' }}>
         <Tabs.List className="flex border-b border-gray-200 px-3">
           <Tabs.Trigger 
             value="history" 
@@ -267,16 +317,6 @@ export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
           )}
         </Tabs.Content>
       </Tabs.Root>
-      
-      <div className="border-t p-3 flex justify-end bg-gray-50 mt-auto">
-        <button
-          onClick={onClose}
-          className="px-4 py-2 text-sm bg-white hover:bg-gray-100 border border-gray-300 rounded-lg transition-colors flex items-center gap-2"
-        >
-          <X className="w-4 h-4" />
-          Back to Chat
-        </button>
-      </div>
     </div>
   );
 };
