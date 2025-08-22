@@ -177,9 +177,9 @@ export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
           </div>
         </Tabs.Content>
         
-        <Tabs.Content value="intent" className="flex-1 overflow-auto p-4">
+        <Tabs.Content value="intent" className="flex-1 overflow-hidden flex flex-col p-4" style={{ minHeight: 0 }}>
           {detectedIntent ? (
-            <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4">
               <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 shadow-sm">
                 <div className="flex items-start justify-between mb-3">
                   <div>
@@ -241,7 +241,7 @@ export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
                 )}
               </div>
               
-              <div className="bg-gray-50 rounded-lg p-3">
+              <div className="bg-gray-50 rounded-lg p-3 mt-auto">
                 <p className="text-xs text-gray-600">
                   <span className="font-semibold">How this works:</span> Our AI analyzes your browsing patterns 
                   to understand your shopping intent and provide personalized assistance.
@@ -250,7 +250,7 @@ export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
+              <div className="text-center py-8">
                 <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-600 text-sm font-medium mb-2">
                   Intent Analysis Pending
