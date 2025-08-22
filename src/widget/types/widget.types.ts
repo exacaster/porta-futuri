@@ -39,7 +39,7 @@ export interface CDPResponse {
 export interface FieldValue {
   value: string | number | boolean | null;
   type: 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object';
-  display_name: string;
+  display_name?: string;
 }
 
 export interface Product {

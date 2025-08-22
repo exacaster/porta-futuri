@@ -1,4 +1,5 @@
 import { ContextEvent, EventType } from '@shared/types/context.types';
+import { CustomerProfile } from '../types/widget.types';
 
 export interface BrowsingIntent {
   intent: string;
@@ -12,6 +13,9 @@ export class EventTrackingService {
   private maxEvents = 50;
   private sessionId: string;
   private listeners: Set<(events: ContextEvent[]) => void> = new Set();
+  private interactionCount = 0;
+  private currentIntent: BrowsingIntent | null = null;
+  private lastAIAnalysisTime = 0;
   
   constructor(sessionId: string) {
     this.sessionId = sessionId;
@@ -49,6 +53,7 @@ export class EventTrackingService {
     };
     
     this.addEvent(event);
+    this.interactionCount++;
   }
   
   trackProductView(productId: string, category?: string, price?: number) {
@@ -63,6 +68,7 @@ export class EventTrackingService {
     };
     
     this.addEvent(event);
+    this.interactionCount++;
   }
   
   trackSearch(query: string) {
@@ -75,6 +81,7 @@ export class EventTrackingService {
     };
     
     this.addEvent(event);
+    this.interactionCount++;
   }
   
   trackCartAction(productId: string, action: 'add' | 'remove' | 'update_quantity', quantity?: number, price?: number) {
@@ -90,6 +97,7 @@ export class EventTrackingService {
     };
     
     this.addEvent(event);
+    this.interactionCount++;
   }
   
   private extractCategoryFromUrl(url: string): string | undefined {
@@ -254,6 +262,93 @@ export class EventTrackingService {
     }
     
     return null;
+  }
+
+  getInteractionCount(): number {
+    return this.interactionCount;
+  }
+
+  async analyzeIntentWithAI(
+    apiKey: string,
+    customerProfile?: CustomerProfile
+  ): Promise<BrowsingIntent | null> {
+    console.log('[AI Intent] Starting analysis. Interaction count:', this.interactionCount);
+    
+    // Only analyze after 3-5 interactions
+    if (this.interactionCount < 3) {
+      console.log('[AI Intent] Not enough interactions yet (need 3, have', this.interactionCount, ')');
+      return this.currentIntent; // Return cached intent
+    }
+    
+    // Analyze every 3 interactions
+    if (this.interactionCount % 3 !== 0) {
+      console.log('[AI Intent] Not at 3-interaction interval');
+      return this.currentIntent;
+    }
+
+    // Prevent too frequent API calls (minimum 30 seconds between calls)
+    const now = Date.now();
+    if (now - this.lastAIAnalysisTime < 30000) {
+      console.log('[AI Intent] Too soon since last analysis (wait 30s)');
+      return this.currentIntent;
+    }
+
+    try {
+      // Get the Supabase URL from environment or widget config
+      const supabaseUrl = (window as any).PortaFuturi?.supabaseUrl || 
+                         (window as any).env?.REACT_APP_SUPABASE_URL || 
+                         'https://rvlbbgdkgneobvlyawix.supabase.co';
+      
+      const API_URL = `${supabaseUrl}/functions/v1/intent-analysis`;
+      
+      console.log('Calling AI intent analysis API:', API_URL);
+      console.log('Interaction count:', this.interactionCount);
+      console.log('Events to analyze:', this.events.length);
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          session_id: this.sessionId,
+          browsing_history: this.events,
+          customer_profile: customerProfile,
+          interaction_count: this.interactionCount,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('AI intent analysis failed:', response.status, response.statusText);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error details:', errorData);
+        
+        // Fall back to rule-based analysis
+        return this.analyzeIntent();
+      }
+
+      const data = await response.json();
+      console.log('AI intent analysis successful:', data);
+
+      // Format the response for the UI
+      const formattedIntent: BrowsingIntent = {
+        intent: data.intent.primary_interest,
+        confidence: data.intent.confidence,
+        signals: data.intent.behavioral_signals || [],
+        suggestedMessage: data.intent.customer_message
+      };
+
+      // Cache the intent
+      this.currentIntent = formattedIntent;
+      this.lastAIAnalysisTime = now;
+
+      return formattedIntent;
+    } catch (error) {
+      console.error('AI intent analysis error:', error);
+      // Fall back to rule-based analysis
+      return this.analyzeIntent();
+    }
   }
   
   destroy() {

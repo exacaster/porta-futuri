@@ -46,7 +46,24 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onFileUpload: _onFileUpload,
   navigation,
 }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  // Load messages from sessionStorage on mount
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const savedMessages = sessionStorage.getItem('porta_futuri_chat_messages');
+    if (savedMessages) {
+      try {
+        const parsed = JSON.parse(savedMessages);
+        // Convert timestamp strings back to Date objects
+        return parsed.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+      } catch (error) {
+        console.error('Failed to load chat history:', error);
+        return [];
+      }
+    }
+    return [];
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(`session-${Date.now()}`);
@@ -68,16 +85,29 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize with greeting
+  // Initialize with greeting only if no existing messages
   useEffect(() => {
-    const greetingMessage: Message = {
-      id: `msg-${Date.now()}`,
-      role: "assistant",
-      content: t("greeting"), // This will return a random greeting in the current language
-      timestamp: new Date(),
-    };
-    setMessages([greetingMessage]);
-  }, [t]);
+    if (messages.length === 0) {
+      const greetingMessage: Message = {
+        id: `msg-${Date.now()}`,
+        role: "assistant",
+        content: t("greeting"), // This will return a random greeting in the current language
+        timestamp: new Date(),
+      };
+      setMessages([greetingMessage]);
+    }
+  }, [t]); // Remove messages from dependency to avoid re-triggering
+
+  // Save messages to sessionStorage whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      try {
+        sessionStorage.setItem('porta_futuri_chat_messages', JSON.stringify(messages));
+      } catch (error) {
+        console.error('Failed to save chat history:', error);
+      }
+    }
+  }, [messages]);
 
   // Auto-scroll to bottom
   useEffect(() => {

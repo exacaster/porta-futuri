@@ -82,8 +82,12 @@ function AppContent({ config }: AppProps) {
     return newId;
   });
   
-  // Initialize browsing history tracking
-  const { events, detectedIntent, clearHistory } = useBrowsingHistory(sessionId);
+  // Initialize browsing history tracking with AI intent detection
+  const { events, detectedIntent, clearHistory } = useBrowsingHistory(sessionId, {
+    apiKey: config.apiKey,
+    customerProfile: customerProfile || undefined,
+    useAIIntentDetection: true // Enable AI-based intent detection
+  });
 
   // Restore widget state from sessionStorage
   useEffect(() => {
@@ -271,6 +275,8 @@ function AppContent({ config }: AppProps) {
     setCustomerId(null);
     setCustomerProfile(null);
     sessionStorage.removeItem('porta_futuri_customer_id');
+    // Also clear chat history when profile is reset
+    sessionStorage.removeItem('porta_futuri_chat_messages');
     setShowCustomerIdModal(true);
   };
 

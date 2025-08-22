@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ContextEvent } from '@shared/types/context.types';
 import { EventTrackingService, BrowsingIntent } from '../services/eventTracking';
+import { CustomerProfile } from '../types/widget.types';
 
 interface UseBrowsingHistoryReturn {
   events: ContextEvent[];
@@ -12,7 +13,16 @@ interface UseBrowsingHistoryReturn {
   trackCartAction: (productId: string, action: 'add' | 'remove' | 'update_quantity', quantity?: number, price?: number) => void;
 }
 
-export function useBrowsingHistory(sessionId: string): UseBrowsingHistoryReturn {
+interface UseBrowsingHistoryOptions {
+  apiKey?: string;
+  customerProfile?: CustomerProfile;
+  useAIIntentDetection?: boolean;
+}
+
+export function useBrowsingHistory(
+  sessionId: string, 
+  options: UseBrowsingHistoryOptions = {}
+): UseBrowsingHistoryReturn {
   const [events, setEvents] = useState<ContextEvent[]>([]);
   const [detectedIntent, setDetectedIntent] = useState<BrowsingIntent | null>(null);
   const trackingServiceRef = useRef<EventTrackingService | null>(null);
@@ -28,8 +38,26 @@ export function useBrowsingHistory(sessionId: string): UseBrowsingHistoryReturn 
       setEvents(trackingServiceRef.current.getEvents());
     }
     
+    // Define detectIntent inside useEffect to avoid circular dependency
+    const runDetection = async () => {
+      if (!trackingServiceRef.current) return;
+      
+      // Use AI-based intent detection if API key is provided and enabled
+      if (options.useAIIntentDetection && options.apiKey) {
+        const intent = await trackingServiceRef.current.analyzeIntentWithAI(
+          options.apiKey,
+          options.customerProfile
+        );
+        setDetectedIntent(intent);
+      } else {
+        // Fall back to rule-based detection
+        const intent = trackingServiceRef.current.analyzeIntent();
+        setDetectedIntent(intent);
+      }
+    };
+    
     const detectInterval = setInterval(() => {
-      detectIntent();
+      runDetection();
     }, 10000);
     
     return () => {
@@ -39,14 +67,24 @@ export function useBrowsingHistory(sessionId: string): UseBrowsingHistoryReturn 
         trackingServiceRef.current = null;
       }
     };
-  }, [sessionId]);
+  }, [sessionId, options.apiKey, options.customerProfile, options.useAIIntentDetection]);
   
-  const detectIntent = useCallback(() => {
+  const detectIntent = useCallback(async () => {
     if (!trackingServiceRef.current) return;
     
-    const intent = trackingServiceRef.current.analyzeIntent();
-    setDetectedIntent(intent);
-  }, []);
+    // Use AI-based intent detection if API key is provided and enabled
+    if (options.useAIIntentDetection && options.apiKey) {
+      const intent = await trackingServiceRef.current.analyzeIntentWithAI(
+        options.apiKey,
+        options.customerProfile
+      );
+      setDetectedIntent(intent);
+    } else {
+      // Fall back to rule-based detection
+      const intent = trackingServiceRef.current.analyzeIntent();
+      setDetectedIntent(intent);
+    }
+  }, [options.apiKey, options.customerProfile, options.useAIIntentDetection]);
   
   const clearHistory = useCallback(() => {
     if (!trackingServiceRef.current) return;
@@ -61,6 +99,7 @@ export function useBrowsingHistory(sessionId: string): UseBrowsingHistoryReturn 
     
     trackingServiceRef.current.trackPageView(url, title);
     
+    // Trigger intent detection after tracking
     setTimeout(() => detectIntent(), 500);
   }, [detectIntent]);
   
@@ -69,6 +108,7 @@ export function useBrowsingHistory(sessionId: string): UseBrowsingHistoryReturn 
     
     trackingServiceRef.current.trackProductView(productId, category, price);
     
+    // Trigger intent detection after tracking
     setTimeout(() => detectIntent(), 500);
   }, [detectIntent]);
   
@@ -77,6 +117,7 @@ export function useBrowsingHistory(sessionId: string): UseBrowsingHistoryReturn 
     
     trackingServiceRef.current.trackSearch(query);
     
+    // Trigger intent detection after tracking
     setTimeout(() => detectIntent(), 500);
   }, [detectIntent]);
   
@@ -86,6 +127,7 @@ export function useBrowsingHistory(sessionId: string): UseBrowsingHistoryReturn 
       
       trackingServiceRef.current.trackCartAction(productId, action, quantity, price);
       
+      // Trigger intent detection after tracking
       setTimeout(() => detectIntent(), 500);
     },
     [detectIntent]

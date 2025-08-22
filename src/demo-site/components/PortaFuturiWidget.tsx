@@ -40,7 +40,7 @@ export function PortaFuturiWidget() {
   }
 
   const widgetConfig = {
-    apiKey: import.meta.env.VITE_WIDGET_API_KEY || "demo-api-key",
+    apiKey: import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_WIDGET_API_KEY || "demo-api-key",
     apiUrl: `${supabaseUrl}/functions/v1/recommendations`,
     position: "bottom-right" as const,
     theme: {
