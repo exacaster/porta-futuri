@@ -8,11 +8,19 @@ interface Product {
   brand?: string;
   price: number;
   description: string;
-  features?: string;
+  features?: string | string[];  // Can be either string or array
   stock_status: string;
   image_url?: string;
   ratings?: number;
   review_count?: number;
+  comments?: Array<{  // User reviews/comments
+    user_id?: string;
+    user_name?: string;
+    rating?: number;
+    comment: string;
+    date?: string;
+  }>;
+  [key: string]: any;  // Allow additional dynamic fields
 }
 
 interface CustomerProfile {
@@ -62,7 +70,6 @@ interface RecommendationResponse {
 
 export class AIRecommendationService {
   private anthropic: Anthropic;
-  private readonly MAX_PRODUCTS_IN_CONTEXT = 100;
   private readonly MAX_CONVERSATION_HISTORY = 5;
 
   constructor(apiKey: string) {
@@ -84,11 +91,20 @@ export class AIRecommendationService {
       const prompt = this.buildPrompt(params);
       console.log('AI Service: Prompt built, length:', prompt.length);
       
-      // Call Claude API
+      // Log the full prompt being sent to Anthropic
+      console.log('========== FULL PROMPT SENT TO ANTHROPIC ==========');
+      console.log('SYSTEM PROMPT:');
+      console.log(this.getSystemPrompt());
+      console.log('\n========== USER PROMPT ==========');
+      console.log(prompt);
+      console.log('========== END OF PROMPT ==========');
+      console.log('Total prompt length:', prompt.length, 'characters');
+      
+      // Call Claude API with increased token limit for larger context
       console.log('AI Service: Calling Claude API...');
       const completion = await this.anthropic.messages.create({
         model: 'claude-3-5-sonnet-20241022',  // Updated to latest model
-        max_tokens: 2000,
+        max_tokens: 100000,  // Increased for more detailed responses
         temperature: 0.7,
         system: this.getSystemPrompt(),
         messages: [{ role: 'user', content: prompt }]
@@ -186,10 +202,9 @@ Remember: You're the fun, clever friend who happens to be amazing at finding the
       parts.push(`\nRecent Conversation:\n${historyText}`);
     }
 
-    // Add product catalog (limited to relevant products)
-    const relevantProducts = this.selectRelevantProducts(params.query, params.products);
-    const catalogText = this.formatProductCatalog(relevantProducts);
-    parts.push(`\nAvailable Products (${relevantProducts.length} total):\n${catalogText}`);
+    // Add complete product catalog (all products with full details)
+    const catalogText = this.formatCompleteProductCatalog(params.products);
+    parts.push(`\nComplete Product Catalog (${params.products.length} total products):\n${catalogText}`);
 
     // Add context if available
     if (params.context) {
@@ -249,58 +264,67 @@ Remember: You're the fun, clever friend who happens to be amazing at finding the
       .replace(/\b\w/g, l => l.toUpperCase());
   }
 
-  private selectRelevantProducts(query: string, products: Product[]): Product[] {
-    // If no query, return top products
-    if (!query) {
-      return products
-        .filter(p => p.stock_status === 'in_stock')
-        .sort((a, b) => (b.ratings || 0) - (a.ratings || 0))
-        .slice(0, this.MAX_PRODUCTS_IN_CONTEXT);
-    }
+  // Removed selectRelevantProducts - we now include all products in the prompt
 
-    // Score products based on relevance to query
-    const queryWords = query.toLowerCase().split(/\s+/);
-    const scoredProducts = products
-      .filter(p => p.stock_status === 'in_stock')
-      .map(product => {
-        let score = 0;
-        const searchableText = `${product.name} ${product.category} ${product.subcategory || ''} ${product.brand || ''} ${product.description} ${product.features || ''}`.toLowerCase();
-        
-        // Check for exact matches
-        queryWords.forEach(word => {
-          if (searchableText.includes(word)) {
-            score += 10;
-          }
+  private formatCompleteProductCatalog(products: Product[]): string {
+    // Temporarily limit to avoid rate limits - will increase as tier goes up
+    const MAX_PRODUCTS_FOR_RATE_LIMIT = 50; // Start small to avoid acceleration limits
+    const productsToInclude = products.slice(0, MAX_PRODUCTS_FOR_RATE_LIMIT);
+    
+    console.log(`Including ${productsToInclude.length} of ${products.length} products due to rate limits`);
+    
+    return productsToInclude.map(p => {
+      const lines: string[] = [];
+      lines.push(`Product ID: ${p.product_id}`);
+      lines.push(`  Name: ${p.name}`);
+      lines.push(`  Category: ${p.category}`);
+      if (p.subcategory) lines.push(`  Subcategory: ${p.subcategory}`);
+      if (p.brand) lines.push(`  Brand: ${p.brand}`);
+      lines.push(`  Price: $${p.price}`);
+      lines.push(`  Description: ${p.description}`); // Full description, no truncation
+      
+      // Handle features (can be string or array)
+      if (p.features) {
+        if (Array.isArray(p.features)) {
+          lines.push(`  Features: ${p.features.join(', ')}`);
+        } else {
+          lines.push(`  Features: ${p.features}`);
+        }
+      }
+      
+      lines.push(`  Stock Status: ${p.stock_status}`);
+      if (p.image_url) lines.push(`  Image URL: ${p.image_url}`);
+      if (p.ratings !== undefined) lines.push(`  Rating: ${p.ratings}/5`);
+      if (p.review_count !== undefined) lines.push(`  Number of Reviews: ${p.review_count}`);
+      
+      // Include user comments/reviews if available
+      if (p.comments && p.comments.length > 0) {
+        lines.push(`  Customer Reviews (${p.comments.length} total):`);
+        p.comments.forEach((comment, idx) => {
+          lines.push(`    Review ${idx + 1}:`);
+          if (comment.user_name) lines.push(`      Customer: ${comment.user_name}`);
+          if (comment.rating !== undefined) lines.push(`      Rating: ${comment.rating}/5`);
+          lines.push(`      Comment: ${comment.comment}`);
+          if (comment.date) lines.push(`      Date: ${comment.date}`);
         });
-        
-        // Boost for category match
-        if (product.category && queryWords.some(w => product.category.toLowerCase().includes(w))) {
-          score += 20;
+      }
+      
+      // Add any additional fields that might exist (excluding already processed ones)
+      Object.keys(p).forEach(key => {
+        if (!['product_id', 'name', 'category', 'subcategory', 'brand', 'price', 
+              'description', 'features', 'stock_status', 'image_url', 'ratings', 
+              'review_count', 'comments'].includes(key)) {
+          const value = p[key];
+          if (value !== null && value !== undefined && typeof value !== 'object') {
+            lines.push(`  ${this.humanizeFieldName(key)}: ${value}`);
+          }
         }
-        
-        // Boost for brand match
-        if (product.brand && queryWords.some(w => product.brand.toLowerCase().includes(w))) {
-          score += 15;
-        }
-        
-        // Consider ratings
-        score += (product.ratings || 0) * 2;
-        
-        return { product, score };
-      })
-      .sort((a, b) => b.score - a.score);
-
-    // Return top scored products
-    return scoredProducts
-      .slice(0, this.MAX_PRODUCTS_IN_CONTEXT)
-      .map(item => item.product);
+      });
+      
+      return lines.join('\n');
+    }).join('\n\n');
   }
 
-  private formatProductCatalog(products: Product[]): string {
-    return products.slice(0, 20).map(p => 
-      `- ${p.product_id}: ${p.name} (${p.category}${p.brand ? ', ' + p.brand : ''}) - $${p.price} - ${p.description.substring(0, 100)}...`
-    ).join('\n');
-  }
 
   private parseResponse(responseText: string, allProducts: Product[]): RecommendationResponse {
     try {
@@ -321,6 +345,7 @@ Remember: You're the fun, clever friend who happens to be amazing at finding the
           
           return {
             ...product,
+            features: Array.isArray(product.features) ? product.features : product.features ? [product.features] : undefined,
             reasoning: rec.reasoning || `Recommended based on your query`,
             match_score: rec.match_score || (90 - index * 10),
             position: index + 1
@@ -353,6 +378,7 @@ Remember: You're the fun, clever friend who happens to be amazing at finding the
     return {
       recommendations: productMentions.map((p, index) => ({
         ...p,
+        features: Array.isArray(p.features) ? p.features : p.features ? [p.features] : undefined,
         reasoning: 'Mentioned in recommendation',
         match_score: 80 - index * 10,
         position: index + 1
@@ -379,6 +405,7 @@ Remember: You're the fun, clever friend who happens to be amazing at finding the
       .slice(0, 5)
       .map((p, index) => ({
         ...p,
+        features: Array.isArray(p.features) ? p.features : p.features ? [p.features] : undefined,
         reasoning: `Popular product in ${p.category}`,
         match_score: 70 - index * 10,
         position: index + 1
