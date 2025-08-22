@@ -103,11 +103,16 @@ function AppContent({ config }: AppProps) {
   // Fetch CDP data if customer ID is available
   const fetchCDPData = async (customerId: string) => {
     try {
-      const response = await fetch(`${config.apiUrl || '/api/v1'}/cdp-proxy`, {
+      // Get Supabase URL and anon key from config or environment
+      const supabaseUrl = config.apiUrl?.split('/functions')[0] || import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      
+      const response = await fetch(`${supabaseUrl}/functions/v1/cdp-proxy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': config.apiKey
+          'X-API-Key': config.apiKey,
+          'Authorization': `Bearer ${supabaseAnonKey}`
         },
         body: JSON.stringify({
           action: 'fetch',
