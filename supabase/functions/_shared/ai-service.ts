@@ -51,6 +51,13 @@ interface CustomerProfile {
   [key: string]: any;
 }
 
+interface DetectedIntent {
+  primary_interest: string;
+  confidence: number;
+  behavioral_signals: string[];
+  suggested_context?: string;
+}
+
 interface Message {
   role: 'user' | 'assistant';
   content: string;
@@ -96,6 +103,7 @@ export class AIRecommendationService {
     customerProfile?: CustomerProfile;
     conversationHistory?: Message[];
     context?: any;
+    detectedIntent?: DetectedIntent;
   }): Promise<RecommendationResponse> {
     try {
       console.log('AI Service: Starting generation with query:', params.query);
@@ -192,6 +200,18 @@ CRITICAL RECOMMENDATION RULES:
      * "What's your budget range?"
      * "Will you use this for work or entertainment?"
    - Only provide recommendations AFTER receiving answers to your questions
+6. **INTENT-AWARE RECOMMENDATIONS**: When detected intent is provided:
+   - Acknowledge the detected shopping behavior naturally
+   - Prioritize products that match the detected intent
+   - Use confidence level to determine how specific to be:
+     * High confidence (>70%): Be specific about their interest
+     * Medium confidence (40-70%): Acknowledge general category interest
+     * Low confidence (<40%): Keep recommendations broad
+   - Reference behavioral signals to show understanding
+   - Examples:
+     * "I see you've been exploring smartphones extensively..."
+     * "Based on your focused browsing in the TV category..."
+     * "You seem to be comparing different laptop options..."
 
 CORE BEHAVIOR:
 1. Always respond naturally to what they actually said first
@@ -223,6 +243,16 @@ You: "Excellent timing for a phone upgrade! To find your perfect match, what mat
 
 User: "Something for my grandmother"
 You: "How thoughtful! To find something perfect for your grandmother, could you tell me a bit about her interests? Is she tech-savvy or prefers simpler devices? What kinds of things does she enjoy?"
+
+INTENT-AWARE RESPONSE EXAMPLES:
+User: "Show me TVs" (Detected Intent: "Category Exploration - TVs" 85% confidence)
+You: "I see you've been thoroughly exploring our TV selection! Based on your viewing pattern, you seem particularly interested in larger screens. Let me show you our top-rated 55-65 inch models..."
+
+User: "Something for gaming" (Detected Intent: "Gaming Equipment Research" 72% confidence)
+You: "Perfect timing! I noticed you've been checking out gaming gear across multiple categories. Whether you need a new console, gaming laptop, or accessories, I've got some excellent recommendations based on what you've been viewing..."
+
+User: "What do you recommend?" (Detected Intent: "Smartphone Comparison" 68% confidence)
+You: "Based on your recent browsing of several smartphone models, particularly the premium ones, here are my top picks that match your interests..."
 
 IMPORTANT:
 - Keep responses concise (2-3 sentences usually)
@@ -259,6 +289,7 @@ Remember: You're the expert friend who finds EXACTLY what they need FROM THE AVA
     customerProfile?: CustomerProfile;
     conversationHistory?: Message[];
     context?: any;
+    detectedIntent?: DetectedIntent;
   }): string {
     const parts: string[] = [];
 
@@ -269,6 +300,12 @@ Remember: You're the expert friend who finds EXACTLY what they need FROM THE AVA
     if (params.customerProfile) {
       const profileInfo = this.formatCustomerProfile(params.customerProfile);
       parts.push(`\nCustomer Profile:\n${profileInfo}`);
+    }
+
+    // Add detected intent if available
+    if (params.detectedIntent) {
+      const intentInfo = this.formatDetectedIntent(params.detectedIntent);
+      parts.push(`\nDetected Shopping Intent:\n${intentInfo}`);
     }
 
     // Add conversation history if available
@@ -368,6 +405,26 @@ Remember: You're the expert friend who finds EXACTLY what they need FROM THE AVA
         }
       }
     });
+    
+    return lines.join('\n');
+  }
+
+  private formatDetectedIntent(intent: DetectedIntent): string {
+    const lines: string[] = [];
+    
+    lines.push(`- Primary Interest: ${intent.primary_interest}`);
+    lines.push(`- Confidence Level: ${(intent.confidence * 100).toFixed(0)}%`);
+    
+    if (intent.behavioral_signals && intent.behavioral_signals.length > 0) {
+      lines.push(`- Behavioral Signals:`);
+      intent.behavioral_signals.forEach(signal => {
+        lines.push(`  • ${signal}`);
+      });
+    }
+    
+    if (intent.suggested_context) {
+      lines.push(`- AI Suggested Context: "${intent.suggested_context}"`);
+    }
     
     return lines.join('\n');
   }

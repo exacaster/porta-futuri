@@ -333,7 +333,8 @@ async function generateRecommendations(request: RecommendationRequest): Promise<
         products: products,
         customerProfile: request.customer_profile,
         conversationHistory: request.conversation_history,
-        context: request.context
+        context: request.context,
+        detectedIntent: request.context?.detected_intent
       });
       
       console.log('AI service result:', { 
