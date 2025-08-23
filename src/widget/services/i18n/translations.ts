@@ -53,6 +53,9 @@ interface TranslationStrings {
     stateCheckout: string;
     insightsGathered: string;
     clearHistory: string;
+    dismissButton: string;
+    dismissOffer: string;
+    offerDismissed: string;
   };
   common: {
     cancel: string;
@@ -144,6 +147,9 @@ export const translations: WidgetTranslations = {
       stateCheckout: "Apmokėjimas",
       insightsGathered: "surinktos įžvalgos",
       clearHistory: "Išvalyti pokalbį",
+      dismissButton: "Atmesti",
+      dismissOffer: "Atmesti pasiūlymą",
+      offerDismissed: "Gerai, pašalinu šį pasiūlymą ir daugiau jo nerodysiu ateityje.",
     },
     common: {
       cancel: "Atšaukti",
@@ -234,6 +240,9 @@ export const translations: WidgetTranslations = {
       stateCheckout: "Checkout",
       insightsGathered: "insights gathered",
       clearHistory: "Clear chat",
+      dismissButton: "Dismiss it",
+      dismissOffer: "Dismiss offer",
+      offerDismissed: "Ok, I am removing this offer and will not show it to you in the future.",
     },
     common: {
       cancel: "Cancel",

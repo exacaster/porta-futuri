@@ -131,8 +131,30 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   const handleDismissRecommendation = useCallback((productId: string, messageId: string) => {
     const dismissKey = `${messageId}-${productId}`;
-    setDismissedRecommendations(prev => new Set(prev).add(dismissKey));
-  }, []);
+    setDismissedRecommendations(prev => {
+      const updated = new Set(prev).add(dismissKey);
+      
+      // Also store just product IDs for easier AI integration
+      const dismissedProductIds = new Set<string>();
+      updated.forEach(key => {
+        const [, pid] = key.split('-');
+        if (pid) dismissedProductIds.add(pid);
+      });
+      sessionStorage.setItem('porta_futuri_dismissed_products', 
+        JSON.stringify(Array.from(dismissedProductIds)));
+      
+      return updated;
+    });
+    
+    // Add AI acknowledgment message
+    const acknowledgmentMessage: Message = {
+      id: `msg-${Date.now()}`,
+      role: "assistant",
+      content: t("chat.offerDismissed"),
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, acknowledgmentMessage]);
+  }, [t]);
 
   const handleClearChat = useCallback(() => {
     // Clear messages from state and sessionStorage
@@ -252,6 +274,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         incrementRedirectAttempts();
       }
 
+      // Get dismissed products from sessionStorage
+      const dismissedProductIds = JSON.parse(
+        sessionStorage.getItem('porta_futuri_dismissed_products') || '[]'
+      );
+
       // Build request payload
       const requestPayload = {
         session_id: sessionId,
@@ -260,6 +287,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           role: m.role,
           content: m.content,
         })),
+        dismissed_products: dismissedProductIds,
         context: {
           current_page: window.location.pathname,
           browsing_category: analysis.category,
@@ -482,31 +510,31 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     position: "absolute",
                     top: "8px",
                     right: "8px",
-                    width: "24px",
-                    height: "24px",
-                    borderRadius: "50%",
-                    background: "rgba(255, 255, 255, 0.9)",
-                    border: "1px solid #ddd",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    padding: "6px 12px",
+                    borderRadius: "4px",
+                    background: "rgba(255, 255, 255, 0.95)",
+                    border: "1px solid #e5e5e7",
+                    fontSize: "12px",
+                    fontWeight: "500",
+                    color: "#666",
                     cursor: "pointer",
                     zIndex: 10,
-                    fontSize: "12px",
-                    color: "#666",
                     transition: "all 0.2s",
+                    backdropFilter: "blur(10px)",
                   }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLElement).style.background = "#fff";
-                    (e.currentTarget as HTMLElement).style.color = "#333";
+                    (e.currentTarget as HTMLElement).style.color = "#ef4444";
+                    (e.currentTarget as HTMLElement).style.borderColor = "#ef4444";
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.9)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.95)";
                     (e.currentTarget as HTMLElement).style.color = "#666";
+                    (e.currentTarget as HTMLElement).style.borderColor = "#e5e5e7";
                   }}
-                  aria-label="Dismiss recommendation"
+                  aria-label={t("chat.dismissOffer")}
                 >
-                  ✕
+                  {t("chat.dismissButton")}
                 </button>
                 {/* Product Image */}
                 {product.image_url && (

@@ -104,6 +104,7 @@ export class AIRecommendationService {
     conversationHistory?: Message[];
     context?: any;
     detectedIntent?: DetectedIntent;
+    dismissedProducts?: string[];
   }): Promise<RecommendationResponse> {
     try {
       console.log('AI Service: Starting generation with query:', params.query);
@@ -213,6 +214,12 @@ CRITICAL RECOMMENDATION RULES:
      * "Based on your focused browsing in the TV category..."
      * "You seem to be comparing different laptop options..."
 
+CRITICAL EXCLUSION RULES:
+1. NEVER recommend products that appear in the "Dismissed Products" list
+2. If a dismissed product would be perfect, find the next best alternative
+3. Do not mention or reference dismissed products in any way
+4. Treat dismissed products as if they don't exist in the catalog
+
 CORE BEHAVIOR:
 1. Always respond naturally to what they actually said first
 2. Analyze their EXACT request - don't assume or add unrelated items
@@ -290,6 +297,7 @@ Remember: You're the expert friend who finds EXACTLY what they need FROM THE AVA
     conversationHistory?: Message[];
     context?: any;
     detectedIntent?: DetectedIntent;
+    dismissedProducts?: string[];
   }): string {
     const parts: string[] = [];
 
@@ -320,6 +328,12 @@ Remember: You're the expert friend who finds EXACTLY what they need FROM THE AVA
     // Add complete product catalog (all products with full details)
     const catalogText = this.formatCompleteProductCatalog(params.products);
     parts.push(`\nComplete Product Catalog (${params.products.length} total products):\n${catalogText}`);
+
+    // Add dismissed products section
+    if (params.dismissedProducts && params.dismissedProducts.length > 0) {
+      parts.push(`\nDismissed Products (DO NOT RECOMMEND THESE):\n${params.dismissedProducts.join(', ')}`);
+      parts.push(`\nIMPORTANT: The customer has explicitly dismissed the above products. Never recommend them again, even if they seem like a perfect match.`);
+    }
 
     // Add context if available
     if (params.context) {

@@ -22,6 +22,7 @@ interface RecommendationRequest {
   products?: any[];
   customer_profile?: any;
   context_events?: any[];
+  dismissed_products?: string[];
 }
 
 interface RecommendationResponse {
@@ -334,7 +335,8 @@ async function generateRecommendations(request: RecommendationRequest): Promise<
         customerProfile: request.customer_profile,
         conversationHistory: request.conversation_history,
         context: request.context,
-        detectedIntent: request.context?.detected_intent
+        detectedIntent: request.context?.detected_intent,
+        dismissedProducts: request.dismissed_products || []
       });
       
       console.log('AI service result:', { 
