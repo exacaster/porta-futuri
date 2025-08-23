@@ -118,6 +118,15 @@ export class EventTrackingService {
   private persist() {
     try {
       sessionStorage.setItem('porta_futuri_browsing_history', JSON.stringify(this.events));
+      sessionStorage.setItem('porta_futuri_interaction_count', String(this.interactionCount));
+      
+      // Persist the current intent analysis
+      if (this.currentIntent) {
+        sessionStorage.setItem('porta_futuri_intent_analysis', JSON.stringify({
+          intent: this.currentIntent,
+          timestamp: this.lastAIAnalysisTime
+        }));
+      }
     } catch (e) {
       console.warn('Failed to persist browsing history:', e);
     }
@@ -128,6 +137,35 @@ export class EventTrackingService {
       const stored = sessionStorage.getItem('porta_futuri_browsing_history');
       if (stored) {
         this.events = JSON.parse(stored);
+      }
+      
+      // Restore interaction count from storage
+      const storedCount = sessionStorage.getItem('porta_futuri_interaction_count');
+      if (storedCount) {
+        this.interactionCount = parseInt(storedCount, 10);
+      } else {
+        // If no stored count, calculate from events
+        this.interactionCount = this.events.length;
+      }
+      
+      // Restore intent analysis from storage
+      const storedIntent = sessionStorage.getItem('porta_futuri_intent_analysis');
+      if (storedIntent) {
+        try {
+          const { intent, timestamp } = JSON.parse(storedIntent);
+          // Only restore if the intent is less than 5 minutes old
+          const age = Date.now() - timestamp;
+          if (age < 5 * 60 * 1000) { // 5 minutes
+            this.currentIntent = intent;
+            this.lastAIAnalysisTime = timestamp;
+            console.log('[AI Intent] Restored from session storage (age:', Math.floor(age / 1000), 'seconds)');
+          } else {
+            console.log('[AI Intent] Stored intent too old, discarding (age:', Math.floor(age / 1000), 'seconds)');
+            sessionStorage.removeItem('porta_futuri_intent_analysis');
+          }
+        } catch (e) {
+          console.warn('Failed to restore intent analysis:', e);
+        }
       }
     } catch (e) {
       console.warn('Failed to load browsing history:', e);
@@ -140,7 +178,12 @@ export class EventTrackingService {
   
   clearHistory() {
     this.events = [];
+    this.interactionCount = 0;
+    this.currentIntent = null;
+    this.lastAIAnalysisTime = 0;
     sessionStorage.removeItem('porta_futuri_browsing_history');
+    sessionStorage.removeItem('porta_futuri_interaction_count');
+    sessionStorage.removeItem('porta_futuri_intent_analysis');
     this.notifyListeners();
   }
   
@@ -157,7 +200,7 @@ export class EventTrackingService {
   }
   
   analyzeIntent(): BrowsingIntent | null {
-    if (this.events.length < 3) return null;
+    if (this.events.length < 3) return this.currentIntent;
     
     const categories = this.events
       .map(e => e.category_viewed)
@@ -182,7 +225,7 @@ export class EventTrackingService {
       .sort(([, a], [, b]) => b - a)[0];
     
     if (categories.filter(c => c === 'smartphones').length >= 3) {
-      return {
+      const intent = {
         intent: 'smartphone_shopping',
         confidence: 0.85,
         signals: [
@@ -192,10 +235,14 @@ export class EventTrackingService {
         ],
         suggestedMessage: "I noticed you're exploring our smartphone selection. Would you like help finding the perfect phone for your needs?"
       };
+      this.currentIntent = intent;
+      this.lastAIAnalysisTime = Date.now();
+      this.persistIntent();
+      return intent;
     }
     
     if (products.some(p => p?.toLowerCase().includes('iphone')) && products.length >= 2) {
-      return {
+      const intent = {
         intent: 'iphone_interest',
         confidence: 0.90,
         signals: [
@@ -205,10 +252,14 @@ export class EventTrackingService {
         ],
         suggestedMessage: "Looking at iPhones? I can help you compare models and find the best deal!"
       };
+      this.currentIntent = intent;
+      this.lastAIAnalysisTime = Date.now();
+      this.persistIntent();
+      return intent;
     }
     
     if (categories.filter(c => c === 'electronics').length >= 3) {
-      return {
+      const intent = {
         intent: 'electronics_browsing',
         confidence: 0.75,
         signals: [
@@ -218,11 +269,15 @@ export class EventTrackingService {
         ],
         suggestedMessage: "I see you're browsing our electronics. Can I help you find something specific?"
       };
+      this.currentIntent = intent;
+      this.lastAIAnalysisTime = Date.now();
+      this.persistIntent();
+      return intent;
     }
     
     if (searches.length >= 2) {
       const lastSearch = searches[0];
-      return {
+      const intent = {
         intent: 'active_searching',
         confidence: 0.80,
         signals: [
@@ -232,11 +287,15 @@ export class EventTrackingService {
         ],
         suggestedMessage: `Still searching for "${lastSearch}"? Let me help you find exactly what you're looking for!`
       };
+      this.currentIntent = intent;
+      this.lastAIAnalysisTime = Date.now();
+      this.persistIntent();
+      return intent;
     }
     
     const cartActions = this.events.filter(e => e.event_type === 'cart_action');
     if (cartActions.length >= 2) {
-      return {
+      const intent = {
         intent: 'purchase_consideration',
         confidence: 0.85,
         signals: [
@@ -246,10 +305,14 @@ export class EventTrackingService {
         ],
         suggestedMessage: "Building your cart? I can suggest complementary items or help you find better deals!"
       };
+      this.currentIntent = intent;
+      this.lastAIAnalysisTime = Date.now();
+      this.persistIntent();
+      return intent;
     }
     
     if (dominantCategory && dominantCategory[1] >= 3) {
-      return {
+      const intent = {
         intent: 'category_exploration',
         confidence: 0.70,
         signals: [
@@ -259,9 +322,14 @@ export class EventTrackingService {
         ],
         suggestedMessage: `Exploring ${dominantCategory[0]}? I can recommend our top-rated products in this category!`
       };
+      this.currentIntent = intent;
+      this.lastAIAnalysisTime = Date.now();
+      this.persistIntent();
+      return intent;
     }
     
-    return null;
+    // No new intent detected, return cached intent if available
+    return this.currentIntent;
   }
 
   getInteractionCount(): number {
@@ -270,34 +338,51 @@ export class EventTrackingService {
 
   async analyzeIntentWithAI(
     apiKey: string,
-    customerProfile?: CustomerProfile
+    customerProfile?: CustomerProfile,
+    forceRefresh: boolean = false
   ): Promise<BrowsingIntent | null> {
-    console.log('[AI Intent] Starting analysis. Interaction count:', this.interactionCount);
+    console.log('[AI Intent] Starting analysis. Interaction count:', this.interactionCount, 'Events:', this.events.length);
     
-    // Only analyze after 3-5 interactions
-    if (this.interactionCount < 3) {
-      console.log('[AI Intent] Not enough interactions yet (need 3, have', this.interactionCount, ')');
-      return this.currentIntent; // Return cached intent
-    }
-    
-    // Analyze every 3 interactions
-    if (this.interactionCount % 3 !== 0) {
-      console.log('[AI Intent] Not at 3-interaction interval');
-      return this.currentIntent;
-    }
+    // If forced refresh, skip all checks except minimum interactions
+    if (!forceRefresh) {
+      // Only analyze after 3-5 interactions
+      if (this.interactionCount < 3) {
+        console.log('[AI Intent] Not enough interactions yet (need 3, have', this.interactionCount, ')');
+        return this.currentIntent; // Return cached intent
+      }
+      
+      // Analyze every 3 interactions
+      if (this.interactionCount % 3 !== 0) {
+        console.log('[AI Intent] Not at 3-interaction interval');
+        return this.currentIntent;
+      }
 
-    // Prevent too frequent API calls (minimum 30 seconds between calls)
-    const now = Date.now();
-    if (now - this.lastAIAnalysisTime < 30000) {
-      console.log('[AI Intent] Too soon since last analysis (wait 30s)');
-      return this.currentIntent;
+      // Prevent too frequent API calls (minimum 30 seconds between calls)
+      const now = Date.now();
+      if (now - this.lastAIAnalysisTime < 30000) {
+        console.log('[AI Intent] Too soon since last analysis (wait 30s)');
+        return this.currentIntent;
+      }
+    } else {
+      // For forced refresh, still check minimum interactions
+      if (this.events.length < 2) {
+        console.log('[AI Intent] Not enough events for analysis (need at least 2)');
+        return this.currentIntent;
+      }
     }
+    
+    const now = Date.now();
 
     try {
       // Get the Supabase URL from environment or widget config
       const supabaseUrl = (window as any).PortaFuturi?.supabaseUrl || 
                          (window as any).env?.REACT_APP_SUPABASE_URL || 
                          'https://rvlbbgdkgneobvlyawix.supabase.co';
+      
+      // Get the Supabase anon key (required for edge runtime)
+      const supabaseAnonKey = (window as any).PortaFuturi?.supabaseAnonKey || 
+                             (window as any).env?.VITE_SUPABASE_ANON_KEY ||
+                             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2bGJiZ2RrZ25lb2J2bHlhd2l4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4OTM1MTIsImV4cCI6MjA3MDQ2OTUxMn0.hz5d5bKI5kxLVAz9SohS4wz-Qufc8em_aQPTVJF7GhA';
       
       const API_URL = `${supabaseUrl}/functions/v1/intent-analysis`;
       
@@ -309,7 +394,8 @@ export class EventTrackingService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
+          'Authorization': `Bearer ${supabaseAnonKey}`,  // Required for Supabase edge runtime
+          'X-API-Key': apiKey,  // Our custom API key for widget validation
         },
         body: JSON.stringify({
           session_id: this.sessionId,
@@ -342,6 +428,9 @@ export class EventTrackingService {
       // Cache the intent
       this.currentIntent = formattedIntent;
       this.lastAIAnalysisTime = now;
+      
+      // Persist the intent immediately
+      this.persistIntent();
 
       return formattedIntent;
     } catch (error) {
@@ -349,6 +438,24 @@ export class EventTrackingService {
       // Fall back to rule-based analysis
       return this.analyzeIntent();
     }
+  }
+  
+  private persistIntent() {
+    try {
+      if (this.currentIntent) {
+        sessionStorage.setItem('porta_futuri_intent_analysis', JSON.stringify({
+          intent: this.currentIntent,
+          timestamp: this.lastAIAnalysisTime
+        }));
+        console.log('[AI Intent] Persisted to session storage');
+      }
+    } catch (e) {
+      console.warn('Failed to persist intent analysis:', e);
+    }
+  }
+  
+  getCurrentIntent(): BrowsingIntent | null {
+    return this.currentIntent;
   }
   
   destroy() {

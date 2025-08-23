@@ -1,13 +1,14 @@
 import React from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
 import { ContextEvent } from '@shared/types/context.types';
-import { Clock, TrendingUp, AlertCircle, ShoppingCart, Search, Package } from 'lucide-react';
+import { Clock, TrendingUp, AlertCircle, ShoppingCart, Search, Package, RefreshCw } from 'lucide-react';
 import { BrowsingIntent } from '../services/eventTracking';
 
 interface BrowsingHistoryProps {
   events: ContextEvent[];
   detectedIntent: BrowsingIntent | null;
   onClearHistory: () => void;
+  onRefreshIntent?: () => void;
   onClose?: () => void; // Made optional since we removed the close button
 }
 
@@ -15,6 +16,7 @@ export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
   events,
   detectedIntent,
   onClearHistory,
+  onRefreshIntent,
 }) => {
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -202,6 +204,20 @@ export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
         </Tabs.Content>
         
         <Tabs.Content value="intent" className="data-[state=active]:flex flex-1 overflow-hidden flex-col p-4" style={{ minHeight: 0 }}>
+          <div className="mb-3 flex justify-between items-center">
+            <h3 className="text-sm font-semibold text-gray-900">AI Shopping Intent Detection</h3>
+            {onRefreshIntent && events.length >= 2 && (
+              <button
+                onClick={onRefreshIntent}
+                className="text-xs text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1 px-2 py-1 bg-blue-50 hover:bg-blue-100 rounded"
+                title="Manually refresh intent analysis"
+              >
+                <RefreshCw className="w-3 h-3" />
+                Refresh Analysis
+              </button>
+            )}
+          </div>
+          
           {detectedIntent ? (
             <div className="flex-1 overflow-y-auto space-y-4">
               <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 shadow-sm">
@@ -270,6 +286,9 @@ export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
                   <span className="font-semibold">How this works:</span> Our AI analyzes your browsing patterns 
                   to understand your shopping intent and provide personalized assistance.
                 </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Analysis updates automatically every 3 interactions or you can refresh manually.
+                </p>
               </div>
             </div>
           ) : (
@@ -282,9 +301,22 @@ export const BrowsingHistory: React.FC<BrowsingHistoryProps> = ({
                 <p className="text-gray-500 text-xs max-w-xs mx-auto">
                   Browse a few more products and I'll analyze your shopping intent to provide personalized recommendations
                 </p>
-                <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
-                  <span className="text-xs text-gray-600">Minimum 3 interactions required</span>
+                <div className="mt-4 space-y-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
+                    <span className="text-xs text-gray-600">Minimum 3 interactions required (Current: {events.length})</span>
+                  </div>
+                  {events.length >= 2 && onRefreshIntent && (
+                    <div className="mt-2">
+                      <button
+                        onClick={onRefreshIntent}
+                        className="text-xs text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-full mx-auto"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        Try Analysis Now
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

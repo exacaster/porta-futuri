@@ -52,6 +52,7 @@ interface TranslationStrings {
     stateComparing: string;
     stateCheckout: string;
     insightsGathered: string;
+    clearHistory: string;
   };
   common: {
     cancel: string;
@@ -87,10 +88,10 @@ interface TranslationStrings {
 export const translations: WidgetTranslations = {
   lt: {
     greeting: [
-      "Sveiki! Kuo galiu jums padėti?",
-      "Labas! Ieškote ko nors ypatingo?",
-      "Sveiki atvykę! Kaip galiu padėti su jūsų pirkimu?",
-      "Sveiki! Turite klausimų apie mūsų produktus?",
+      "Klauskite AI asistento patarimo",
+      "Klauskite AI asistento patarimo",
+      "Klauskite AI asistento patarimo",
+      "Klauskite AI asistento patarimo",
     ],
     navigation: {
       chat: "Pokalbis",
@@ -142,6 +143,7 @@ export const translations: WidgetTranslations = {
       stateComparing: "Lyginu",
       stateCheckout: "Apmokėjimas",
       insightsGathered: "surinktos įžvalgos",
+      clearHistory: "Išvalyti pokalbį",
     },
     common: {
       cancel: "Atšaukti",
@@ -231,6 +233,7 @@ export const translations: WidgetTranslations = {
       stateComparing: "Comparing",
       stateCheckout: "Checkout",
       insightsGathered: "insights gathered",
+      clearHistory: "Clear chat",
     },
     common: {
       cancel: "Cancel",

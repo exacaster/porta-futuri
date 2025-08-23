@@ -310,9 +310,27 @@ async function handleFetchCustomer(
     let credentials: { bearer_token?: string } = {};
     if (integration.credentials_encrypted) {
       try {
-        credentials = JSON.parse(atob(integration.credentials_encrypted));
+        console.log('Attempting to decrypt credentials...');
+        console.log('credentials_encrypted length:', integration.credentials_encrypted.length);
+        console.log('credentials_encrypted preview:', integration.credentials_encrypted.substring(0, 20));
+        
+        const decoded = atob(integration.credentials_encrypted);
+        console.log('Base64 decoded, length:', decoded.length);
+        console.log('Decoded content:', decoded.substring(0, 100));
+        
+        if (!decoded || decoded.length === 0) {
+          throw new Error('Decoded credentials are empty');
+        }
+        
+        credentials = JSON.parse(decoded);
+        console.log('CDP Credentials parsed successfully');
+        console.log('Bearer token exists:', !!credentials.bearer_token);
+        console.log('Bearer token length:', credentials.bearer_token?.length || 0);
+        console.log('Bearer token preview:', credentials.bearer_token?.substring(0, 20) || 'N/A');
       } catch (err) {
         console.error('Failed to decrypt credentials:', err);
+        console.error('Error message:', err.message);
+        console.error('Raw credentials_encrypted:', integration.credentials_encrypted);
         return new Response(
           JSON.stringify({ 
             error: 'Failed to decrypt credentials',
@@ -326,10 +344,29 @@ async function handleFetchCustomer(
           }
         );
       }
+    } else {
+      console.error('No credentials_encrypted field in integration');
+      return new Response(
+        JSON.stringify({ 
+          error: 'No CDP credentials configured',
+          customer_id: customerId,
+          cdp_available: false,
+          fallback_reason: 'No CDP credentials in database'
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     // Build CDP URL
     const cdpUrl = `${integration.config.api_url}/workspaces/${integration.config.workspace_id}/resources/${integration.config.resource_id}?userId=${encodeURIComponent(customerId)}&page=0&size=1`;
+
+    // Log the request for debugging
+    console.log('CDP Fetch Request:');
+    console.log('URL:', cdpUrl);
+    console.log('Bearer token being used:', credentials.bearer_token ? `${credentials.bearer_token.substring(0, 20)}...` : 'MISSING');
 
     // Make CDP API call with timeout
     const controller = new AbortController();

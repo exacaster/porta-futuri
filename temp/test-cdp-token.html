@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CDP Token Test</title>
+</head>
+<body>
+    <h1>CDP Token Tester</h1>
+    <p>Open the browser console and check the results</p>
+    
+    <script>
+        // Configuration - update these values
+        const config = {
+            api_url: 'https://customer360.exacaster.com/courier/api/v1',
+            workspace_id: '2fae3e40-c67e-49de-bd87-b36b43e3f30a',
+            resource_id: 'f9aecfe6-21f5-4528-9db6-19833bc86f69',
+            bearer_token: 'YOUR_BEARER_TOKEN_HERE' // Replace with actual token
+        };
+        
+        async function testCDP() {
+            const url = `${config.api_url}/workspaces/${config.workspace_id}/resources/${config.resource_id}?userId=TEST_USER&page=0&size=1`;
+            
+            console.log('Testing CDP with URL:', url);
+            console.log('Bearer token length:', config.bearer_token.length);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${config.bearer_token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (response.status === 401) {
+                    console.error('❌ UNAUTHORIZED - Bearer token is invalid or expired');
+                    const text = await response.text();
+                    console.log('Response:', text);
+                } else if (response.ok) {
+                    console.log('✅ SUCCESS - Bearer token is valid!');
+                    const data = await response.json();
+                    console.log('Response data:', data);
+                } else {
+                    console.warn('⚠️ Unexpected status:', response.status);
+                    const text = await response.text();
+                    console.log('Response:', text);
+                }
+            } catch (error) {
+                console.error('Request failed:', error);
+            }
+        }
+        
+        // Run test when page loads
+        testCDP();
+    </script>
+</body>
+</html>

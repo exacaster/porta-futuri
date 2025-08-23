@@ -7,6 +7,7 @@ interface UseBrowsingHistoryReturn {
   events: ContextEvent[];
   detectedIntent: BrowsingIntent | null;
   clearHistory: () => void;
+  refreshIntent: () => void;
   trackEvent: (url: string, title?: string) => void;
   trackProductView: (productId: string, category?: string, price?: number) => void;
   trackSearch: (query: string) => void;
@@ -35,7 +36,15 @@ export function useBrowsingHistory(
         setEvents(updatedEvents);
       });
       
+      // Restore events from storage
       setEvents(trackingServiceRef.current.getEvents());
+      
+      // Restore intent from storage if available
+      const storedIntent = trackingServiceRef.current.getCurrentIntent();
+      if (storedIntent) {
+        setDetectedIntent(storedIntent);
+        console.log('[useBrowsingHistory] Restored intent from storage');
+      }
     }
     
     // Define detectIntent inside useEffect to avoid circular dependency
@@ -46,7 +55,8 @@ export function useBrowsingHistory(
       if (options.useAIIntentDetection && options.apiKey) {
         const intent = await trackingServiceRef.current.analyzeIntentWithAI(
           options.apiKey,
-          options.customerProfile
+          options.customerProfile,
+          false // Not forced refresh for automatic detection
         );
         setDetectedIntent(intent);
       } else {
@@ -55,6 +65,11 @@ export function useBrowsingHistory(
         setDetectedIntent(intent);
       }
     };
+    
+    // Run initial detection after a short delay (only if no intent is already loaded)
+    if (!trackingServiceRef.current?.getCurrentIntent()) {
+      setTimeout(() => runDetection(), 1000);
+    }
     
     const detectInterval = setInterval(() => {
       runDetection();
@@ -69,14 +84,15 @@ export function useBrowsingHistory(
     };
   }, [sessionId, options.apiKey, options.customerProfile, options.useAIIntentDetection]);
   
-  const detectIntent = useCallback(async () => {
+  const detectIntent = useCallback(async (forceRefresh: boolean = false) => {
     if (!trackingServiceRef.current) return;
     
     // Use AI-based intent detection if API key is provided and enabled
     if (options.useAIIntentDetection && options.apiKey) {
       const intent = await trackingServiceRef.current.analyzeIntentWithAI(
         options.apiKey,
-        options.customerProfile
+        options.customerProfile,
+        forceRefresh
       );
       setDetectedIntent(intent);
     } else {
@@ -93,6 +109,11 @@ export function useBrowsingHistory(
     setEvents([]);
     setDetectedIntent(null);
   }, []);
+  
+  const refreshIntent = useCallback(() => {
+    console.log('[Manual Refresh] Triggering intent analysis');
+    detectIntent(true); // Force refresh
+  }, [detectIntent]);
   
   const trackEvent = useCallback((url: string, title?: string) => {
     if (!trackingServiceRef.current) return;
@@ -137,6 +158,7 @@ export function useBrowsingHistory(
     events,
     detectedIntent,
     clearHistory,
+    refreshIntent,
     trackEvent,
     trackProductView,
     trackSearch,

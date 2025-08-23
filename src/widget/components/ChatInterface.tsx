@@ -6,6 +6,7 @@ import {
   ConversationState,
   Topic,
 } from "@shared/types";
+import { BrowsingIntent } from "../services/eventTracking";
 import { ConversationManager } from "../services/conversation/ConversationManager";
 import { useConversation } from "../hooks/useConversation";
 import { useLanguage } from "../hooks/useLanguage";
@@ -16,6 +17,7 @@ interface ChatInterfaceProps {
   products: Product[];
   customerProfile: CustomerProfile | null;
   contextEvents: ContextEvent[];
+  detectedIntent?: BrowsingIntent | null;
   onFileUpload?: (files: {
     products?: File;
     customer?: File;
@@ -43,6 +45,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   products,
   customerProfile,
   contextEvents,
+  detectedIntent,
   onFileUpload: _onFileUpload,
   navigation,
 }) => {
@@ -67,6 +70,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(`session-${Date.now()}`);
+  const [dismissedRecommendations, setDismissedRecommendations] = useState<Set<string>>(() => {
+    const saved = sessionStorage.getItem('porta_futuri_dismissed_recommendations');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
   const { t } = useLanguage();
 
   const conversationManager = useRef<ConversationManager>(
@@ -113,6 +120,38 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Persist dismissed recommendations
+  useEffect(() => {
+    sessionStorage.setItem(
+      'porta_futuri_dismissed_recommendations',
+      JSON.stringify(Array.from(dismissedRecommendations))
+    );
+  }, [dismissedRecommendations]);
+
+  const handleDismissRecommendation = useCallback((productId: string, messageId: string) => {
+    const dismissKey = `${messageId}-${productId}`;
+    setDismissedRecommendations(prev => new Set(prev).add(dismissKey));
+  }, []);
+
+  const handleClearChat = useCallback(() => {
+    // Clear messages from state and sessionStorage
+    setMessages([]);
+    sessionStorage.removeItem('porta_futuri_chat_messages');
+    
+    // Reset dismissed recommendations
+    setDismissedRecommendations(new Set());
+    sessionStorage.removeItem('porta_futuri_dismissed_recommendations');
+    
+    // Add initial greeting message
+    const greetingMessage: Message = {
+      id: `msg-${Date.now()}`,
+      role: "assistant",
+      content: t("greeting"),
+      timestamp: new Date(),
+    };
+    setMessages([greetingMessage]);
+  }, [t]);
 
   const handleProductClick = useCallback((productId: string) => {
     // Build the product URL from config
@@ -229,6 +268,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           ),
           conversation_state: nextState,
           insights: insights,
+          detected_intent: detectedIntent ? {
+            primary_interest: detectedIntent.intent,
+            confidence: detectedIntent.confidence,
+            behavioral_signals: detectedIntent.signals,
+            suggested_context: detectedIntent.suggestedMessage
+          } : null,
         },
         customer_data: {
           csv_hash: customerProfile
@@ -308,6 +353,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     products,
     customerProfile,
     contextEvents,
+    detectedIntent,
     context,
     insights,
     updateState,
@@ -392,7 +438,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               marginBottom: "1rem",
             }}
           >
-            {msg.recommendations.slice(0, 3).map((product, idx) => (
+            {msg.recommendations
+              .filter((product) => {
+                const dismissKey = `${msg.id}-${(product as any).id || (product as any).product_id}`;
+                return !dismissedRecommendations.has(dismissKey);
+              })
+              .slice(0, 3)
+              .map((product, idx) => (
               <div
                 key={`${msg.id}-rec-${idx}`}
                 style={{
@@ -405,6 +457,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   flexDirection: "column",
                   transition: "all 0.2s ease",
                   transform: "translateY(0)",
+                  position: "relative",
                 }}
                 onClick={() => handleProductClick((product as any).id || (product as any).product_id)}
                 onMouseEnter={(e) => {
@@ -416,6 +469,45 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   (e.currentTarget as HTMLElement).style.boxShadow = "none";
                 }}
               >
+                {/* Dismiss Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDismissRecommendation(
+                      (product as any).id || (product as any).product_id,
+                      msg.id
+                    );
+                  }}
+                  style={{
+                    position: "absolute",
+                    top: "8px",
+                    right: "8px",
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "50%",
+                    background: "rgba(255, 255, 255, 0.9)",
+                    border: "1px solid #ddd",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    zIndex: 10,
+                    fontSize: "12px",
+                    color: "#666",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "#fff";
+                    (e.currentTarget as HTMLElement).style.color = "#333";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.9)";
+                    (e.currentTarget as HTMLElement).style.color = "#666";
+                  }}
+                  aria-label="Dismiss recommendation"
+                >
+                  ✕
+                </button>
                 {/* Product Image */}
                 {product.image_url && (
                   <div
@@ -624,6 +716,51 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           >
             {insights.length} {t("chat.insightsGathered")}
           </span>
+        )}
+      </div>
+
+      {/* Chat Header with Clear Button */}
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "8px 12px",
+        borderBottom: "1px solid hsl(var(--pf-border))",
+        background: "hsl(var(--pf-background))",
+      }}>
+        <span style={{
+          fontSize: "14px",
+          fontWeight: "500",
+          color: "hsl(var(--pf-foreground))",
+        }}>
+          {t("chat.title")}
+        </span>
+        {messages.length > 1 && (
+          <button
+            onClick={handleClearChat}
+            style={{
+              padding: "4px 8px",
+              fontSize: "12px",
+              background: "transparent",
+              border: "1px solid hsl(var(--pf-border))",
+              borderRadius: "4px",
+              color: "hsl(var(--pf-muted-foreground))",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "hsl(var(--pf-muted))";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "transparent";
+            }}
+          >
+            <span style={{ fontSize: "14px" }}>🗑️</span>
+            {t("chat.clearHistory")}
+          </button>
         )}
       </div>
 

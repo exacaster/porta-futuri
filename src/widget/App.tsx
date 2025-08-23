@@ -83,7 +83,7 @@ function AppContent({ config }: AppProps) {
   });
   
   // Initialize browsing history tracking with AI intent detection
-  const { events, detectedIntent, clearHistory } = useBrowsingHistory(sessionId, {
+  const { events, detectedIntent, clearHistory, refreshIntent } = useBrowsingHistory(sessionId, {
     apiKey: config.apiKey,
     customerProfile: customerProfile || undefined,
     useAIIntentDetection: true // Enable AI-based intent detection
@@ -507,6 +507,7 @@ function AppContent({ config }: AppProps) {
               events={events}
               detectedIntent={detectedIntent}
               onClearHistory={clearHistory}
+              onRefreshIntent={refreshIntent}
               onClose={() => setActiveTab('chat')}
             />
           ) : activeTab === 'profile' ? (
@@ -523,6 +524,7 @@ function AppContent({ config }: AppProps) {
               products={products}
               customerProfile={customerProfile}
               contextEvents={contextEvents}
+              detectedIntent={detectedIntent}
               onFileUpload={handleFileUpload}
               navigation={config.navigation}
             />
